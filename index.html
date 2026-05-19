@@ -430,7 +430,7 @@ function iniciarReloj() {
 
 async function cargarCerebroSistema() {
     try {
-        const res = await fetch(URL_SCRIPT + "?accion=getAdminConfig"); // <-- cambia aquí
+        const res = await fetch(URL_SCRIPT + "/admin"); 
         DB_MASTER = await res.json();
         console.log("✅ Cerebro Sincronizado", DB_MASTER);
         return true;
@@ -455,15 +455,11 @@ async function entrar() {
     btn.disabled = true;
 
     try {
-        const res = await fetch(URL_SCRIPT, {
+        await fetch(URL_SCRIPT + "/logistica", {
             method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({
-                action: "login",
-                usuario: u,
-                password: p
-            })
-        });
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ codigo_piloto: 'P001', movimiento: 'ENTRADA' })
+           );
 
         const data = await res.json();
 
