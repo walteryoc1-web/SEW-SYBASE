@@ -618,7 +618,7 @@ function checkPiloto(inp) {
         const p = getRegistro('PILOTO', id);
         if(!p) throw new Error("Piloto no encontrado en BD_CONFIG");
 
-        const payload = `LOGISTICA;${id};${p.nombre};${document.getElementById('mov').value};${document.getElementById('prod').value};${p.extra4||""};${p.extra1||""};${document.getElementById('CicloTer').value||""};${document.getElementById('CicloEPQ').value||""}`;
+        const payload = `LOGIS;${id};${p.nombre};${document.getElementById('mov').value};${document.getElementById('prod').value};${p.extra4||""};${p.extra1||""};${document.getElementById('CicloTer').value||""};${document.getElementById('CicloEPQ').value||""}`;
 
         await fetch(URL_SCRIPT, {
             method: 'POST',
