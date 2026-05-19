@@ -456,11 +456,10 @@ async function entrar() {
 
     try {
         await fetch(URL_SCRIPT + "/logistica", {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ codigo_piloto: 'P001', movimiento: 'ENTRADA' })
-           );
-
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({ codigo_piloto: 'P001', movimiento: 'ENTRADA' })
+});
         const data = await res.json();
 
         if (data.error) {
