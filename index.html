@@ -648,21 +648,38 @@ function checkPiloto(inp) {
 // ===== PÍLDORAS =====
 async function actualizarPildoras() {
     try {
-        const rLog = await fetch(URL_SCRIPT + "?modulo=LOGISTICA&t=" + Date.now());
-        const dLog = await rLog.json();
-        if(document.getElementById('count-pendientes')) document.getElementById('count-pendientes').innerText = (dLog.pendientes || 0).toString().padStart(2,'0');
-        if(document.getElementById('count-proceso')) document.getElementById('count-proceso').innerText = (dLog.proceso || 0).toString().padStart(2,'0');
-        if(document.getElementById('count-despachadas')) document.getElementById('count-despachadas').innerText = (dLog.despachadas || 0).toString().padStart(2,'0');
+        // Toma el rango de fechas de los inputs del supervisor
+        const ini = document.getElementById('f-inicio')?.value || '';
+        const fin = document.getElementById('f-fin')?.value || '';
 
-        const rSSO = await fetch(URL_SCRIPT + "?modulo=SSO&t=" + Date.now());
+        // LOGISTICA
+        const rLog = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=LOGISTICA&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
+        const dLog = await rLog.json();
+        
+        if (dLog.ok) {
+            if(document.getElementById('count-pendientes')) 
+                document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0');
+          
+        }
+
+        // SSO
+        const rSSO = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=SSO&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dSSO = await rSSO.json();
-        if(document.getElementById('sso-pnd')) document.getElementById('sso-pnd').innerText = (dSSO.totalSSO || 0).toString().padStart(2,'0');
-        if(document.getElementById('sso-riesgo')) document.getElementById('sso-riesgo').innerText = (dSSO.riesgoSSO || 0).toString().padStart(2,'0');
-        if(document.getElementById('sso-personal')) document.getElementById('sso-personal').innerText = (dSSO.personalSSO || 0).toString().padStart(2,'0');
+        
+        if (dSSO.ok) {
+            if(document.getElementById('sso-pnd')) 
+                document.getElementById('sso-pnd').innerText = (dSSO.total || 0).toString().padStart(2,'0');
+            if(document.getElementById('sso-riesgo')) 
+                document.getElementById('sso-riesgo').innerText = (dSSO.riesgo || 0).toString().padStart(2,'0');
+            if(document.getElementById('sso-personal')) 
+                document.getElementById('sso-personal').innerText = (dSSO.personal || 0).toString().padStart(2,'0');
+        }
+
     } catch(e) {
         console.error("Error pildoras:", e);
     }
 }
+
 
 // ===== DESPLEGABLES =====
 function llenarDesplegablesLogistica() {
@@ -1367,39 +1384,28 @@ function mostrarListaAdmin(categoria) {
     html += "</table>";
     div.innerHTML = html;
 }
-       async function cambiarEstado(categoria, id, nuevoEstado) {
+     async function cambiarEstado(categoria, id, nuevoEstado) {
     if (!confirm(`¿Seguro que quieres poner ${id} en ${nuevoEstado}?`)) return;
 
-    const registro = (DB_MASTER[categoria] || []).find(x => x.id.toUpperCase() === id.toUpperCase());
-    if (!registro) return alert("❌ No encontré el registro");
+   const payload = {
+    accion: "actualizarExtra3",
+    categoria: categoria,
+    id: id,
+    extra3: nuevoEstado
+};
 
-    const payload = {
-        action: "guardarConfig",
-        categoria: categoria,
-        id: id,
-        nombre: registro.nombre,
-        extra1: registro.extra1,
-        extra2: registro.extra2,
-        extra3: nuevoEstado, // solo cambias esto
-        extra4: registro.extra4
-    };
-
-    try {
-        const r = await fetch(URL_SCRIPT, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {'Content-Type': 'text/plain'}
-        });
+const r = await fetch(URL_SCRIPT + '/api/adminConfig', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: {'Content-Type': 'application/json'}
+});
 
         const txt = await r.text();
 
-        if (txt.includes('OK') || txt === '') {
+        if (txt.includes('OK')) {
             alert(`✅ ${id} ahora está ${nuevoEstado}`);
-
-            // Recarga DB_MASTER completa y luego pinta la lista
             await recargarDatosMaestros();
             mostrarListaAdmin(categoria);
-
         } else {
             alert("❌ Error: " + txt);
         }
@@ -1408,7 +1414,7 @@ function mostrarListaAdmin(categoria) {
         alert("❌ Error: " + e.message);
     }
 }
-
+       
 async function recargarDatosMaestros() {
     return new Promise((resolve, reject) => {
         fetch(URL_SCRIPT + '?accion=getAdminConfig') // <-- usa getAdminConfig
