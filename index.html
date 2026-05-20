@@ -1091,16 +1091,23 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
         const url = `${URL_SCRIPT}?accion=${accion}&modulo=${modulo}&t=${Date.now()}`;
         const res = await fetch(url);
         const data = await res.json();
+
         if (!Array.isArray(data)) return alert("❌ Error: El servidor no devolvió una lista de registros.");
 
-        const fil = data.filter(r => r.fecha && r.fecha >= ini && r.fecha <= fin);
+        const fil = data.filter(r => {
+            if (!r.fecha) return false;
+            const fechaSolo = r.fecha.substring(0, 10);
+            return fechaSolo >= ini && fechaSolo <= fin;
+        });
 
         if (fil.length === 0) return alert("⚠️ No hay datos del " + ini + " al " + fin);
 
         let csv = "\uFEFFFECHA,HORA,DATOS REGISTRADOS\n";
         fil.forEach(r => {
             const datosLimpios = r.datos? r.datos.replace(/;/g, ",") : "";
-            csv += `${r.fecha},${r.hora},"${datosLimpios}"\n`;
+            // Si hora viene dentro de fecha, sácala también
+            const hora = r.hora || (r.fecha.length > 10? r.fecha.substring(11, 19) : "");
+            csv += `${r.fecha.substring(0, 10)},${hora},"${datosLimpios}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1112,7 +1119,6 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
         alert("❌ Error de comunicación con la base de datos: " + e.message);
     }
 }
-
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
