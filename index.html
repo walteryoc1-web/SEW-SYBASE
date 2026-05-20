@@ -606,7 +606,7 @@ function checkPiloto(inp) {
     box.style.display = 'block';
     if(btn) btn.disabled = false;
 }
-      async function enviar() {
+     async function enviar() {
     try {
         const id = document.getElementById('id-in').value.trim().toUpperCase();
         if(!id) throw new Error("Ingresa ID de piloto");
@@ -625,7 +625,7 @@ function checkPiloto(inp) {
             observaciones: `Cliente: ${p.extra4 || ''} | Lic: ${p.extra2 || 'N/A'} | CicloTer: ${document.getElementById('CicloTer').value || ''} | CicloEPQ: ${document.getElementById('CicloEPQ').value || ''}`
         };
 
-        const r = await fetch(URL_SCRIPT, {
+        const r = await fetch("http://172.16.0.1:3000/api/logistica", {
             method: 'POST',
             headers: {'Content-Type': 'text/plain'},
             body: JSON.stringify(payload)
@@ -645,7 +645,6 @@ function checkPiloto(inp) {
         console.error(e);
     }
 }
-
 // ===== PÍLDORAS =====
 async function actualizarPildoras() {
     try {
