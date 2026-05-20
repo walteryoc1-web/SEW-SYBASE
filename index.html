@@ -1177,7 +1177,17 @@ function descargarBase64PDF(b, n) {
   a.click();
   document.body.removeChild(a);
 }
- async function guardarDatoMaestro() {
+ async function recargarYMostrar() {
+    const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({accion: 'getAdminConfig'})
+    });
+    DB_MASTER = await r.json();
+    mostrarListaAdmin(document.getElementById('adm-categoria').value || 'USUARIOS');
+}
+
+async function guardarDatoMaestro() {
     const idNuevo = document.getElementById('adm-id').value.toUpperCase().trim();
     const cat = document.getElementById('adm-categoria').value;
     const dpiNuevo = document.getElementById('adm-extra2').value.toUpperCase().trim();
@@ -1213,13 +1223,13 @@ function descargarBase64PDF(b, n) {
     };
 
     try {
-        const res = await fetch('http://172.16.0.1:3000/api/adminConfig', {
+        const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
             method: 'POST',
             headers: {'Content-Type': 'text/plain'},
             body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
+        const data = await r.json();
 
         if (data.ok) {
             alert("✅ Guardado en Sybase");
@@ -1227,13 +1237,11 @@ function descargarBase64PDF(b, n) {
         } else {
             alert("❌ Error: " + data.error);
         }
-
     } catch (e) {
-        alert("❌ Error de conexión: " + e.message);
+        alert("❌ No llegó: " + e.message);
         console.error(e);
     }
-}
-       
+}       
 // Genera ID automático tipo TIP-001, GRA-002, etc
 function generarID(categoria) {
     const lista = DB_MASTER[categoria] || [];
