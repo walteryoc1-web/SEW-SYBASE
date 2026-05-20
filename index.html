@@ -1177,35 +1177,27 @@ function descargarBase64PDF(b, n) {
   a.click();
   document.body.removeChild(a);
 }
-  const API_URL = 'http://172.16.0.1:3000/api';
-
-let DB_MASTER_ADMIN = {};
-
-// Carga todos los datos maestros al abrir el módulo admin
-async function recargarDatosMaestros() {
-    try {
-        const r = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({accion: 'getAdminConfig'})
-        });
-
-        if (!r.ok) throw new Error('Error HTTP ' + r.status);
-
-        DB_MASTER = await r.json();
-        console.log("✅ Datos maestros recargados", DB_MASTER);
-
-    } catch (e) {
-        alert("❌ No se pudieron cargar los datos: " + e.message);
-        console.error(e);
-    }
-}
-
-async function guardarDatoMaestro() {
+   async function guardarDatoMaestro() {
     const idNuevo = document.getElementById('adm-id').value.toUpperCase().trim();
     if (!idNuevo) return alert("❌ Selecciona una categoría primero");
 
     const cat = document.getElementById('adm-categoria').value;
+    const dpiNuevo = document.getElementById('adm-extra2').value.toUpperCase().trim();
+
+    // Validación de duplicados por DPI solo para categorías que usan DPI
+    const categoriasConDPI = ["TECNICO", "PILOTO", "EMPLEADO"];
+    let duplicado = null;
+
+    if (categoriasConDPI.includes(cat) && dpiNuevo!== "") {
+        for (let c in DB_MASTER) {
+            const lista = Array.isArray(DB_MASTER[c])? DB_MASTER[c] : [];
+            duplicado = lista.find(x => (x.extra2 || "").toString().toUpperCase().trim() === dpiNuevo);
+            if (duplicado) break;
+        }
+        if (duplicado && duplicado.id!== idNuevo) {
+            return alert(`🚫 BLOQUEADO: El DPI ${dpiNuevo} ya está registrado con el ID ${duplicado.id} (${duplicado.nombre}).`);
+        }
+    }
 
     const payload = {
         action: "guardarConfig",
@@ -1213,38 +1205,30 @@ async function guardarDatoMaestro() {
         id: idNuevo,
         nombre: document.getElementById('adm-nombre').value.toUpperCase().trim(),
         extra1: document.getElementById('adm-extra1').value.toUpperCase(),
-        extra2: document.getElementById('adm-extra2').value.toUpperCase().trim(),
+        extra2: dpiNuevo,
         extra3: document.getElementById('adm-estado').value,
         extra4: document.getElementById('adm-extra4').value.toUpperCase()
     };
 
     try {
-        const r = await fetch(`${API_URL}/login`, {
+        await fetch(URL_SCRIPT, {
             method: 'POST',
+            mode: 'no-cors',
             body: JSON.stringify(payload),
             headers: {'Content-Type': 'text/plain'}
         });
 
-        const txt = await r.text();
-
-        if (!r.ok || txt.startsWith('ERROR')) {
-            alert("❌ " + txt);
-            return;
-        }
-
-        alert("✅ " + txt);
-        await recargarDatosMaestros();
-        mostrarListaAdmin(cat);
+        alert("✅ ENVIADO A GOOGLE SHEETS. Recarga y revisa si se guardó.");
+        setTimeout(() => location.reload(), 1200);
 
     } catch (e) {
         alert("❌ Error de conexión: " + e.message);
         console.error(e);
     }
 }
-
-// Genera ID automático tipo TIP-001, GRA-002, etc
+        // Genera ID automático tipo TIP-001, GRA-002, etc
 function generarID(categoria) {
-    const lista = DB_MASTER_ADMIN[categoria] || [];
+    const lista = DB_MASTER[categoria] || [];
     let maxNum = 0;
 
     lista.forEach(x => {
@@ -1270,7 +1254,6 @@ function generarID(categoria) {
     const prefijo = prefijos[categoria] || categoria.substring(0, 3).toUpperCase();
     return `${prefijo}-${String(siguiente).padStart(3, '0')}`;
 }
-
 // Cambia labels y genera ID al elegir categoría
 function ajustarLabelsAdmin() {
     const c = document.getElementById('adm-categoria').value;
@@ -1328,7 +1311,7 @@ function ajustarLabelsAdmin() {
 
 function mostrarListaAdmin(categoria) {
     const div = document.getElementById('adm-lista');
-    const lista = DB_MASTER_ADMIN[categoria] || [];
+    const lista = DB_MASTER[categoria] || [];
 
     if (lista.length === 0) {
         div.innerHTML = "<small>No hay registros en esta categoría</small>";
@@ -1377,11 +1360,10 @@ function mostrarListaAdmin(categoria) {
     html += "</table>";
     div.innerHTML = html;
 }
-
-async function cambiarEstado(categoria, id, nuevoEstado) {
+    async function cambiarEstado(categoria, id, nuevoEstado) {
     if (!confirm(`¿Seguro que quieres poner ${id} en ${nuevoEstado}?`)) return;
 
-    const registro = (DB_MASTER_ADMIN[categoria] || []).find(x => x.id.toUpperCase() === id.toUpperCase());
+    const registro = (DB_MASTER[categoria] || []).find(x => x.id.toUpperCase() === id.toUpperCase());
     if (!registro) return alert("❌ No encontré el registro");
 
     const payload = {
@@ -1391,12 +1373,12 @@ async function cambiarEstado(categoria, id, nuevoEstado) {
         nombre: registro.nombre,
         extra1: registro.extra1,
         extra2: registro.extra2,
-        extra3: nuevoEstado,
+        extra3: nuevoEstado, // solo cambias esto
         extra4: registro.extra4
     };
 
     try {
-        const r = await fetch(`${API_URL}/login`, {
+        const r = await fetch(URL_SCRIPT, {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: {'Content-Type': 'text/plain'}
@@ -1404,34 +1386,34 @@ async function cambiarEstado(categoria, id, nuevoEstado) {
 
         const txt = await r.text();
 
-        if (!r.ok || txt.startsWith('ERROR')) {
-            alert("❌ " + txt);
-            return;
-        }
+        if (txt.includes('OK') || txt === '') {
+            alert(`✅ ${id} ahora está ${nuevoEstado}`);
 
-        alert(`✅ ${id} ahora está ${nuevoEstado}`);
-        await recargarDatosMaestros();
-        mostrarListaAdmin(categoria);
+            // Recarga DB_MASTER completa y luego pinta la lista
+            await recargarDatosMaestros();
+            mostrarListaAdmin(categoria);
+
+        } else {
+            alert("❌ Error: " + txt);
+        }
 
     } catch (e) {
         alert("❌ Error: " + e.message);
-        console.error(e);
     }
 }
 
-
-recargarDatosMaestros();
 async function recargarDatosMaestros() {
-    try {
-        const r = await fetch(`${API_URL}/adminConfig?accion=getAdminConfig`);
-        if (!r.ok) throw new Error('Error al cargar datos');
-        DB_MASTER_ADMIN = await r.json();
-    } catch (e) {
-        console.error('Error recargando datos maestros:', e);
-        alert("❌ No se pudieron recargar los datos");
-    }
+    return new Promise((resolve, reject) => {
+        fetch(URL_SCRIPT + '?accion=getAdminConfig') // <-- usa getAdminConfig
+      .then(r => r.json())
+      .then(d => {
+            DB_MASTER = d;
+            resolve();
+        })
+      .catch(reject);
+    });
 }
-       // ✅ FIX Q28K #3: NAVEGACIÓN SSO - AHORA SÍ OCULTA EL MONITOR
+        // ✅ FIX Q28K #3: NAVEGACIÓN SSO - AHORA SÍ OCULTA EL MONITOR
         function irAIncidentes() {
     document.getElementById('ui-monitor-sso').style.display='none';
     document.getElementById('ui-incidentes-sso').style.display='block';
@@ -1440,13 +1422,13 @@ async function recargarDatosMaestros() {
         function llenarListasIncidentes() {
             const selSalud = document.getElementById('inc-salud');
             const selGrav = document.getElementById('inc-gravedad');
-            if (selSalud && DB_MASTER_ADMIN.ESTADO_SALUD) {
+            if (selSalud && DB_MASTER.ESTADO_SALUD) {
                 selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
                 DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
             }
-            if (selGrav && DB_MASTER_ADMIN.GRAVEDAD) {
+            if (selGrav && DB_MASTER.GRAVEDAD) {
                 selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
-                DB_MASTER_ADMIN.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
+                DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
             }
         }
 
@@ -1639,13 +1621,13 @@ async function cerrarPermiso(f, btn) {
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
-  if (DB_MASTER_ADMIN.PRIORIDAD_OT) {
+  if (DB_MASTER.PRIORIDAD_OT) {
     selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
     DB_MASTER.PRIORIDAD_OT.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
   }
-  if (DB_MASTER_ADMIN.DEPTO_OT) {
+  if (DB_MASTER.DEPTO_OT) {
     selDepto.innerHTML = '<option disabled selected>Departamento</option>';
-    DB_MASTER_ADMIN.DEPTO_OT.forEach(d => selDepto.add(new Option(d.nombre, d.nombre)));
+    DB_MASTER.DEPTO_OT.forEach(d => selDepto.add(new Option(d.nombre, d.nombre)));
   }
 }
 
@@ -1672,7 +1654,7 @@ function checkTecnicoOperaciones(id) {
 
 function checkInvolucradoIncidente(inp) {
     const id = inp.value.toUpperCase().trim();
-    const persona = DB_MASTER_ADMIN.TECNICO?.find(x => x.id.toString().toUpperCase() === id);
+    const persona = DB_MASTER.TECNICO?.find(x => x.id.toString().toUpperCase() === id);
     inp.style.background = persona? "#e8f5e9" : "#fff";
     inp.style.border = persona? "2px solid #27ae60" : "1px solid #ccc";
 }
