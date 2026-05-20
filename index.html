@@ -1384,25 +1384,26 @@ function mostrarListaAdmin(categoria) {
     html += "</table>";
     div.innerHTML = html;
 }
-     async function cambiarEstado(categoria, id, nuevoEstado) {
+    async function cambiarEstado(categoria, id, nuevoEstado) {
     if (!confirm(`¿Seguro que quieres poner ${id} en ${nuevoEstado}?`)) return;
 
-   const payload = {
-    accion: "actualizarExtra3",
-    categoria: categoria,
-    id: id,
-    extra3: nuevoEstado
-};
+    try {  // <-- te faltaba esto
+        const payload = {
+            accion: "actualizarExtra3",
+            categoria: categoria,
+            id: id,
+            extra3: nuevoEstado
+        };
 
-const r = await fetch(URL_SCRIPT + '/api/adminConfig', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-    headers: {'Content-Type': 'application/json'}
-});
+        const r = await fetch(URL_SCRIPT + '/api/adminConfig', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: {'Content-Type': 'application/json'}
+        });
 
         const txt = await r.text();
 
-        if (txt.includes('OK')) {
+        if (txt.includes('OK') || txt.includes('"ok":true')) {
             alert(`✅ ${id} ahora está ${nuevoEstado}`);
             await recargarDatosMaestros();
             mostrarListaAdmin(categoria);
