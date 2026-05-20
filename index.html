@@ -1829,17 +1829,17 @@ function salir() {
        async function testEnviarASybase() {
     const payload = {
         accion: "guardarConfig",
-        categoria: "TEST",
-        id: "TEST-001",
+        categoria: "USUARIOS",
+        id: "TEST-002",
         nombre: "PRUEBA SYBASE",
-        extra1: "TEST1",
-        extra2: "TEST2", 
+        extra1: "testuser",
+        extra2: "testpass", 
         extra3: "ACTIVO",
-        extra4: "TEST4"
+        extra4: "USER"
     };
 
     try {
-        const r = await fetch("http://172.16.0.1:3000/api/admin", {
+        const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
             method: 'POST',
             headers: {'Content-Type': 'text/plain'},
             body: JSON.stringify(payload)
@@ -1847,11 +1847,20 @@ function salir() {
 
         const data = await r.json();
         console.log("Respuesta:", data);
-        alert(data.ok ? "✅ Llegó a Sybase" : "❌ Error: " + data.error);
+        alert(data.ok ? "✅ Guardado en Sybase" : "❌ Error: " + data.error);
     } catch (e) {
         alert("❌ No llegó: " + e.message);
         console.error(e);
     }
+}
+       async function recargarYMostrar() {
+    const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({accion: 'getAdminConfig'})
+    });
+    DB_MASTER = await r.json();
+    mostrarListaAdmin('USUARIOS');
 }
 
     </script>
