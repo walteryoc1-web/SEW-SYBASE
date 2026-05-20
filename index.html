@@ -280,6 +280,7 @@
 
         <button class="btn" style="background:#0984e3; color:white; margin-top:20px;" onclick="guardarDatoMaestro()">GUARDAR / ACTUALIZAR</button>
         <button class="btn-salir" onclick="descargarDataMaestra()">DESCARGAR BD COMPLETA</button>
+        <button onclick="testEnviarASybase()">Probar envío a Sybase</button>
         <button class="btn-salir" onclick="document.getElementById('ui-admin-datos').style.display='none'; location.reload();">SALIR</button>
 
         <div id="adm-lista" style="margin-top:20px; max-height:300px; overflow:auto; border:1px solid #ddd; padding:10px;">
@@ -1824,6 +1825,33 @@ function salir() {
     btn.disabled = false;
     btn.textContent = 'INGRESAR';
   }
+}
+       async function testEnviarASybase() {
+    const payload = {
+        accion: "guardarConfig",
+        categoria: "TEST",
+        id: "TEST-001",
+        nombre: "PRUEBA SYBASE",
+        extra1: "TEST1",
+        extra2: "TEST2", 
+        extra3: "ACTIVO",
+        extra4: "TEST4"
+    };
+
+    try {
+        const r = await fetch("http://172.16.0.1:3000/api/admin", {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify(payload)
+        });
+
+        const data = await r.json();
+        console.log("Respuesta:", data);
+        alert(data.ok ? "✅ Llegó a Sybase" : "❌ Error: " + data.error);
+    } catch (e) {
+        alert("❌ No llegó: " + e.message);
+        console.error(e);
+    }
 }
 
     </script>
