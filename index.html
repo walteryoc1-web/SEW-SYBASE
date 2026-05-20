@@ -1833,7 +1833,6 @@ function salir() {
 }
 async function testLogistica() {
     const payload = {
-        accion: "insertarLogistica",
         departamento: "LOGISTICA",
         id_piloto: "102",
         nombre_piloto: "CESAR ADOLFO MIRANDA COJ",
@@ -1846,7 +1845,7 @@ async function testLogistica() {
     };
 
     try {
-        const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
+        const r = await fetch("http://172.16.0.1:3000/api/logistica", {
             method: 'POST',
             headers: {'Content-Type': 'text/plain'},
             body: JSON.stringify(payload)
@@ -1859,17 +1858,6 @@ async function testLogistica() {
         alert("❌ No llegó: " + e.message);
         console.error(e);
     }
-}
-
-async function verUltimosLogistica() {
-    const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
-        method: 'POST',
-        headers: {'Content-Type': 'text/plain'},
-        body: JSON.stringify({accion: 'getLogistica'})
-    });
-    const data = await r.json();
-    console.table(data.datos || []);
-    alert("Mira la consola para ver los últimos registros");
 }
     </script>
 </body>
