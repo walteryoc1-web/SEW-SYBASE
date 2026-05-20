@@ -49,9 +49,6 @@
         <input type="text" id="CicloTer" placeholder="Ciclo Terpac">
         <input type="text" id="CicloEPQ" placeholder="Ciclo E.P.Q">
         <button id="btn-env" class="btn" onclick="enviar()">REGISTRAR DATOS 🚀</button>
-        <button onclick="testLogistica()" style="margin:10px; padding:10px; background:orange; color:white;">
-  Probar Insert Logistica
-</button>      
         <button class="btn-salir" onclick="salir()">CERRAR SESIÓN</button>
     </div>
     
@@ -1831,32 +1828,7 @@ function salir() {
     btn.textContent = 'INGRESAR';
   }
 }
-async function testLogistica() {
-  try {
-    const r = await fetch("http://172.16.0.1:3000/api/logistica", {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify({
-        departamento: "LOGISTICA",
-        id_piloto: "102",
-        nombre_piloto: "CESAR ADOLFO MIRANDA COJ",
-        movimiento: "ARRIBO",
-        producto: "SBM",
-        cliente: "PURINA",
-        placa_unidad: "C129BZH",
-        ciclo_terpac: 1214,
-        ciclo_epq: 13
-      })
-    });
 
-    const data = await r.json();
-    console.log("Respuesta:", data);
-    alert(data.ok ? "✅ Guardado" : "❌ Error: " + data.error);
-  } catch (e) {
-    alert("❌ No conectó: " + e.message);
-    console.error(e);
-  }
-}
     </script>
 </body>
 </html>
