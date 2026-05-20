@@ -606,7 +606,7 @@ function checkPiloto(inp) {
     box.style.display = 'block';
     if(btn) btn.disabled = false;
 }
-       async function enviar() {
+      async function enviar() {
     try {
         const id = document.getElementById('id-in').value.trim().toUpperCase();
         if(!id) throw new Error("Ingresa ID de piloto");
@@ -616,18 +616,33 @@ function checkPiloto(inp) {
         const p = getRegistro('PILOTO', id);
         if(!p) throw new Error("Piloto no encontrado en BD_CONFIG");
 
-        const payload = `LOGISTICA;${id};${p.nombre};${document.getElementById('mov').value};${document.getElementById('prod').value};${p.extra4||""};${p.extra1||""};${document.getElementById('CicloTer').value||""};${document.getElementById('CicloEPQ').value||""}`;
+        const payload = {
+            id_logistica: 0,
+            departamento: document.getElementById('mov').value || '',
+            codigo_piloto: id,
+            nombre: p.nombre,
+            movimiento: document.getElementById('prod').value || '',
+            observaciones: `Cliente: ${p.extra4 || ''} | Lic: ${p.extra2 || 'N/A'} | CicloTer: ${document.getElementById('CicloTer').value || ''} | CicloEPQ: ${document.getElementById('CicloEPQ').value || ''}`
+        };
 
-        await fetch(URL_SCRIPT, {
+        const r = await fetch(URL_SCRIPT, {
             method: 'POST',
-            mode: 'no-cors',
-            body: payload
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify(payload)
         });
 
-        alert("✅ REGISTRO EXITOSO");
-        location.reload();
+        const data = await r.json();
+        
+        if (data.ok) {
+            alert("✅ REGISTRO EXITOSO");
+            location.reload();
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+
     } catch(e) {
         alert("❌ Error: " + e.message);
+        console.error(e);
     }
 }
 
