@@ -1179,7 +1179,7 @@ function descargarBase64PDF(b, n) {
 }
   const API_URL = 'http://172.16.0.1:3000/api';
 
-let DB_MASTER = {};
+let DB_MASTER_ADMIN = {};
 
 // Carga todos los datos maestros al abrir el módulo admin
 async function recargarDatosMaestros() {
@@ -1244,7 +1244,7 @@ async function guardarDatoMaestro() {
 
 // Genera ID automático tipo TIP-001, GRA-002, etc
 function generarID(categoria) {
-    const lista = DB_MASTER[categoria] || [];
+    const lista = DB_MASTER_ADMIN[categoria] || [];
     let maxNum = 0;
 
     lista.forEach(x => {
@@ -1328,7 +1328,7 @@ function ajustarLabelsAdmin() {
 
 function mostrarListaAdmin(categoria) {
     const div = document.getElementById('adm-lista');
-    const lista = DB_MASTER[categoria] || [];
+    const lista = DB_MASTER_ADMIN[categoria] || [];
 
     if (lista.length === 0) {
         div.innerHTML = "<small>No hay registros en esta categoría</small>";
@@ -1381,7 +1381,7 @@ function mostrarListaAdmin(categoria) {
 async function cambiarEstado(categoria, id, nuevoEstado) {
     if (!confirm(`¿Seguro que quieres poner ${id} en ${nuevoEstado}?`)) return;
 
-    const registro = (DB_MASTER[categoria] || []).find(x => x.id.toUpperCase() === id.toUpperCase());
+    const registro = (DB_MASTER_ADMIN[categoria] || []).find(x => x.id.toUpperCase() === id.toUpperCase());
     if (!registro) return alert("❌ No encontré el registro");
 
     const payload = {
@@ -1425,7 +1425,7 @@ async function recargarDatosMaestros() {
     try {
         const r = await fetch(`${API_URL}/adminConfig?accion=getAdminConfig`);
         if (!r.ok) throw new Error('Error al cargar datos');
-        DB_MASTER = await r.json();
+        DB_MASTER_ADMIN = await r.json();
     } catch (e) {
         console.error('Error recargando datos maestros:', e);
         alert("❌ No se pudieron recargar los datos");
@@ -1440,13 +1440,13 @@ async function recargarDatosMaestros() {
         function llenarListasIncidentes() {
             const selSalud = document.getElementById('inc-salud');
             const selGrav = document.getElementById('inc-gravedad');
-            if (selSalud && DB_MASTER.ESTADO_SALUD) {
+            if (selSalud && DB_MASTER_ADMIN.ESTADO_SALUD) {
                 selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
                 DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
             }
-            if (selGrav && DB_MASTER.GRAVEDAD) {
+            if (selGrav && DB_MASTER_ADMIN.GRAVEDAD) {
                 selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
-                DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
+                DB_MASTER_ADMIN.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
             }
         }
 
@@ -1639,13 +1639,13 @@ async function cerrarPermiso(f, btn) {
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
-  if (DB_MASTER.PRIORIDAD_OT) {
+  if (DB_MASTER_ADMIN.PRIORIDAD_OT) {
     selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
     DB_MASTER.PRIORIDAD_OT.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
   }
-  if (DB_MASTER.DEPTO_OT) {
+  if (DB_MASTER_ADMIN.DEPTO_OT) {
     selDepto.innerHTML = '<option disabled selected>Departamento</option>';
-    DB_MASTER.DEPTO_OT.forEach(d => selDepto.add(new Option(d.nombre, d.nombre)));
+    DB_MASTER_ADMIN.DEPTO_OT.forEach(d => selDepto.add(new Option(d.nombre, d.nombre)));
   }
 }
 
@@ -1672,7 +1672,7 @@ function checkTecnicoOperaciones(id) {
 
 function checkInvolucradoIncidente(inp) {
     const id = inp.value.toUpperCase().trim();
-    const persona = DB_MASTER.TECNICO?.find(x => x.id.toString().toUpperCase() === id);
+    const persona = DB_MASTER_ADMIN.TECNICO?.find(x => x.id.toString().toUpperCase() === id);
     inp.style.background = persona? "#e8f5e9" : "#fff";
     inp.style.border = persona? "2px solid #27ae60" : "1px solid #ccc";
 }
