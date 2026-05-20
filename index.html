@@ -1179,6 +1179,28 @@ function descargarBase64PDF(b, n) {
 }
   const API_URL = 'http://172.16.0.1:3000/api';
 
+let DB_MASTER = {};
+
+// Carga todos los datos maestros al abrir el módulo admin
+async function recargarDatosMaestros() {
+    try {
+        const r = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({accion: 'getAdminConfig'})
+        });
+
+        if (!r.ok) throw new Error('Error HTTP ' + r.status);
+
+        DB_MASTER = await r.json();
+        console.log("✅ Datos maestros recargados", DB_MASTER);
+
+    } catch (e) {
+        alert("❌ No se pudieron cargar los datos: " + e.message);
+        console.error(e);
+    }
+}
+
 async function guardarDatoMaestro() {
     const idNuevo = document.getElementById('adm-id').value.toUpperCase().trim();
     if (!idNuevo) return alert("❌ Selecciona una categoría primero");
@@ -1197,10 +1219,10 @@ async function guardarDatoMaestro() {
     };
 
     try {
-        const r = await fetch(`${API_URL}/adminConfig`, {
+        const r = await fetch(`${API_URL}/login`, {
             method: 'POST',
             body: JSON.stringify(payload),
-            headers: {'Content-Type': 'application/json'}
+            headers: {'Content-Type': 'text/plain'}
         });
 
         const txt = await r.text();
@@ -1374,10 +1396,10 @@ async function cambiarEstado(categoria, id, nuevoEstado) {
     };
 
     try {
-        const r = await fetch(`${API_URL}/adminConfig`, {
+        const r = await fetch(`${API_URL}/login`, {
             method: 'POST',
             body: JSON.stringify(payload),
-            headers: {'Content-Type': 'application/json'}
+            headers: {'Content-Type': 'text/plain'}
         });
 
         const txt = await r.text();
@@ -1397,6 +1419,8 @@ async function cambiarEstado(categoria, id, nuevoEstado) {
     }
 }
 
+
+recargarDatosMaestros();
 async function recargarDatosMaestros() {
     try {
         const r = await fetch(`${API_URL}/adminConfig?accion=getAdminConfig`);
