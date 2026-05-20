@@ -49,6 +49,9 @@
         <input type="text" id="CicloTer" placeholder="Ciclo Terpac">
         <input type="text" id="CicloEPQ" placeholder="Ciclo E.P.Q">
         <button id="btn-env" class="btn" onclick="enviar()">REGISTRAR DATOS 🚀</button>
+        <button onclick="testLogistica()" style="margin:10px; padding:10px; background:orange; color:white;">
+  Probar Insert Logistica
+</button>      
         <button class="btn-salir" onclick="salir()">CERRAR SESIÓN</button>
     </div>
     
@@ -1135,35 +1138,7 @@ function descargarCSV_OT() {
 }
 
 // ===== ADMIN DATOS MAESTROS =====
-function descargarDataMaestra() {
-    try {
-        let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,ESTADO\n";
-        for (let cat in DB_MASTER) {
-            const lista = Array.isArray(DB_MASTER[cat])? DB_MASTER[cat] : [];
-            lista.forEach(i => {
-                csv += `${cat},${i.id},"${(i.nombre||"").replace(/"/g,'') || ""}","${(i.extra1||"").replace(/"/g,'') || ""}","${(i.extra2||"").replace(/"/g,'') || ""}",${i.extra3 || 'ACTIVO'}\n`;
-            });
-        }
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        a.download = `DB_MAESTRA_TERPAC_${new Date().toISOString().slice(0,10)}.csv`;
-        a.click();
-    } catch (e) { alert("❌ Error exportando base de datos."); }
-}
-
-function descargarBase64PDF(b, n) {
-    if(!b || b.length < 500) return;
-    const a = document.createElement("a");
-    a.href = "data:application/pdf;base64," + b.trim();
-    a.download = n;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
-
-
-        function descargarDataMaestra() {
+    function descargarDataMaestra() {
             try {
                 let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,ESTADO\n";
                 for (let cat in DB_MASTER) {
@@ -1856,7 +1831,46 @@ function salir() {
     btn.textContent = 'INGRESAR';
   }
 }
+async function testLogistica() {
+    const payload = {
+        accion: "insertarLogistica",
+        departamento: "LOGISTICA",
+        id_piloto: "102",
+        nombre_piloto: "CESAR ADOLFO MIRANDA COJ",
+        movimiento: "ARRIBO",
+        producto: "SBM",
+        cliente: "PURINA",
+        placa_unidad: "C129BZH",
+        ciclo_terpac: 1214,
+        ciclo_epq: 13
+    };
 
+    try {
+        const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify(payload)
+        });
+
+        const data = await r.json();
+        console.log("Respuesta:", data);
+        alert(data.ok ? "✅ Insertado en LOGISTICA" : "❌ Error: " + data.error);
+    } catch (e) {
+        alert("❌ No llegó: " + e.message);
+        console.error(e);
+    }
+}
+
+async function verUltimosLogistica() {
+    const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({accion: 'getLogistica'})
+    });
+    const data = await r.json();
+    console.table(data.datos || []);
+    alert("Mira la consola para ver los últimos registros");
+}
     </script>
 </body>
 </html>
