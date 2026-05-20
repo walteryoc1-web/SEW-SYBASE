@@ -280,7 +280,6 @@
 
         <button class="btn" style="background:#0984e3; color:white; margin-top:20px;" onclick="guardarDatoMaestro()">GUARDAR / ACTUALIZAR</button>
         <button class="btn-salir" onclick="descargarDataMaestra()">DESCARGAR BD COMPLETA</button>
-        <button onclick="testEnviarASybase()">Probar envío a Sybase</button>
         <button class="btn-salir" onclick="document.getElementById('ui-admin-datos').style.display='none'; location.reload();">SALIR</button>
 
         <div id="adm-lista" style="margin-top:20px; max-height:300px; overflow:auto; border:1px solid #ddd; padding:10px;">
@@ -1178,12 +1177,14 @@ function descargarBase64PDF(b, n) {
   a.click();
   document.body.removeChild(a);
 }
-   async function guardarDatoMaestro() {
+  async function guardarDatoMaestro() {
     const idNuevo = document.getElementById('adm-id').value.toUpperCase().trim();
-    if (!idNuevo) return alert("❌ Selecciona una categoría primero");
-
     const cat = document.getElementById('adm-categoria').value;
     const dpiNuevo = document.getElementById('adm-extra2').value.toUpperCase().trim();
+
+    if (!cat || cat === "Selecciona categoría") return alert("❌ Selecciona una categoría primero");
+    if (!idNuevo) return alert("❌ ID vacío");
+    if (!document.getElementById('adm-nombre').value.trim()) return alert("❌ Escribe un nombre");
 
     // Validación de duplicados por DPI solo para categorías que usan DPI
     const categoriasConDPI = ["TECNICO", "PILOTO", "EMPLEADO"];
@@ -1201,7 +1202,7 @@ function descargarBase64PDF(b, n) {
     }
 
     const payload = {
-        action: "guardarConfig",
+        accion: "guardarConfig",
         categoria: cat,
         id: idNuevo,
         nombre: document.getElementById('adm-nombre').value.toUpperCase().trim(),
@@ -1212,22 +1213,28 @@ function descargarBase64PDF(b, n) {
     };
 
     try {
-        await fetch(URL_SCRIPT, {
+        const res = await fetch('/api/adminConfig', {
             method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(payload),
-            headers: {'Content-Type': 'text/plain'}
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
 
-        alert("✅ ENVIADO A GOOGLE SHEETS. Recarga y revisa si se guardó.");
-        setTimeout(() => location.reload(), 1200);
+        const data = await res.json();
+
+        if (data.ok) {
+            alert("✅ Guardado en Sybase");
+            recargarYMostrar();
+        } else {
+            alert("❌ Error: " + data.error);
+        }
 
     } catch (e) {
         alert("❌ Error de conexión: " + e.message);
         console.error(e);
     }
 }
-        // Genera ID automático tipo TIP-001, GRA-002, etc
+
+// Genera ID automático tipo TIP-001, GRA-002, etc
 function generarID(categoria) {
     const lista = DB_MASTER[categoria] || [];
     let maxNum = 0;
@@ -1255,6 +1262,7 @@ function generarID(categoria) {
     const prefijo = prefijos[categoria] || categoria.substring(0, 3).toUpperCase();
     return `${prefijo}-${String(siguiente).padStart(3, '0')}`;
 }
+
 // Cambia labels y genera ID al elegir categoría
 function ajustarLabelsAdmin() {
     const c = document.getElementById('adm-categoria').value;
@@ -1361,7 +1369,7 @@ function mostrarListaAdmin(categoria) {
     html += "</table>";
     div.innerHTML = html;
 }
-    async function cambiarEstado(categoria, id, nuevoEstado) {
+       async function cambiarEstado(categoria, id, nuevoEstado) {
     if (!confirm(`¿Seguro que quieres poner ${id} en ${nuevoEstado}?`)) return;
 
     const registro = (DB_MASTER[categoria] || []).find(x => x.id.toUpperCase() === id.toUpperCase());
@@ -1825,42 +1833,6 @@ function salir() {
     btn.disabled = false;
     btn.textContent = 'INGRESAR';
   }
-}
-       async function testEnviarASybase() {
-    const payload = {
-        accion: "guardarConfig",
-        categoria: "USUARIOS",
-        id: "TEST-002",
-        nombre: "PRUEBA SYBASE",
-        extra1: "testuser",
-        extra2: "testpass", 
-        extra3: "ACTIVO",
-        extra4: "USER"
-    };
-
-    try {
-        const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify(payload)
-        });
-
-        const data = await r.json();
-        console.log("Respuesta:", data);
-        alert(data.ok ? "✅ Guardado en Sybase" : "❌ Error: " + data.error);
-    } catch (e) {
-        alert("❌ No llegó: " + e.message);
-        console.error(e);
-    }
-}
-       async function recargarYMostrar() {
-    const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
-        method: 'POST',
-        headers: {'Content-Type': 'text/plain'},
-        body: JSON.stringify({accion: 'getAdminConfig'})
-    });
-    DB_MASTER = await r.json();
-    mostrarListaAdmin('USUARIOS');
 }
 
     </script>
