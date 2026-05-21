@@ -870,7 +870,7 @@ async function enviarPermisoSSO() {
             checklist: marcados
         };
 
-        const res = await fetch(URL_SCRIPT, {
+        const res = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'text/plain' }
