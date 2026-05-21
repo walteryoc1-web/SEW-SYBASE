@@ -1259,6 +1259,7 @@ function generarID(categoria) {
         TIPO_MEDICO: 'TME',
         AGENTE_EXTINTOR: 'AEX',
         COLECTIVA: 'COL'
+        FASE: 'FAS'
     };
 
     const prefijo = prefijos[categoria] || categoria.substring(0, 3).toUpperCase();
@@ -1289,6 +1290,7 @@ function ajustarLabelsAdmin() {
         TIPO_MEDICO: ["Tipo", "Descripción", ""],
         AGENTE_EXTINTOR: ["Tipo", "Capacidad", ""],
         USUARIOS: ["Usuario interfaz", "Contraseña", "Rol"]
+        FASE: ["Descripción", "", ""]
     };
 
     if (c === 'USUARIOS') {
