@@ -616,14 +616,14 @@ function checkPiloto(inp) {
         const p = getRegistro('PILOTO', id);
         if(!p) throw new Error("Piloto no encontrado en BD_CONFIG");
 
-      const payload = {
-  departamento: 'LOGISTICA', // fijo, o agarra el select correcto
+     const payload = {
+  departamento: 'LOGISTICA',
   id_piloto: id,
   nombre_piloto: p.nombre,
   movimiento: document.getElementById('mov').value || '', 
   producto: document.getElementById('prod').value || '',  
   cliente: p.extra4 || '',                                
-  placa_unidad: document.getElementById('placa').value || '',
+  placa_unidad: p.extra1 || '',  // <- aquí
   ciclo_terpac: document.getElementById('CicloTer').value || null,
   ciclo_epq: document.getElementById('CicloEPQ').value || null
 };
