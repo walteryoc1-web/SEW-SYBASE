@@ -649,22 +649,20 @@ function checkPiloto(inp) {
     }
 }
 // ===== PÍLDORAS =====
+/ ===== PÍLDORAS =====
 async function actualizarPildoras() {
     try {
         const hoy = new Date();
         const ini = document.getElementById('f-inicio')?.value || hoy.toISOString().split('T')[0];
         const fin = document.getElementById('f-fin')?.value || hoy.toISOString().split('T')[0];
 
+        // LOGISTICA
         const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dLog = await rLog.json();
 
         if (dLog.ok) {
             document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0');
         }
-    } catch(e) {
-        console.error("Error pildoras:", e);
-    }
-}
 
         // SSO - si sigue en Apps Script usa URL_SCRIPT
         const rSSO = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=SSO&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
