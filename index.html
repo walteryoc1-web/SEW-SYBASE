@@ -837,14 +837,14 @@ async function enviarPermisoSSO() {
 
         if(ids.length === 0) throw new Error("Agrega al menos 1 técnico");
 
-        const tecnicoInactivo = ids.find(id =>!esActivo('TECNICO', id));
+        const tecnicoInactivo = ids.find(id => !esActivo('TECNICO', id));
         if(tecnicoInactivo) {
             throw new Error(`🚫 El técnico ${tecnicoInactivo} está INACTIVO.`);
         }
 
         const nombres = ids.map(id => {
             const t = getRegistro('TECNICO', id);
-            return t? `${t.nombre} (${t.extra2})` : id;
+            return t ? `${t.nombre} (${t.extra2})` : id;
         }).join(" / ");
 
         const marcados = Array.from(document.querySelectorAll('#contenedor-checklist input:checked'))
@@ -854,29 +854,61 @@ async function enviarPermisoSSO() {
         const fase = document.getElementById('p-fase').value;
         const tipo = document.getElementById('p-tipo').value;
         const ubi = document.getElementById('p-ubicacion').value;
-        const desc = document.getElementById('p-descripcion').value || ''; // <- fallback
+        const desc = document.getElementById('p-descripcion').value || '';
 
-        if(!fase ||!tipo ||!ubi) throw new Error("Completa Área, Lugar y Tipo de Trabajo");
+        if(!fase || !tipo || !ubi) throw new Error("Completa Área, Lugar y Tipo de Trabajo");
 
         const payload = {
             personal: nombres,
             fase: fase,
             ubi: ubi,
             tipo: tipo,
-            desc: desc,           // <- ahora nunca es undefined
-            checklist: marcados || ''  // <- fallback
+            desc: desc,           
+            checklist: marcados || ''  
         };
 
+        // 1. Guardar en SQL
         const res = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'text/plain' }
         });
 
-        const data = await res.json(); // <- usa .json() como la otra función
+        const data = await res.json();
         if (!data.ok) throw new Error(data.error);
 
-        alert("✅ PERMISO REGISTRADO");
+        const folio = data.folio;
+
+        // 2. Generar PDF con Node
+        btn.innerText = "GENERANDO PDF... ⏳";
+        const resPDF = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                folio: folio,
+                fecha: new Date().toLocaleString('es-GT'),
+                fase: fase,
+                ubicacion: ubi,
+                tipo: tipo,
+                ejecutores: nombres,
+                descripcion: desc,
+                checks: marcados,
+                plantilla: 'general' // cámbialo si usas las 5 plantilla
+            })
+        });
+
+        if (!resPDF.ok) throw new Error("No se pudo generar el PDF");
+
+        const blob = await resPDF.blob();
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ATS_${folio}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        alert("✅ PERMISO REGISTRADO Y PDF DESCARGADO");
         location.reload();
 
     } catch (e) {
@@ -885,7 +917,7 @@ async function enviarPermisoSSO() {
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
-
+       
 async function enviarFichaMedica() {
     const id = document.getElementById('med-id').value.trim();
     if (!id) {
