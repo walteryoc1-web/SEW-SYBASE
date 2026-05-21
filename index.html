@@ -616,14 +616,17 @@ function checkPiloto(inp) {
         const p = getRegistro('PILOTO', id);
         if(!p) throw new Error("Piloto no encontrado en BD_CONFIG");
 
-        const payload = {
-            id_logistica: 0,
-            departamento: document.getElementById('mov').value || '',
-            codigo_piloto: id,
-            nombre: p.nombre,
-            movimiento: document.getElementById('prod').value || '',
-            observaciones: `Cliente: ${p.extra4 || ''} | Lic: ${p.extra2 || 'N/A'} | CicloTer: ${document.getElementById('CicloTer').value || ''} | CicloEPQ: ${document.getElementById('CicloEPQ').value || ''}`
-        };
+      const payload = {
+  departamento: 'LOGISTICA', // fijo, o agarra el select correcto
+  id_piloto: id,
+  nombre_piloto: p.nombre,
+  movimiento: document.getElementById('mov').value || '', 
+  producto: document.getElementById('prod').value || '',  
+  cliente: p.extra4 || '',                                
+  placa_unidad: document.getElementById('placa').value || '',
+  ciclo_terpac: document.getElementById('CicloTer').value || null,
+  ciclo_epq: document.getElementById('CicloEPQ').value || null
+};
 
         const r = await fetch("http://172.16.0.1:3000/api/logistica", {
             method: 'POST',
