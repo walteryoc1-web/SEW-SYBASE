@@ -1087,9 +1087,8 @@ async function finalizarTareaOT(folioOT, btn) {
     }
 }
 
-// ===== REPORTES CSV =====
-function procesarDescargaUniversal(accion, ini, fin, nombre) {
-    if (!ini ||!fin) return alert("❌ Por favor, selecciona un rango de fechas (Inicio y Fin).");
+async function procesarDescargaUniversal(accion, ini, fin, nombre) {
+    if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
 
     const moduloMap = {
         "reporte": "LOGISTICA",
@@ -1101,10 +1100,24 @@ function procesarDescargaUniversal(accion, ini, fin, nombre) {
     };
     const modulo = moduloMap[accion] || "LOGISTICA";
 
-    // Usa /export directo y abre la descarga
-    const url = `http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
-    window.open(url, '_blank');
-}    
+    try {
+        const url = `http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Error " + res.status);
+
+        const csv = await res.text(); // no es JSON, es texto CSV
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${nombre}_${ini}_al_${fin}.csv`;
+        link.click();
+
+    } catch(e) {
+        alert("❌ Error de descarga: " + e.message);
+    }
+}
        
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
