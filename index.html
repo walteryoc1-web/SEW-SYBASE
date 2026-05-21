@@ -831,7 +831,7 @@ function agregarInvolucradoInc() {
 async function enviarPermisoSSO() {
     const btn = document.getElementById('btn-sso');
     btn.disabled = true;
-    btn.innerText = "GENERANDO ATS Y PDF... ⏳";
+    btn.innerText = "GENERANDO ATS... ⏳";
 
     try {
         const ids = Array.from(document.querySelectorAll('.p-id-clase'))
@@ -842,7 +842,7 @@ async function enviarPermisoSSO() {
 
         const tecnicoInactivo = ids.find(id =>!esActivo('TECNICO', id));
         if(tecnicoInactivo) {
-            throw new Error(`🚫 El técnico ${tecnicoInactivo} está INACTIVO. No se puede generar el permiso.`);
+            throw new Error(`🚫 El técnico ${tecnicoInactivo} está INACTIVO.`);
         }
 
         const nombres = ids.map(id => {
@@ -857,17 +857,17 @@ async function enviarPermisoSSO() {
         const fase = document.getElementById('p-fase').value;
         const tipo = document.getElementById('p-tipo').value;
         const ubi = document.getElementById('p-ubicacion').value;
+        const desc = document.getElementById('p-descripcion').value || ''; // <- fallback
 
         if(!fase ||!tipo ||!ubi) throw new Error("Completa Área, Lugar y Tipo de Trabajo");
 
         const payload = {
-            action: "registrarPermiso",
             personal: nombres,
             fase: fase,
             ubi: ubi,
             tipo: tipo,
-            desc: document.getElementById('p-descripcion').value,
-            checklist: marcados
+            desc: desc,           // <- ahora nunca es undefined
+            checklist: marcados || ''  // <- fallback
         };
 
         const res = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
@@ -876,17 +876,11 @@ async function enviarPermisoSSO() {
             headers: { 'Content-Type': 'text/plain' }
         });
 
-        const txt = await res.text();
-        if (txt.startsWith("ERROR:")) throw new Error(txt);
+        const data = await res.json(); // <- usa .json() como la otra función
+        if (!data.ok) throw new Error(data.error);
 
-        if (txt.length > 500) {
-            descargarBase64PDF(txt, `ATS_${payload.fase}_${Date.now()}.pdf`);
-            alert("✅ ATS REGISTRADO Y PDF GENERADO");
-            location.reload();
-        } else {
-            alert("⚠️ Guardado sin PDF: " + txt);
-            location.reload();
-        }
+        alert("✅ PERMISO REGISTRADO");
+        location.reload();
 
     } catch (e) {
         alert("❌ Error: " + e.message);
@@ -894,7 +888,6 @@ async function enviarPermisoSSO() {
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
-
 async function testSSO() {
   try {
     const r = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
