@@ -654,15 +654,17 @@ async function actualizarPildoras() {
         const ini = document.getElementById('f-inicio')?.value || '';
         const fin = document.getElementById('f-fin')?.value || '';
 
-        // LOGISTICA - ahora sí de tu API
-        const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?desde=${ini}&hasta=${fin}&t=${Date.now()}`);
+        // Agregué modulo y accion para que entre a tu if
+        const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dLog = await rLog.json();
 
         if (dLog.ok) {
-            if(document.getElementById('count-pendientes'))
-                document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0');
+            document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0');
         }
-
+    } catch(e) {
+        console.error("Error pildoras:", e);
+    }
+}
         // SSO sigue igual si aún está en Apps Script
         const rSSO = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=SSO&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dSSO = await rSSO.json();
