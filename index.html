@@ -1088,47 +1088,23 @@ async function finalizarTareaOT(folioOT, btn) {
 }
 
 // ===== REPORTES CSV =====
-// ===== REPORTES CSV =====
-async function procesarDescargaUniversal(accion, ini, fin, nombre) {
-    if (!ini ||!fin) return alert("❌ Por favor, seleccione un rango de fechas (Inicio y Fin).");
-    try {
-        const moduloMap = {
-            "reporte": "LOGISTICA",
-            "reporteSSO": "SSO",
-            "reporteIncidentes": "SSO",
-            "reporteOT": "OPERACIONES",
-            "reporteMedico": "SSO",
-            "reporteExtintor": "SSO"
-        };
-        const modulo = moduloMap[accion] || "LOGISTICA";
+function procesarDescargaUniversal(accion, ini, fin, nombre) {
+    if (!ini ||!fin) return alert("❌ Por favor, selecciona un rango de fechas (Inicio y Fin).");
 
-        // Usa /api directo con desde/hasta
-        const url = `${URL_SCRIPT}?modulo=${modulo}&desde=${ini}&hasta=${fin}&t=${Date.now()}`;
-        const res = await fetch(url);
-        const data = await res.json();
+    const moduloMap = {
+        "reporte": "LOGISTICA",
+        "reporteSSO": "SSO",
+        "reporteIncidentes": "SSO",
+        "reporteOT": "OPERACIONES",
+        "reporteMedico": "SSO",
+        "reporteExtintor": "SSO"
+    };
+    const modulo = moduloMap[accion] || "LOGISTICA";
 
-        if (!Array.isArray(data)) return alert("❌ Error: El servidor no devolvió una lista de registros.");
-
-        // Ya no filtres aquí, el backend ya lo hace con CAST DATE
-        if (data.length === 0) return alert("⚠️ No hay datos del " + ini + " al " + fin);
-
-        let csv = "\uFEFFFECHA,HORA,DATOS REGISTRADOS\n";
-        data.forEach(r => {
-            const datosLimpios = r.datos? r.datos.replace(/;/g, ",") : "";
-            const hora = r.fecha.length > 10? r.fecha.substring(11, 19) : "";
-            const fechaSolo = r.fecha.substring(0, 10);
-            csv += `${fechaSolo},${hora},"${datosLimpios}"\n`;
-        });
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${nombre}_${ini}_al_${fin}.csv`;
-        link.click();
-    } catch (e) {
-        alert("❌ Error de comunicación con la base de datos: " + e.message);
-    }
-}
+    // Usa /export directo y abre la descarga
+    const url = `http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
+    window.open(url, '_blank');
+}    
        
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
