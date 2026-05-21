@@ -654,7 +654,6 @@ async function actualizarPildoras() {
         const ini = document.getElementById('f-inicio')?.value || '';
         const fin = document.getElementById('f-fin')?.value || '';
 
-        // Agregué modulo y accion para que entre a tu if
         const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dLog = await rLog.json();
 
@@ -664,6 +663,11 @@ async function actualizarPildoras() {
     } catch(e) {
         console.error("Error pildoras:", e);
     }
+}
+
+function entrar() {
+    // valida login y luego:
+    actualizarPildoras();
 }
         // SSO sigue igual si aún está en Apps Script
         const rSSO = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=SSO&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
