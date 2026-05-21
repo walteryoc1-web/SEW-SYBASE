@@ -137,6 +137,10 @@
         <textarea id="p-descripcion" rows="2" placeholder="Descripción detallada de la tarea..."></textarea>
         <button id="btn-sso" class="btn" onclick="enviarPermisoSSO()">🚀 REGISTRAR PERMISO</button>
         <button class="btn-salir" onclick="salir()">CERRAR / CANCELAR</button>
+        <button onclick="testSSO()" style="margin:10px; padding:10px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer;">
+  Probar Insert SSO
+</button>      
+
     </div>
 </div>
     
@@ -890,6 +894,38 @@ async function enviarPermisoSSO() {
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
+
+async function testSSO() {
+  try {
+    const r = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify({
+        personal: "CESAR ADOLFO MIRANDA COJ",
+        fase: "FASE 1",
+        ubi: "PLANTA",
+        tipo: "TRABAJO EN CALIENTE",
+        desc: "Prueba de insercion desde frontend",
+        checklist: "EPP OK | EXTINTOR OK | PERMISO FIRMADO"
+      })
+    });
+
+    const data = await r.text(); // devuelve base64 del PDF o ERROR
+    console.log("Respuesta:", data);
+    
+    if (data.startsWith("ERROR")) {
+      alert("❌ Error: " + data);
+    } else {
+      alert("✅ Guardado. PDF generado. Longitud base64: " + data.length);
+      // Si quieres ver el PDF:
+      // window.open("data:application/pdf;base64," + data);
+    }
+  } catch (e) {
+    alert("❌ No conectó: " + e.message);
+    console.error(e);
+  }
+}
+       
 
 async function enviarFichaMedica() {
     const id = document.getElementById('med-id').value.trim();
