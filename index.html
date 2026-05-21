@@ -648,30 +648,28 @@ function checkPiloto(inp) {
 // ===== PÍLDORAS =====
 async function actualizarPildoras() {
     try {
-        // Toma el rango de fechas de los inputs del supervisor
         const ini = document.getElementById('f-inicio')?.value || '';
         const fin = document.getElementById('f-fin')?.value || '';
 
-        // LOGISTICA
-        const rLog = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=LOGISTICA&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
+        // LOGISTICA - ahora sí de tu API
+        const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dLog = await rLog.json();
-        
+
         if (dLog.ok) {
-            if(document.getElementById('count-pendientes')) 
+            if(document.getElementById('count-pendientes'))
                 document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0');
-          
         }
 
-        // SSO
+        // SSO sigue igual si aún está en Apps Script
         const rSSO = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=SSO&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dSSO = await rSSO.json();
-        
+
         if (dSSO.ok) {
-            if(document.getElementById('sso-pnd')) 
+            if(document.getElementById('sso-pnd'))
                 document.getElementById('sso-pnd').innerText = (dSSO.total || 0).toString().padStart(2,'0');
-            if(document.getElementById('sso-riesgo')) 
+            if(document.getElementById('sso-riesgo'))
                 document.getElementById('sso-riesgo').innerText = (dSSO.riesgo || 0).toString().padStart(2,'0');
-            if(document.getElementById('sso-personal')) 
+            if(document.getElementById('sso-personal'))
                 document.getElementById('sso-personal').innerText = (dSSO.personal || 0).toString().padStart(2,'0');
         }
 
