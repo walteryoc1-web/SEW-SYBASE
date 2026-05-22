@@ -652,59 +652,47 @@ function checkPiloto(inp) {
     }
 }
 // ===== PÍLDORAS =====
-async function actualizarPildoras() {
-    try {
-        // --- LOGÍSTICA ---
-        const hoy = new Date();
-        const ini = document.getElementById('f-inicio')?.value || hoy.toISOString().split('T')[0];
-        const fin = document.getElementById('f-fin')?.value || hoy.toISOString().split('T')[0];
+async function cargarPildorasSSO() {
+  try {
+    const hoySSO = new Date().toISOString().split('T')[0];
+    const elIni = document.getElementById('f-ini-sso');
+    const elFin = document.getElementById('f-fin-sso');
 
-        const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
-        const dLog = await rLog.json();
+    const iniSSO = (elIni && elIni.value && /^\d{4}-\d{2}-\d{2}$/.test(elIni.value))? elIni.value : hoySSO;
+    const finSSO = (elFin && elFin.value && /^\d{4}-\d{2}-\d{2}$/.test(elFin.value))? elFin.value : hoySSO;
 
-        if (dLog.ok) {
-            document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0');
-        }
+    console.log("Fechas SSO enviadas:", iniSSO, finSSO);
 
-       // --- BLOQUE SSO ---
-try {
-  const hoySSO = new Date().toISOString().split('T')[0];
+    const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
 
-  const elIni = document.getElementById('f-ini-sso');
-  const elFin = document.getElementById('f-fin-sso');
+    if (!rSSO.ok) {
+      console.error("SSO API error:", rSSO.status);
+      document.getElementById('sso-pnd').innerText = '00';
+      document.getElementById('sso-riesgo').innerText = '00';
+      document.getElementById('sso-personal').innerText = '00';
+      return;
+    }
 
-  // Solo usa el input si tiene valor válido YYYY-MM-DD
-  const iniSSO = (elIni && elIni.value && /^\d{4}-\d{2}-\d{2}$/.test(elIni.value))? elIni.value : hoySSO;
-  const finSSO = (elFin && elFin.value && /^\d{4}-\d{2}-\d{2}$/.test(elFin.value))? elFin.value : hoySSO;
+    const dSSO = await rSSO.json();
 
-  console.log("Fechas SSO enviadas:", iniSSO, finSSO);
+    if (dSSO.ok) {
+      document.getElementById('sso-pnd').innerText = String(dSSO.total || 0).padStart(2,'0');
+      document.getElementById('sso-riesgo').innerText = String(dSSO.riesgo || 0).padStart(2,'0');
+      document.getElementById('sso-personal').innerText = String(dSSO.personal || 0).padStart(2,'0');
+    } else {
+      console.error("SSO API returned error:", dSSO.error);
+    }
 
-  const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
-
-  if (!rSSO.ok) {
-    console.error("SSO API error:", rSSO.status);
+  } catch(e) {
+    console.error("Error pildoras:", e);
     document.getElementById('sso-pnd').innerText = '00';
     document.getElementById('sso-riesgo').innerText = '00';
     document.getElementById('sso-personal').innerText = '00';
-    return;
   }
-
-  const dSSO = await rSSO.json();
-
-  if (dSSO.ok) {
-    document.getElementById('sso-pnd').innerText = String(dSSO.total || 0).padStart(2,'0');
-    document.getElementById('sso-riesgo').innerText = String(dSSO.riesgo || 0).padStart(2,'0');
-    document.getElementById('sso-personal').innerText = String(dSSO.personal || 0).padStart(2,'0');
-  } else {
-    console.error("SSO API returned error:", dSSO.error);
-  }
-
-} catch(e) {
-  console.error("Error pildoras:", e);
-  document.getElementById('sso-pnd').innerText = '00';
-  document.getElementById('sso-riesgo').innerText = '00';
-  document.getElementById('sso-personal').innerText = '00';
 }
+
+// Llamalo donde lo necesites
+cargarPildorasSSO();
         
         // ===== DESPLEGABLES =====
 function llenarDesplegablesLogistica() {
