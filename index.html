@@ -1116,104 +1116,67 @@ async function finalizarTareaOT(folioOT, btn) {
     }
 }
 
+// ===== REPORTES CSV =====
 async function procesarDescargaUniversal(accion, ini, fin, nombre) {
-    if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
-
-    const endpointMap = {
-         "reporteSSO": "/api/descargar-csv-ats",
-        "reporteIncidentes": "/api/descargar-csv-incidentes",
-        "reporteOT": "/api/descargar-csv-ot",
-        "reporteMedico": "/api/descargar-csv-medico",
-        "reporteExtintor": "/api/descargar-csv-extintores"
-    };
-
-    const url = endpointMap[accion];
-    if (!url) return alert("❌ Acción no válida");
-
+    if (!ini ||!fin) return alert("❌ Por favor, seleccione un rango de fechas (Inicio y Fin).");
     try {
-        const res = await fetch('http://172.16.0.1:3000' , {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                fechaInicio: ini,
-                fechaFin: fin
-            })
+        const moduloMap = {
+            "reporte": "LOGISTICA",
+            "reporteSSO": "SSO",
+            "reporteIncidentes": "SSO",
+            "reporteOT": "OPERACIONES",
+            "reporteMedico": "SSO",
+            "reporteExtintor": "SSO"
+        };
+        const modulo = moduloMap[accion] || "LOGISTICA";
+
+        const url = `${URL_SCRIPT}?accion=${accion}&modulo=${modulo}&t=${Date.now()}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!Array.isArray(data)) return alert("❌ Error: El servidor no devolvió una lista de registros.");
+
+        const fil = data.filter(r => r.fecha && r.fecha >= ini && r.fecha <= fin);
+
+        if (fil.length === 0) return alert("⚠️ No hay datos del " + ini + " al " + fin);
+
+        let csv = "\uFEFFFECHA,HORA,DATOS REGISTRADOS\n";
+        fil.forEach(r => {
+            const datosLimpios = r.datos? r.datos.replace(/;/g, ",") : "";
+            csv += `${r.fecha},${r.hora},"${datosLimpios}"\n`;
         });
 
-    if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || "Error " + res.status);
-        }
-
-        const blob = await res.blob();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `${nombre}_${ini}_al_${fin}.csv`;
         link.click();
-        URL.revokeObjectURL(link.href);
-
-    } catch(e) {
-        alert("❌ Error de descarga: " + e.message);
-    }
-}
-
-function descargarCSV_SSO() {
-    procesarDescargaUniversal("reporteSSO", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "ATS_SSO");
-}
-
-function descargarCSV_Incidentes() {
-    procesarDescargaUniversal("reporteIncidentes", document.getElementById('f-ini-incidentes').value, document.getElementById('f-fin-incidentes').value, "Incidentes");
-}
-
-function descargarCSV_Medico() {
-    procesarDescargaUniversal("reporteMedico", document.getElementById('f-ini-medico').value, document.getElementById('f-fin-medico').value, "Control_Medico");
-}
-
-function descargarCSV_Extintores() {
-    procesarDescargaUniversal("reporteExtintor", document.getElementById('f-ini-extintores').value, document.getElementById('f-fin-extintores').value, "Extintores");
-}
-
-function descargarCSV_OT() {
-    procesarDescargaUniversal("reporteOT", document.getElementById('f-ini-ot').value, document.getElementById('f-fin-ot').value, "Ordenes_Trabajo");
-}
-
-       async function procesarDescargaLogistica(ini, fin, nombre) {
-    if (!ini || !fin) return alert("❌ Selecciona un rango de fechas");
-
-    try {
-        const res = await fetch('http://172.16.0.1:3000/api/descargar-csv-logistica', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                fechaInicio: ini,
-                fechaFin: fin
-            })
-        });
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || "Error " + res.status);
-        }
-
-        const blob = await res.blob();
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${nombre}_${ini}_al_${fin}.csv`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-
-    } catch(e) {
-        alert("❌ Error de descarga: " + e.message);
+    } catch (e) {
+        alert("❌ Error de comunicación con la base de datos: " + e.message);
     }
 }
 
 function descargarCSV() {
-    procesarDescargaLogistica(
-        document.getElementById('f-inicio').value, 
-        document.getElementById('f-fin').value, 
-        "Logistica"
-    );
+    procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
+function descargarCSV_SSO() {
+    procesarDescargaUniversal("reporteSSO", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "ATS_SSO");
+}
+function descargarCSV_Incidentes() {
+    procesarDescargaUniversal("reporteIncidentes", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Incidentes");
+}
+function descargarCSV_Medico() {
+    procesarDescargaUniversal("reporteMedico", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Control_Medico");
+}
+function descargarCSV_Extintores() {
+    procesarDescargaUniversal("reporteExtintor", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Extintores");
+}
+function descargarCSV_OT() {
+    const ini = document.getElementById('f-ini-ot')?.value || document.getElementById('f-ini-sso').value;
+    const fin = document.getElementById('f-fin-ot')?.value || document.getElementById('f-fin-sso').value;
+    procesarDescargaUniversal("reporteOT", ini, fin, "Ordenes_Trabajo");
+}
+
+       
 // ===== ADMIN DATOS MAESTROS =====
     function descargarDataMaestra() {
             try {
