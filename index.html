@@ -1121,48 +1121,64 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
 
     const moduloMap = {
         "reporte": "LOGISTICA",
-        "reporteSSO": "SSO",
-        "reporteIncidentes": "SSO",
-        "reporteOT": "OPERACIONES",
-        "reporteMedico": "SSO",
-        "reporteExtintor": "SSO"
+        "reporteSSO": "ATS_SSO",
+        "reporteIncidentes": "INCIDENTES",
+        "reporteOT": "OT",
+        "reporteMedico": "CONTROL_MEDICO",
+        "reporteExtintor": "EXTINTORES"
     };
-    const modulo = moduloMap[accion] || "LOGISTICA";
+
+    const submodulo = moduloMap[accion];
+    if (!submodulo) return alert("❌ Acción no válida");
 
     try {
-        const url = `http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
+        const res = await fetch('http://172.16.0.1:3000/api/descargar-csv', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                submodulo: submodulo,
+                fechaInicio: ini,
+                fechaFin: fin
+            })
+        });
 
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Error " + res.status);
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || "Error " + res.status);
+        }
 
-        const csv = await res.text(); // no es JSON, es texto CSV
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = await res.blob();
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `${nombre}_${ini}_al_${fin}.csv`;
         link.click();
+        URL.revokeObjectURL(link.href);
 
     } catch(e) {
         alert("❌ Error de descarga: " + e.message);
     }
 }
-       
+
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
+
 function descargarCSV_SSO() {
     procesarDescargaUniversal("reporteSSO", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "ATS_SSO");
 }
+
 function descargarCSV_Incidentes() {
     procesarDescargaUniversal("reporteIncidentes", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Incidentes");
 }
+
 function descargarCSV_Medico() {
     procesarDescargaUniversal("reporteMedico", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Control_Medico");
 }
+
 function descargarCSV_Extintores() {
     procesarDescargaUniversal("reporteExtintor", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Extintores");
 }
+
 function descargarCSV_OT() {
     const ini = document.getElementById('f-ini-ot')?.value || document.getElementById('f-ini-sso').value;
     const fin = document.getElementById('f-fin-ot')?.value || document.getElementById('f-fin-sso').value;
