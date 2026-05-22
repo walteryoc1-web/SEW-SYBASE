@@ -667,15 +667,20 @@ async function actualizarPildoras() {
         }
 
         
+         // SSO
+        console.log("Existe sso-pnd:",!!document.getElementById('sso-pnd'));
         if (typeof URL_SCRIPT!== 'undefined' && document.getElementById('sso-pnd')) {
             const rSSO = await fetch(`${URL_SCRIPT}?accion=reporte&modulo=SSO&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
             const dSSO = await rSSO.json();
+            console.log("Respuesta SSO:", dSSO);
 
             if (dSSO.ok) {
                 document.getElementById('sso-pnd').innerText = (dSSO.total || 0).toString().padStart(2,'0');
                 document.getElementById('sso-riesgo').innerText = (dSSO.riesgo || 0).toString().padStart(2,'0');
                 document.getElementById('sso-personal').innerText = (dSSO.personal || 0).toString().padStart(2,'0');
             }
+        } else {
+            console.warn("No entró al bloque SSO. Revisa URL_SCRIPT y el ID sso-pnd");
         }
 
     } catch(e) {
