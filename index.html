@@ -881,7 +881,7 @@ async function enviarPermisoSSO() {
 
         // 2. Generar PDF con Node
         btn.innerText = "GENERANDO PDF... ⏳";
-        const resPDF = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
+        const resPDF = await fetch("http://172.16.0.1:3000/api/generarPDF", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
