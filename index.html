@@ -682,7 +682,7 @@ async function cargarPildorasSSO() {
 
     console.log("Fechas SSO enviadas:", iniSSO, finSSO);
 
-    const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
+   const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&t=${Date.now()}`);
 
     if (!rSSO.ok) {
       console.error("SSO API error:", rSSO.status);
