@@ -1133,7 +1133,7 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     const modulo = moduloMap[accion] || "LOGISTICA";
 
     try {
-        const url = http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin};
+        const url = `http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
 
         const res = await fetch(url);
         if (!res.ok) throw new Error("Error " + res.status);
