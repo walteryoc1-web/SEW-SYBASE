@@ -1143,7 +1143,7 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = ${nombre}_${ini}_al_${fin}.csv;
+        link.download = `${nombre}_${ini}_al_${fin}.csv`;
         link.click();
 
     } catch(e) {
