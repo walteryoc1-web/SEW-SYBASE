@@ -669,7 +669,16 @@ async function actualizarPildoras() {
         // --- BLOQUE SSO ---
        const hoySSO = new Date().toISOString().split('T')[0];
 
-const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${hoySSO}&hasta=${hoySSO}&t=${Date.now()}`);
+const elIni = document.getElementById('f-ini-sso');
+const elFin = document.getElementById('f-fin-sso');
+
+// Solo usa el input si tiene valor válido YYYY-MM-DD
+const iniSSO = (elIni && elIni.value && /^\d{4}-\d{2}-\d{2}$/.test(elIni.value))? elIni.value : hoySSO;
+const finSSO = (elFin && elFin.value && /^\d{4}-\d{2}-\d{2}$/.test(elFin.value))? elFin.value : hoySSO;
+
+console.log("Fechas SSO enviadas:", iniSSO, finSSO); // para debug
+
+const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
 const dSSO = await rSSO.json();
 
 if (dSSO.ok) {
