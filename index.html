@@ -672,7 +672,7 @@ async function actualizarPildoras() {
         const finSSO = document.getElementById('f-fin-sso')?.value || hoy.toISOString().split('T')[0];
 
         const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
-        const dSSO = await rSSO.json();
+const dSSO = await rSSO.json();
 
         if (dSSO.ok) {
             document.getElementById('sso-pnd').innerText = (dSSO.total || 0).toString().padStart(2,'0');
