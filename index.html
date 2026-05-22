@@ -100,7 +100,7 @@
                 <input type="date" id="f-ini-sso" style="width:45%;"><input type="date" id="f-fin-sso" style="width:45%;">
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">
-                <button type="button" class="btn" onclick="descargarCSV_SSO()" style="background:#3498db; color:white; padding:12px; font-size:10px; flex:1;">📥 PERMISOS</button>
+                <button type="button" class="btn" onclick="descargarCSV_ATS()" style="background:#3498db; color:white; padding:12px; font-size:10px; flex:1;">📥 PERMISOS</button>
                 <button type="button" class="btn" onclick="descargarCSV_Incidentes()" style="background:#d63031; color:white; padding:12px; font-size:10px; flex:1;">📥 INCIDENTES</button>
                 <button type="button" class="btn" onclick="descargarCSV_Medico()" style="background:#16a085; color:white; padding:12px; font-size:10px; flex:1;">📥 MÉDICO</button>
                 <button type="button" class="btn" onclick="descargarCSV_Extintores()" style="background:#2c3e50; color:white; padding:12px; font-size:10px; flex:1;">📥 EXTINTORES</button>
@@ -1124,7 +1124,6 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
 
     const moduloMap = {
         "reporte": "LOGISTICA",
-        "reporteSSO": "SSO",
         "reporteIncidentes": "SSO",
         "reporteOT": "OPERACIONES",
         "reporteMedico": "SSO",
@@ -1154,9 +1153,6 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
-function descargarCSV_SSO() {
-    procesarDescargaUniversal("reporteSSO", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "ATS_SSO");
-}
 function descargarCSV_Incidentes() {
     procesarDescargaUniversal("reporteIncidentes", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Incidentes");
 }
@@ -1171,7 +1167,27 @@ function descargarCSV_OT() {
     const fin = document.getElementById('f-fin-ot')?.value || document.getElementById('f-fin-sso').value;
     procesarDescargaUniversal("reporteOT", ini, fin, "Ordenes_Trabajo");
 }
+       async function descargarCSV_ATS() {
+    const ini = document.getElementById('f-ini-ats').value;
+    const fin = document.getElementById('f-fin-ats').value;
+    if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
 
+    try {
+        const url = `http://172.16.0.1:3000/export-ats?desde=${ini}&hasta=${fin}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Error " + res.status);
+
+        const csv = await res.text();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `ATS_${ini}_al_${fin}.csv`;
+        link.click();
+
+    } catch(e) {
+        alert("❌ Error de descarga ATS: " + e.message);
+    }
+}
        
 // ===== ADMIN DATOS MAESTROS =====
     function descargarDataMaestra() {
