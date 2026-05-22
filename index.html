@@ -667,21 +667,23 @@ async function actualizarPildoras() {
         }
 
         // --- BLOQUE SSO ---
-        const hoySSO = new Date().toISOString().split('T')[0]; // renombrado
+       const hoySSO = new Date().toISOString().split('T')[0];
 
-        let iniSSO = document.getElementById('f-ini-sso')?.value || hoySSO;
-        let finSSO = document.getElementById('f-fin-sso')?.value || hoySSO;
+const elIni = document.getElementById('f-ini-sso');
+const elFin = document.getElementById('f-fin-sso');
 
-        const fixFecha = (f) => /^\d{4}-\d{2}-\d{2}$/.test(f)? f : hoySSO;
+// Solo usa el valor si el input existe y es YYYY-MM-DD
+const iniSSO = (elIni && /^\d{4}-\d{2}-\d{2}$/.test(elIni.value))? elIni.value : hoySSO;
+const finSSO = (elFin && /^\d{4}-\d{2}-\d{2}$/.test(elFin.value))? elFin.value : hoySSO;
 
-        const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${fixFecha(iniSSO)}&hasta=${fixFecha(finSSO)}&t=${Date.now()}`);
-        const dSSO = await rSSO.json();
+const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
+const dSSO = await rSSO.json();
 
-        if (dSSO.ok) {
-            document.getElementById('sso-pnd').innerText = (dSSO.total || 0).toString().padStart(2,'0');
-            document.getElementById('sso-riesgo').innerText = (dSSO.riesgo || 0).toString().padStart(2,'0');
-            document.getElementById('sso-personal').innerText = (dSSO.personal || 0).toString().padStart(2,'0');
-        }
+if (dSSO.ok) {
+    document.getElementById('sso-pnd').innerText = (dSSO.total || 0).toString().padStart(2,'0');
+    document.getElementById('sso-riesgo').innerText = (dSSO.riesgo || 0).toString().padStart(2,'0');
+    document.getElementById('sso-personal').innerText = (dSSO.personal || 0).toString().padStart(2,'0');
+}
 
     } catch(e) {
         console.error("Error pildoras:", e);
