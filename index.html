@@ -1166,10 +1166,9 @@ function descargarCSV_OT() {
     const ini = document.getElementById('f-ini-ot')?.value || document.getElementById('f-ini-sso').value;
     const fin = document.getElementById('f-fin-ot')?.value || document.getElementById('f-fin-sso').value;
     procesarDescargaUniversal("reporteOT", ini, fin, "Ordenes_Trabajo");
-}
-       async function descargarCSV_ATS() {
-    const ini = document.getElementById('f-ini-ats').value;
-    const fin = document.getElementById('f-fin-ats').value;
+}async function descargarCSV_ATS() {
+    const ini = document.getElementById('f-ini-sso').value;
+    const fin = document.getElementById('f-fin-sso').value;
     if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
 
     try {
