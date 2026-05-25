@@ -430,17 +430,17 @@ function iniciarReloj() {
     }, 1000);
 }
 
-async function cargarCerebroSistema() {
+aasync function cargarCerebroSistema() {
     try {
         const res = await fetch(URL_SCRIPT + "/admin"); 
-        
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const resp = await res.json();
-
         if (!resp.ok) throw new Error(resp.error || 'Error del servidor');
 
-        DB_MASTER = resp.data; 
+        
+        DB_MASTER = normalizarKeys(resp.data); 
+        
         console.log("✅ Cerebro Sincronizado", DB_MASTER);
         return true;
     } catch (e) {
@@ -449,6 +449,15 @@ async function cargarCerebroSistema() {
     }
 }
 
+function normalizarKeys(obj) {
+    if (Array.isArray(obj)) return obj.map(normalizarKeys);
+    if (obj !== null && typeof obj === 'object') {
+        return Object.fromEntries(
+            Object.entries(obj).map(([k, v]) => [k.toLowerCase(), normalizarKeys(v)])
+        );
+    }
+    return obj;
+}
 async function entrar() {
     const u = document.getElementById('u')?.value.trim();
     const p = document.getElementById('p')?.value;
