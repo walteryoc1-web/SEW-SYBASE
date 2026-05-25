@@ -911,11 +911,11 @@ async function enviarPermisoSSO() {
             checklist: marcados || ''  
         };
 
-        // 1. Guardar en SQL
+        // 1. Guardar en SQL y obtener folio
         const res = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
             method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'text/plain' }
+            headers: { 'Content-Type': 'application/json' }, // <- cámbialo a json
+            body: JSON.stringify(payload)
         });
 
         const data = await res.json();
@@ -923,36 +923,11 @@ async function enviarPermisoSSO() {
 
         const folio = data.folio;
 
-        // 2. Generar PDF con Node
-        btn.innerText = "GENERANDO PDF... ⏳";
-        const resPDF = await fetch("http://172.16.0.1:3000/api/generarPDF", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                folio: folio,
-                fecha: new Date().toLocaleString('es-GT'),
-                fase: fase,
-                ubicacion: ubi,
-                tipo: tipo,
-                ejecutores: nombres,
-                descripcion: desc,
-                checks: marcados,
-                plantilla: 'general' // cámbialo si usas las 5 plantilla
-            })
-        });
+        // 2. Abrir PDF directo - no necesitas /api/generarPDF
+        btn.innerText = "ABRIENDO PDF... ⏳";
+        window.open(`http://172.16.0.1:3000/api/sso/pdf/${folio}`, '_blank');
 
-        if (!resPDF.ok) throw new Error("No se pudo generar el PDF");
-
-        const blob = await resPDF.blob();
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ATS_${folio}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        alert("✅ PERMISO REGISTRADO Y PDF DESCARGADO");
+        alert("✅ PERMISO REGISTRADO");
         location.reload();
 
     } catch (e) {
