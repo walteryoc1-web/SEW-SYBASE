@@ -925,7 +925,7 @@ async function enviarPermisoSSO() {
 
         // 2. Abrir PDF directo - no necesitas /api/generarPDF
         btn.innerText = "ABRIENDO PDF... ⏳";
-        window.open(`http://172.16.0.1:3000/api/sso/pdf/${folio}`, '_blank');
+        window.open(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`, '_blank');
 
         alert("✅ PERMISO REGISTRADO");
         location.reload();
