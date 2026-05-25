@@ -923,26 +923,19 @@ async function enviarPermisoSSO() {
 
         const folio = data.folio;
 
-        // 2. Descargar PDF directo
-        btn.innerText = "DESCARGANDO PDF... ⏳";
+       btn.innerText = "DESCARGANDO PDF... ⏳";
 
-        // Crea un link temporal y dale click
-        const link = document.createElement('a');
-        link.href = `http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`;
-        link.download = `${folio}.pdf`; 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+window.open(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`, '_blank');
 
-        alert("✅ PERMISO REGISTRADO");
-        location.reload();
+alert("✅ PERMISO REGISTRADO");
+location.reload();
         
-    } catch (e) {  // <--- FALTABA ESTA LLAVE
+    } catch (e) {  // 
         alert("❌ Error: " + e.message);
         btn.disabled = false;
         btn.innerText = "REGISTRAR PERMISO";
     }
-} // <--- Y FALTABA CERRAR LA FUNCIÓN
+} // 
 
 async function enviarFichaMedica() {
     const id = document.getElementById('med-id').value.trim();
