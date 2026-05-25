@@ -433,21 +433,15 @@ function iniciarReloj() {
 async function cargarCerebroSistema() {
     try {
         const res = await fetch(URL_SCRIPT + "/admin"); 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const resp = await res.json();
-        if (!resp.ok) throw new Error(resp.error || 'Error del servidor');
-
-        
-        DB_MASTER = normalizarKeys(resp.data); 
-        
+        DB_MASTER = await res.json();
         console.log("✅ Cerebro Sincronizado", DB_MASTER);
         return true;
     } catch (e) {
-        console.error("Error cargando catálogos:", e);
+        console.error(e);
         return false;
     }
 }
+
 
 function normalizarKeys(obj) {
     if (Array.isArray(obj)) return obj.map(normalizarKeys);
