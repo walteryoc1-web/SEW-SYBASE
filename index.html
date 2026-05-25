@@ -923,20 +923,20 @@ async function enviarPermisoSSO() {
 
         const folio = data.folio;
 
-       btn.innerText = "DESCARGANDO PDF... ⏳";
+        btn.innerText = "DESCARGANDO PDF... ⏳";
 
-window.open('http://172.16.0.1:3000');
+        // 2. Abrir el PDF con el folio correcto
+        window.open(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`);
+
+        alert("✅ PERMISO REGISTRADO");
+        location.reload();
         
-alert("✅ PERMISO REGISTRADO");
-location.reload();
-        
-    } catch (e) {  // 
+    } catch (e) {
         alert("❌ Error: " + e.message);
         btn.disabled = false;
         btn.innerText = "REGISTRAR PERMISO";
     }
-} // 
-
+}
 async function enviarFichaMedica() {
     const id = document.getElementById('med-id').value.trim();
     if (!id) {
