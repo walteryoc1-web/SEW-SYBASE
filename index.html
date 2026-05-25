@@ -869,6 +869,7 @@ function agregarInvolucradoInc() {
 }
 
 // ===== ENVIOS SSO =====
+// ===== ENVIOS SSO =====
 async function enviarPermisoSSO() {
     const btn = document.getElementById('btn-sso');
     btn.disabled = true;
@@ -914,7 +915,7 @@ async function enviarPermisoSSO() {
         // 1. Guardar en SQL y obtener folio
         const res = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, 
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
@@ -923,9 +924,10 @@ async function enviarPermisoSSO() {
 
         const folio = data.folio;
 
-        // 2. Abrir PDF directo - no necesitas /api/generarPDF
-        btn.innerText = "ABRIENDO PDF... ⏳";
-        window.open(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}` black;
+        // 2. Descargar PDF directo - usa location.href para evitar bloqueo
+        btn.innerText = "DESCARGANDO PDF... ⏳";
+        window.location.href = `http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`;
+
         alert("✅ PERMISO REGISTRADO");
         location.reload();
 
