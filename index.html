@@ -430,7 +430,7 @@ function iniciarReloj() {
     }, 1000);
 }
 
-aasync function cargarCerebroSistema() {
+async function cargarCerebroSistema() {
     try {
         const res = await fetch(URL_SCRIPT + "/admin"); 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
