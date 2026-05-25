@@ -924,19 +924,26 @@ async function enviarPermisoSSO() {
         const folio = data.folio;
 
         // 2. Descargar PDF directo
-btn.innerText = "DESCARGANDO PDF... ⏳";
+        btn.innerText = "DESCARGANDO PDF... ⏳";
 
-// Crea un link temporal y dale click
-const link = document.createElement('a');
-link.href = `http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`;
-link.download = `${folio}.pdf`; 
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
+        // Crea un link temporal y dale click
+        const link = document.createElement('a');
+        link.href = `http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`;
+        link.download = `${folio}.pdf`; 
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-alert("✅ PERMISO REGISTRADO");
-location.reload();
-       
+        alert("✅ PERMISO REGISTRADO");
+        location.reload();
+        
+    } catch (e) {  // <--- FALTABA ESTA LLAVE
+        alert("❌ Error: " + e.message);
+        btn.disabled = false;
+        btn.innerText = "REGISTRAR PERMISO";
+    }
+} // <--- Y FALTABA CERRAR LA FUNCIÓN
+
 async function enviarFichaMedica() {
     const id = document.getElementById('med-id').value.trim();
     if (!id) {
@@ -982,7 +989,6 @@ async function enviarFichaMedica() {
         alert("❌ ERROR DE RED: " + err.message);
     }
 }
-
 async function enviarInspeccionExtintor() {
     const id = document.getElementById('ext-id').value.trim();
     if (!id) {
