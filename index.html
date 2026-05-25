@@ -883,12 +883,12 @@ async function enviarPermisoSSO() {
 
         const tecnicoInactivo = ids.find(id => !esActivo('TECNICO', id));
         if(tecnicoInactivo) {
-            throw new Error(🚫 El técnico ${tecnicoInactivo} está INACTIVO.);
+            throw new Error(`🚫 El técnico ${tecnicoInactivo} está INACTIVO.`);
         }
 
         const nombres = ids.map(id => {
             const t = getRegistro('TECNICO', id);
-            return t ? ${t.nombre} (${t.extra2}) : id;
+            return t ? `${t.nombre} (${t.extra2})` : id;
         }).join(" / ");
 
         const marcados = Array.from(document.querySelectorAll('#contenedor-checklist input:checked'))
@@ -926,7 +926,7 @@ async function enviarPermisoSSO() {
         btn.innerText = "DESCARGANDO PDF... ⏳";
 
         // 2. Abrir el PDF con el folio correcto
-        window.open(http://172.16.0.1:3000/api/ats-sso/pdf/${folio});
+        window.open(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`);
 
         alert("✅ PERMISO REGISTRADO");
         location.reload();
@@ -937,7 +937,8 @@ async function enviarPermisoSSO() {
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
-async function enviarFichaMedica() {
+       
+       async function enviarFichaMedica() {
     const id = document.getElementById('med-id').value.trim();
     if (!id) {
         alert("❌ Falta el ID");
