@@ -1623,54 +1623,44 @@ async function finalizarTareaOT(folioOT, btn) {
 const API_URL = 'http://172.16.0.1:3000/api/sso';
 
 // Pon esto ANTES de cerrarPermiso
-async function cargarPermisosParaCerrar() {
-  const cont = document.getElementById('contenedor-tabla-sso');
-  if (!cont) return;
-  cont.innerHTML = "Cargando...";
+window.cerrarPermiso = async function(f, btn) {
+  if (!confirm("¿Cerrar permiso " + f + "?")) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "CERRANDO...";
+  }
 
   try {
-    const hoy = new Date();
-    const desde = hoy.toISOString().split('T')[0];
-    const hasta = desde;
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: "cerrarATS",
+        folio: f,
+        usuario: "ADMIN"
+      })
+    });
 
-    const res = await fetch(`${API_URL}/detalle?desde=${desde}&hasta=${hasta}`);
-    if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    if (!Array.isArray(data)) throw new Error(data.error || "Respuesta inválida del servidor");
-
-    const abiertos = data.filter(r => (r.ESTATUS || "").toUpperCase() === "ABIERTO");
-
-    cont.innerHTML = "";
-    if (abiertos.length === 0) {
-      cont.innerHTML = "<p>No hay ATS abiertos</p>";
+    if (!data.ok) {
+      alert("❌ " + (data.error || "Error desconocido"));
       return;
     }
 
-    abiertos.forEach(p => {
-      const div = document.createElement('div');
-      div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
-
-      // Limpia el folio de saltos de línea, tabs y espacios
-      const folioLimpio = (p.FOLIO || '').toString().trim().replace(/[\r\n\t]/g, '');
-
-      div.innerHTML = `
-        <span><b>${folioLimpio}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}</span>
-        <button onclick="cerrarPermiso('${folioLimpio}', this)"
-                style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">
-          CERRAR
-        </button>`;
-
-      cont.appendChild(div);
-    });
+    alert("✅ " + data.mensaje);
+    cargarPermisosParaCerrar(); // recarga la lista
 
   } catch (err) {
-    cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message || err}</p>`;
+    alert("❌ ERROR DE RED: " + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "CERRAR";
+    }
   }
-}
-
-window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
-
+};
        
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
