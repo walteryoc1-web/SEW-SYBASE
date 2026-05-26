@@ -1698,8 +1698,7 @@ async function cargarPermisosParaCerrar() {
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
 
-  // Limpia el folio antes de mandarlo
-  const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '');
+  const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
   
   console.log("Folio enviado:", JSON.stringify(folioLimpio));
   console.log("Largo:", folioLimpio.length);
@@ -1715,12 +1714,13 @@ window.cerrarPermiso = async function(f, btn) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         accion: "cerrarATS",
-        folio: folioLimpio,  // usa el limpio, no f
+        folio: folioLimpio,
         usuario: "ADMIN"
       })
     });
 
     const data = await res.json();
+    console.log("Respuesta backend:", data);
 
     if (!data.ok) {
       alert("❌ " + (data.error || "Error desconocido"));
@@ -1739,7 +1739,7 @@ window.cerrarPermiso = async function(f, btn) {
     }
   }
 };
-
+       
 window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
        
 function llenarDesplegablesOperaciones() {
