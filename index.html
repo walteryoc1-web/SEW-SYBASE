@@ -1672,6 +1672,10 @@ async function cargarPermisosParaCerrar() {
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
 
+  
+  console.log("Folio enviado:", JSON.stringify(f));
+  console.log("Largo:", f.length);
+
   if (btn) {
     btn.disabled = true;
     btn.innerText = "CERRANDO...";
@@ -1696,7 +1700,7 @@ window.cerrarPermiso = async function(f, btn) {
     }
 
     alert("✅ " + data.mensaje);
-    window.cargarPermisosParaCerrar(); // recarga la lista
+    window.cargarPermisosParaCerrar();
 
   } catch (err) {
     alert("❌ ERROR DE RED: " + err.message);
