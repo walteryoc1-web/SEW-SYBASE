@@ -1951,7 +1951,7 @@ function salir() {
     btn.textContent = 'INGRESAR';
   }
 }
-      const API_URL = 'http://172.16.0.1:3000';
+     const API_URL = 'http://172.16.0.1:3000';
 
 async function vincularDatosPermiso(folioATS) {
   const div = document.getElementById('datos-vinculados-sso');
@@ -1968,9 +1968,9 @@ async function vincularDatosPermiso(folioATS) {
     const res = await fetch(`${API_URL}/api/sso/vincularPermiso?folio=${encodeURIComponent(busqueda)}`, {
       cache: "no-store"
     });
-    
+
     if (!res.ok) throw new Error('Servidor no responde');
-    
+
     const data = await res.json();
 
     if (!data.ok) {
@@ -1995,7 +1995,6 @@ async function vincularDatosPermiso(folioATS) {
     div.innerHTML = '';
   }
 }
-
     </script>
 </body>
 </html>
