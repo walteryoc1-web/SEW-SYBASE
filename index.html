@@ -868,7 +868,6 @@ function agregarInvolucradoInc() {
     cont.appendChild(d);
 }
 
-// ===== ENVIOS SSO =====
 async function enviarPermisoSSO() {
     const btn = document.getElementById('btn-sso');
     btn.disabled = true;
@@ -923,30 +922,35 @@ async function enviarPermisoSSO() {
 
         const folio = data.folio;
 
-       // 2. Descargar el PDF con el folio correcto
-btn.innerText = "DESCARGANDO PDF... ⏳";
+        // 2. Descargar el PDF
+        btn.innerText = "DESCARGANDO PDF... ⏳";
 
-const pdfRes = await fetch(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`);
+        const pdfRes = await fetch(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`);
 
-if (!pdfRes.ok) {
-  const errText = await pdfRes.text();
-  throw new Error('Error generando PDF: ' + errText);
-}
+        if (!pdfRes.ok) {
+          const errText = await pdfRes.text();
+          throw new Error('Error generando PDF: ' + errText);
+        }
 
-const blob = await pdfRes.blob();
-const url = window.URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `${folio}.pdf`;
-document.body.appendChild(a);
-a.click();
-a.remove();
-window.URL.revokeObjectURL(url);
+        const blob = await pdfRes.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${folio}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
 
-alert("✅ PERMISO REGISTRADO");
-location.reload();
-          } catch (e) {
+        alert("✅ PERMISO REGISTRADO");
+        
+        // Quita el reload inmediato. Si lo necesitas, dale 1 segundo para que baje el PDF
+        setTimeout(() => location.reload(), 1000);
+
+    } catch (e) {
         alert("❌ Error: " + e.message);
+    } finally {
+        // Esto evita que se quede bloqueado el botón si hay error
         btn.disabled = false;
         btn.innerText = "REGISTRAR PERMISO";
     }
