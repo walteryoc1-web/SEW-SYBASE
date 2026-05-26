@@ -878,70 +878,6 @@ function checkTecnicoOperaciones(id) {
     if(btn) btn.disabled = false;
 }
 
-async function checkInvolucradoIncidente(inp) {
-    const id = inp.value.toUpperCase().trim();
-    const divRow = inp.parentElement;
-
-    // Busca si ya existe el input de nombre en esta fila
-    let inpNombre = divRow.querySelector('.inc-nombre-clase');
-
-    if (!id) {
-        inp.style.background = "#fff";
-        inp.style.border = "1px solid #ccc";
-        if (inpNombre) inpNombre.remove();
-        return;
-    }
-
-    try {
-        const r = await fetch("http://172.16.0.1:3000/api/tecnico/buscar", {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({ id: id })
-        });
-
-        const data = await r.json();
-
-        if (data.ok) {
-            inp.style.background = "#e8f5e9";
-            inp.style.border = "2px solid #27ae60";
-
-            // Si no existe el input de nombre, lo creamos
-            if (!inpNombre) {
-                inpNombre = document.createElement('input');
-                inpNombre.type = "text";
-                inpNombre.className = "inc-nombre-clase";
-                inpNombre.readOnly = true;
-                inpNombre.style.flex = "2";
-                inpNombre.style.background = "#f5f5f5";
-                inpNombre.style.border = "1px solid #ccc";
-                inpNombre.style.borderRadius = "5px";
-                divRow.insertBefore(inpNombre, divRow.children[1]); // lo mete antes del botón +
-            }
-            inpNombre.value = data.nombre;
-
-        } else {
-            inp.style.background = "#ffebee";
-            inp.style.border = "2px solid #d63031";
-            if (inpNombre) inpNombre.remove();
-            alert("❌ Técnico no encontrado");
-        }
-    } catch(e) {
-        console.error(e);
-        inp.style.background = "#fff";
-        inp.style.border = "1px solid #ccc";
-        if (inpNombre) inpNombre.remove();
-    }
-}
-
-function agregarInvolucradoInc() {
-    const cont = document.getElementById('contenedor-involucrados-inc');
-    if (!cont) return;
-    const d = document.createElement('div');
-    d.style.cssText = "display:flex; gap:10px; margin-top:5px;";
-    d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;"><button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>`;
-    cont.appendChild(d);
-}
-
 async function enviarPermisoSSO() {
     const btn = document.getElementById('btn-sso');
     btn.disabled = true;
@@ -1826,11 +1762,54 @@ function checkTecnicoOperaciones(id) {
     if(btn) btn.disabled = false;
 }
 
-function checkInvolucradoIncidente(inp) {
+async function checkInvolucradoIncidente(inp) {
     const id = inp.value.toUpperCase().trim();
-    const persona = DB_MASTER.TECNICO?.find(x => x.id.toString().toUpperCase() === id);
-    inp.style.background = persona? "#e8f5e9" : "#fff";
-    inp.style.border = persona? "2px solid #27ae60" : "1px solid #ccc";
+    const divRow = inp.parentElement;
+    let inpNombre = divRow.querySelector('.inc-nombre-clase');
+
+    if (!id) {
+        inp.style.background = "#fff";
+        inp.style.border = "1px solid #ccc";
+        if (inpNombre) inpNombre.remove();
+        return;
+    }
+
+    try {
+        const r = await fetch("http://172.16.0.1:3000/api/tecnico/buscar", {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({ id: id })
+        });
+
+        const data = await r.json();
+
+        if (data.ok) {
+            inp.style.background = "#e8f5e9";
+            inp.style.border = "2px solid #27ae60";
+            if (!inpNombre) {
+                inpNombre = document.createElement('input');
+                inpNombre.type = "text";
+                inpNombre.className = "inc-nombre-clase";
+                inpNombre.readOnly = true;
+                inpNombre.style.flex = "2";
+                inpNombre.style.background = "#f5f5f5";
+                inpNombre.style.border = "1px solid #ccc";
+                inpNombre.style.borderRadius = "5px";
+                divRow.insertBefore(inpNombre, divRow.children[1]);
+            }
+            inpNombre.value = data.nombre;
+        } else {
+            inp.style.background = "#ffebee";
+            inp.style.border = "2px solid #d63031";
+            if (inpNombre) inpNombre.remove();
+            alert("❌ Técnico no encontrado");
+        }
+    } catch(e) {
+        console.error(e);
+        inp.style.background = "#fff";
+        inp.style.border = "1px solid #ccc";
+        if (inpNombre) inpNombre.remove();
+    }
 }
 
 function agregarInvolucradoInc() {
