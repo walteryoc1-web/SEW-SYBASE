@@ -1694,12 +1694,15 @@ async function cargarPermisosParaCerrar() {
   }
 }
 
-// 2. Tu función para cerrar permiso
+// 2. función para cerrar permiso
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
 
-  console.log("Folio enviado:", JSON.stringify(f));
-  console.log("Largo:", f.length);
+  // Limpia el folio antes de mandarlo
+  const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '');
+  
+  console.log("Folio enviado:", JSON.stringify(folioLimpio));
+  console.log("Largo:", folioLimpio.length);
 
   if (btn) {
     btn.disabled = true;
@@ -1712,7 +1715,7 @@ window.cerrarPermiso = async function(f, btn) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         accion: "cerrarATS",
-        folio: f,
+        folio: folioLimpio,  // usa el limpio, no f
         usuario: "ADMIN"
       })
     });
