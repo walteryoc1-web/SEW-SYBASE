@@ -1626,34 +1626,21 @@ const API_URL = 'http://172.16.0.1:3000/api/sso';
 // 1. Tu función para cargar permisos
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
-  if (!cont) {
-    console.error("No existe #contenedor-tabla-sso en el DOM");
-    return;
-  }
+  if (!cont) return;
   cont.innerHTML = "Cargando...";
 
   try {
-    console.log("API_URL:", API_URL);
-
     const hoy = new Date();
     const desde = hoy.toISOString().split('T')[0];
     const hasta = desde;
 
-    const url = `${API_URL}/detalle?desde=${desde}&hasta=${hasta}`;
-    console.log("Fetch URL:", url);
-
-    const res = await fetch(url);
-    console.log("Status:", res.status, res.ok);
-
+    const res = await fetch(${API_URL}/detalle?desde=${desde}&hasta=${hasta});
     if (!res.ok) throw new Error("HTTP " + res.status);
-
     const data = await res.json();
-    console.log("Data recibida:", data);
 
     if (!Array.isArray(data)) throw new Error(data.error || "Respuesta inválida del servidor");
 
-    const abiertos = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "ABIERTO");
-    console.log("Abiertos filtrados:", abiertos.length, abiertos);
+    const abiertos = data.filter(r => (r.ESTATUS || "").toUpperCase() === "ABIERTO");
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
@@ -1666,11 +1653,10 @@ async function cargarPermisosParaCerrar() {
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
 
       const folioLimpio = (p.FOLIO || '').toString().trim().replace(/[\r\n\t]/g, '');
-      const folioEscapado = JSON.stringify(folioLimpio);
 
       div.innerHTML = `
         <span><b>${folioLimpio}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}</span>
-        <button onclick="cerrarPermiso(${folioEscapado}, this)"
+        <button onclick="cerrarPermiso('${folioLimpio}', this)"
                 style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">
           CERRAR
         </button>`;
@@ -1679,15 +1665,17 @@ async function cargarPermisosParaCerrar() {
     });
 
   } catch (err) {
-    console.error("Error en cargarPermisosParaCerrar:", err);
-    cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message || err}</p>`;
+    cont.innerHTML = <p style="color:red;">Q28K_ERROR: ${err.message || err}</p>;
   }
 }
 
+// 2. Tu función para cerrar permiso
 window.cerrarPermiso = async function(f, btn) {
-  console.log("cerrarPermiso llamado con:", f);
-
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
+
+  
+  console.log("Folio enviado:", JSON.stringify(f));
+  console.log("Largo:", f.length);
 
   if (btn) {
     btn.disabled = true;
@@ -1706,7 +1694,6 @@ window.cerrarPermiso = async function(f, btn) {
     });
 
     const data = await res.json();
-    console.log("Respuesta cerrarATS:", data);
 
     if (!data.ok) {
       alert("❌ " + (data.error || "Error desconocido"));
@@ -1717,7 +1704,6 @@ window.cerrarPermiso = async function(f, btn) {
     window.cargarPermisosParaCerrar();
 
   } catch (err) {
-    console.error("Error en cerrarPermiso:", err);
     alert("❌ ERROR DE RED: " + err.message);
   } finally {
     if (btn) {
@@ -1726,6 +1712,7 @@ window.cerrarPermiso = async function(f, btn) {
     }
   }
 };
+
 
 window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
        
