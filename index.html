@@ -1634,13 +1634,13 @@ async function cargarPermisosParaCerrar() {
     const desde = hoy.toISOString().split('T')[0];
     const hasta = desde;
 
-    const res = await fetch(`${API_URL}/detalle?desde=${desde}&hasta=${hasta}`);
+    const res = await fetch(${API_URL}/detalle?desde=${desde}&hasta=${hasta});
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
     if (!Array.isArray(data)) throw new Error(data.error || "Respuesta inválida del servidor");
 
-    const abiertos = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "ABIERTO");
+    const abiertos = data.filter(r => (r.ESTATUS || "").toUpperCase() === "ABIERTO");
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
@@ -1665,10 +1665,9 @@ async function cargarPermisosParaCerrar() {
     });
 
   } catch (err) {
-    cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message || err}</p>`;
+    cont.innerHTML = <p style="color:red;">Q28K_ERROR: ${err.message || err}</p>;
   }
 }
-
 // 2. Tu función para cerrar permiso
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
