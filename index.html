@@ -1184,7 +1184,34 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
         alert("❌ Error de descarga: " + e.message);
     }
 }
-       
+
+       async function descargarCSV_ATS() {
+  const ini = document.getElementById('fecha-ini').value;
+  const fin = document.getElementById('fecha-fin').value;
+
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin');
+    return;
+  }
+
+  try {
+    const url = `http://172.16.0.1:3000/export-sso?desde=${ini}&hasta=${fin}`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Error " + res.status);
+
+    const csv = await res.text();
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `SSO_${ini}_al_${fin}.csv`;
+    link.click();
+
+  } catch(e) {
+    alert("❌ Error de descarga: " + e.message);
+  }
+}
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
@@ -1201,25 +1228,6 @@ function descargarCSV_OT() {
     const ini = document.getElementById('f-ini-ot')?.value || document.getElementById('f-ini-sso').value;
     const fin = document.getElementById('f-fin-ot')?.value || document.getElementById('f-fin-sso').value;
     procesarDescargaUniversal("reporteOT", ini, fin, "Ordenes_Trabajo");
-}async function descargarCSV_ATS() {
-    const ini = document.getElementById('f-ini-sso').value;
-    const fin = document.getElementById('f-fin-sso').value;
-    if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
-
-    try {
-        const url = `http://172.16.0.1:3000/export-ats?desde=${ini}&hasta=${fin}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Error " + res.status);
-
-        const csv = await res.text();
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `ATS_${ini}_al_${fin}.csv`;
-        link.click();
-
-    } catch(e) {
-        alert("❌ Error de descarga ATS: " + e.message);
     }
 }
        
