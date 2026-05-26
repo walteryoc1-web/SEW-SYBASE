@@ -1650,9 +1650,17 @@ async function cargarPermisosParaCerrar() {
     abiertos.forEach(p => {
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
+
+      // Limpia el folio de saltos de línea, tabs y espacios
+      const folioLimpio = (p.FOLIO || '').toString().trim().replace(/[\r\n\t]/g, '');
+
       div.innerHTML = `
-        <span><b>${p.FOLIO}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}</span>
-        <button onclick="cerrarPermiso('${p.FOLIO}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
+        <span><b>${folioLimpio}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}</span>
+        <button onclick="cerrarPermiso('${folioLimpio}', this)"
+                style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">
+          CERRAR
+        </button>`;
+
       cont.appendChild(div);
     });
 
@@ -1661,7 +1669,7 @@ async function cargarPermisosParaCerrar() {
   }
 }
 
-window.cargarPermisosParaCerrar = cargarPermisosParaCerrar; 
+window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
 
        
 function llenarDesplegablesOperaciones() {
