@@ -1951,7 +1951,9 @@ function salir() {
     btn.textContent = 'INGRESAR';
   }
 }
-       async function vincularDatosPermiso(folioATS) {
+      const API_URL = 'http://172.16.0.1:3000';
+
+async function vincularDatosPermiso(folioATS) {
   const div = document.getElementById('datos-vinculados-sso');
 
   if (!folioATS) {
@@ -1963,9 +1965,12 @@ function salir() {
   try {
     const busqueda = String(folioATS).toUpperCase().trim();
 
-    const res = await fetch(`/api/sso/vincularPermiso?folio=${encodeURIComponent(busqueda)}`, {
+    const res = await fetch(`${API_URL}/api/sso/vincularPermiso?folio=${encodeURIComponent(busqueda)}`, {
       cache: "no-store"
     });
+    
+    if (!res.ok) throw new Error('Servidor no responde');
+    
     const data = await res.json();
 
     if (!data.ok) {
