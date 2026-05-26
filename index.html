@@ -82,7 +82,7 @@
     <div class="pildoras-horizontal">
         <div class="pildora" style="border-bottom-color: #e67e22;"><h3>Generados</h3><p id="sso-pnd">00</p></div>
         <div class="pildora" style="border-bottom-color: #9b59b6;"><h3>Abiertos</h3><p id="sso-riesgo">00</p></div>
-        <div class="pildora" style="border-bottom-color: #16a085;"><h3>Cerrados</h3><p id="sso-personal">00</p></div>
+        <div class="pildora" style="border-bottom-color: #16a085;"><h3>Cerrados</h3><p id="sso-cerrados">00</p></div>
     </div>
     <div style="display:flex; gap:10px; justify-content:center; margin: 15px auto 25px; max-width:800px;">
         <button class="btn" style="background:#d63031; color:white; flex:1; font-size:11px; padding:15px 5px;" onclick="irAIncidentes()">🚨 REPORTAR<br>INCIDENTE</button>
@@ -676,30 +676,29 @@ async function cargarPildorasSSO() {
 
     const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
 
-    if (!rSSO.ok) {
-      console.error("SSO API error:", rSSO.status);
-      document.getElementById('sso-pnd').innerText = '00';
-      document.getElementById('sso-riesgo').innerText = '00';
-      document.getElementById('sso-personal').innerText = '00';
-      return;
-    }
+  if (!rSSO.ok) {
+  console.error("SSO API error:", rSSO.status);
+  document.getElementById('sso-pnd').innerText = '00';
+  document.getElementById('sso-riesgo').innerText = '00';
+  document.getElementById('sso-cerrados').innerText = '00'; 
+  return;
+}
 
-    const dSSO = await rSSO.json();
+const dSSO = await rSSO.json();
 
-    if (dSSO.ok) {
-      document.getElementById('sso-pnd').innerText = String(dSSO.total || 0).padStart(2,'0');
-      document.getElementById('sso-riesgo').innerText = String(dSSO.riesgo || 0).padStart(2,'0');
-      document.getElementById('sso-personal').innerText = String(dSSO.personal || 0).padStart(2,'0');
-    } else {
-      console.error("SSO API returned error:", dSSO.error);
-    }
+if (dSSO.ok) {
+  document.getElementById('sso-pnd').innerText = String(dSSO.total || 0).padStart(2,'0');
+  document.getElementById('sso-riesgo').innerText = String(dSSO.riesgo || 0).padStart(2,'0');
+  document.getElementById('sso-cerrados').innerText = String(dSSO.cerrados || 0).padStart(2,'0'); 
+} else {
+  console.error("SSO API returned error:", dSSO.error);
+}
 
-  } catch(e) {
-    console.error("Error pildoras:", e);
-    document.getElementById('sso-pnd').innerText = '00';
-    document.getElementById('sso-riesgo').innerText = '00';
-    document.getElementById('sso-personal').innerText = '00';
-  }
+} catch(e) {
+console.error("Error pildoras:", e);
+document.getElementById('sso-pnd').innerText = '00';
+document.getElementById('sso-riesgo').innerText = '00';
+document.getElementById('sso-cerrados').innerText = '00'; 
 }
 
 async function cargarCerradosSSO() {
