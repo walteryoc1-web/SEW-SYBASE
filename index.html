@@ -1952,9 +1952,9 @@ function salir() {
   }
 }
    
-async function vincularDatosPermiso() {
+async function vincularDatosPermiso(folioATS) {
     try {
-        const folioATS = document.getElementById('folio-ats').value.trim().toUpperCase();
+        folioATS = folioATS.trim().toUpperCase();
         if (!folioATS) throw new Error("Ingresa el folio ATS");
 
         const div = document.getElementById('datos-vinculados-sso');
@@ -1989,6 +1989,7 @@ async function vincularDatosPermiso() {
         document.getElementById('datos-vinculados-sso').innerHTML = '';
     }
 }
+   
    </script>
 </body>
 </html>
