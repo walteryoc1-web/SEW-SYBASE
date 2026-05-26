@@ -1172,7 +1172,7 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
         const res = await fetch(url);
         if (!res.ok) throw new Error("Error " + res.status);
 
-        const csv = await res.text(); // no es JSON, es texto CSV
+        const csv = await res.text();
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
@@ -1185,7 +1185,7 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     }
 }
 
-       async function descargarCSV_ATS() {
+async function descargarCSV_ATS() {
   const ini = document.getElementById('fecha-ini').value;
   const fin = document.getElementById('fecha-fin').value;
 
@@ -1212,6 +1212,7 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     alert("❌ Error de descarga: " + e.message);
   }
 }
+
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
@@ -1228,9 +1229,7 @@ function descargarCSV_OT() {
     const ini = document.getElementById('f-ini-ot')?.value || document.getElementById('f-ini-sso').value;
     const fin = document.getElementById('f-fin-ot')?.value || document.getElementById('f-fin-sso').value;
     procesarDescargaUniversal("reporteOT", ini, fin, "Ordenes_Trabajo");
-    }
-}
-       
+}       
 // ===== ADMIN DATOS MAESTROS =====
     function descargarDataMaestra() {
             try {
