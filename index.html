@@ -1701,7 +1701,6 @@ window.cerrarPermiso = async function(f, btn) {
   const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
   
   console.log("Folio enviado:", JSON.stringify(folioLimpio));
-  console.log("Largo:", folioLimpio.length);
 
   if (btn) {
     btn.disabled = true;
@@ -1722,13 +1721,22 @@ window.cerrarPermiso = async function(f, btn) {
     const data = await res.json();
     console.log("Respuesta backend:", data);
 
-    if (!data.ok) {
-      alert("❌ " + (data.error || "Error desconocido"));
+    // Si ok es true, ya se cerró. No importa el mensaje
+    if (data.ok) {
+      alert("✅ " + (data.mensaje || "Permiso cerrado"));
+      window.cargarPermisosParaCerrar();
       return;
     }
 
-    alert("✅ " + data.mensaje);
-    window.cargarPermisosParaCerrar();
+    // Solo entra aquí si ok es false
+    // Checa si el mensaje dice "ya estaba cerrado"
+    if ((data.error || "").toLowerCase().includes("ya estaba cerrado")) {
+      alert("⚠️ Este permiso ya estaba cerrado");
+      window.cargarPermisosParaCerrar();
+      return;
+    }
+
+    alert("❌ " + (data.error || "Error desconocido"));
 
   } catch (err) {
     alert("❌ ERROR DE RED: " + err.message);
