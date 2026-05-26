@@ -1721,21 +1721,14 @@ window.cerrarPermiso = async function(f, btn) {
     const data = await res.json();
     console.log("Respuesta backend:", data);
 
-    // Si ok es true, ya se cerró. No importa el mensaje
-    if (data.ok) {
-      alert("✅ " + (data.mensaje || "Permiso cerrado"));
+    // Solo importa si ok es true. El mensaje ignóralo
+    if (data.ok === true) {
+      alert("✅ Permiso cerrado correctamente");
       window.cargarPermisosParaCerrar();
       return;
     }
 
-    // Solo entra aquí si ok es false
-    // Checa si el mensaje dice "ya estaba cerrado"
-    if ((data.error || "").toLowerCase().includes("ya estaba cerrado")) {
-      alert("⚠️ Este permiso ya estaba cerrado");
-      window.cargarPermisosParaCerrar();
-      return;
-    }
-
+    // Solo aquí es error real
     alert("❌ " + (data.error || "Error desconocido"));
 
   } catch (err) {
