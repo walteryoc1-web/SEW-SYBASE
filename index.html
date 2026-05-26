@@ -1613,22 +1613,24 @@ async function finalizarTareaOT(folioOT, btn) {
   }
 }
         
-// ✅ FIX Q28K #10: CARGAR ATS ABIERTOS
+const API_URL = 'http://172.16.0.1:3000/api/sso'; // tu endpoint Node
+
+// ✅ CARGAR ATS ABIERTOS
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
   if (!cont) return;
   cont.innerHTML = "Cargando...";
 
   try {
-    const res = await fetch(URL_SCRIPT + "?accion=reporteSSO");
+    // Usa el endpoint de detalle para traer todos los registros del día
+    const desde = '2026-05-26'; // cámbialo por tu filtro real
+    const hasta = '2026-05-26';
+    
+    const res = await fetch(`${API_URL}/detalle?modulo=SSO&desde=${desde}&hasta=${hasta}`);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    const abiertos = data.filter(r => {
-      const campos = (r.datos || "").split(";");
-      const estado = (campos[8] || "").toString().trim().toUpperCase();
-      return estado === "ABIERTO";
-    });
+    const abiertos = data.filter(r => r.ESTATUS === "ABIERTO");
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
@@ -1637,18 +1639,11 @@ async function cargarPermisosParaCerrar() {
     }
 
     abiertos.forEach(p => {
-      const d = (p.datos || "").split(";");
-      const folio = (d[0] || "").toString().trim();
-      if (!folio) return;
-
-      const personal = (d[1] || "").toString().trim();
-      const area = (d[2] || "").toString().trim();
-
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
       div.innerHTML = `
-        <span><b>${folio}</b> - ${personal} - ${area}</span>
-        <button onclick="cerrarPermiso('${folio}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
+        <span><b>${p.FOLIO}</b> - ${p.NOMBRES} - ${p.AREA}</span>
+        <button onclick="cerrarPermiso('${p.FOLIO}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
       cont.appendChild(div);
     });
 
@@ -1657,7 +1652,7 @@ async function cargarPermisosParaCerrar() {
   }
 }
 
-// ✅ FIX Q28K #11: CERRAR PERMISO ATS - BLINDADO
+// ✅ CERRAR PERMISO ATS - BLINDADO
 async function cerrarPermiso(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
 
@@ -1668,27 +1663,27 @@ async function cerrarPermiso(f, btn) {
   }
 
   try {
-    const res = await fetch(URL_SCRIPT, {
+    const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: "cerrarATS",
+        accion: "cerrarATS",
         folio: (f || "").toString().trim(),
         usuario: "ADMIN"
       })
     });
 
+    const data = await res.json();
+
     window.datosVinculadosATS_Cierre = null;
     const divCierre = document.getElementById('ot-datos-vinculados-cierre');
     if (divCierre) divCierre.innerHTML = '';
 
-    const txt = await res.text();
-
-    if (txt.includes("Q28K_OK")) {
-      alert("✅ " + txt);
-      cargarPermisosParaCerrar();
+    if (data.ok) {
+      alert("✅ " + data.mensaje);
+      cargarPermisosParaCerrar(); // recarga la lista
     } else {
-      alert("❌ " + txt);
+      alert("❌ " + data.error);
     }
   } catch (err) {
     alert("❌ ERROR DE RED: " + err);
