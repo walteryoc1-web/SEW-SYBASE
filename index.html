@@ -682,46 +682,47 @@ async function actualizarPildoras() {
     }
 }
 
-async function cargarPildorasSSO() {
+async function cargarCerradosSSO() {
+  const cont = document.getElementById('contenedor-cerrados-sso');
+  if (!cont) return;
+
+  cont.innerHTML = "Cargando...";
+
   try {
-    const hoySSO = new Date().toISOString().split('T')[0];
-    const elIni = document.getElementById('f-ini-sso');
-    const elFin = document.getElementById('f-fin-sso');
+    const hoy = new Date();
+    const desde = hoy.toISOString().split('T')[0];
+    const hasta = desde;
 
-    const iniSSO = (elIni && elIni.value && /^\d{4}-\d{2}-\d{2}$/.test(elIni.value))? elIni.value : hoySSO;
-    const finSSO = (elFin && elFin.value && /^\d{4}-\d{2}-\d{2}$/.test(elFin.value))? elFin.value : hoySSO;
+    const res = await fetch(`http://172.16.0.1:3000/api/sso/detalle?desde=${desde}&hasta=${hasta}`);
+    const data = await res.json();
 
-    console.log("Fechas SSO enviadas:", iniSSO, finSSO);
+    if (!Array.isArray(data)) throw new Error("Respuesta inválida");
 
-   const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`);
+    // DEBUG: mira qué trae ESTATUS
+    console.log("ESTATUS crudos:", data.map(r => `"${r.ESTATUS}"`));
 
-    if (!rSSO.ok) {
-      console.error("SSO API error:", rSSO.status);
-      document.getElementById('sso-pnd').innerText = '00';
-      document.getElementById('sso-riesgo').innerText = '00';
-      document.getElementById('sso-personal').innerText = '00';
+    // Filtro a prueba de espacios y mayúsculas
+    const cerrados = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "CERRADO");
+
+    console.log("Cerrados filtrados:", cerrados.length, cerrados);
+
+    cont.innerHTML = "";
+    if (cerrados.length === 0) {
+      cont.innerHTML = "<p>No hay ATS cerrados</p>";
       return;
     }
 
-    const dSSO = await rSSO.json();
+    cerrados.forEach(p => {
+      const div = document.createElement('div');
+      div.innerHTML = `<b>${p.FOLIO}</b> - ${p.NOMBRES} - ${p.FECHA_CIERRE}`;
+      cont.appendChild(div); // usa appendChild, no +=
+    });
 
-    if (dSSO.ok) {
-      document.getElementById('sso-pnd').innerText = String(dSSO.total || 0).padStart(2,'0');
-      document.getElementById('sso-riesgo').innerText = String(dSSO.riesgo || 0).padStart(2,'0');
-      document.getElementById('sso-personal').innerText = String(dSSO.personal || 0).padStart(2,'0');
-    } else {
-      console.error("SSO API returned error:", dSSO.error);
-    }
-
-  } catch(e) {
-    console.error("Error pildoras:", e);
-    document.getElementById('sso-pnd').innerText = '00';
-    document.getElementById('sso-riesgo').innerText = '00';
-    document.getElementById('sso-personal').innerText = '00';
+  } catch (err) {
+    cont.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 }
 
-// Llamalo donde lo necesites
 cargarPildorasSSO();
         
         // ===== DESPLEGABLES =====
