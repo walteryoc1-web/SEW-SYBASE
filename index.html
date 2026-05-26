@@ -945,6 +945,12 @@ window.URL.revokeObjectURL(url);
 
 alert("✅ PERMISO REGISTRADO");
 location.reload();
+          } catch (e) {
+        alert("❌ Error: " + e.message);
+        btn.disabled = false;
+        btn.innerText = "REGISTRAR PERMISO";
+    }
+}
        
        async function enviarFichaMedica() {
     const id = document.getElementById('med-id').value.trim();
