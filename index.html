@@ -702,9 +702,6 @@ async function cargarPildorasSSO() {
   }
 }
 
-// Llamalo donde lo necesites
-cargarPildorasSSO();
-
 async function cargarCerradosSSO() {
   const cont = document.getElementById('contenedor-cerrados-sso');
   if (!cont) return;
@@ -721,10 +718,8 @@ async function cargarCerradosSSO() {
 
     if (!Array.isArray(data)) throw new Error("Respuesta inválida");
 
-    // DEBUG: mira qué trae ESTATUS
     console.log("ESTATUS crudos:", data.map(r => `"${r.ESTATUS}"`));
 
-    // Filtro a prueba de espacios y mayúsculas
     const cerrados = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "CERRADO");
 
     console.log("Cerrados filtrados:", cerrados.length, cerrados);
@@ -742,10 +737,14 @@ async function cargarCerradosSSO() {
     });
 
   } catch (err) {
+    console.error("Error cerrados:", err);
     cont.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 }
-       window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
+
+// Ejecuta las funciones
+cargarPildorasSSO();
+cargarCerradosSSO();
         
         // ===== DESPLEGABLES =====
 function llenarDesplegablesLogistica() {
@@ -1656,13 +1655,14 @@ async function cargarPermisosParaCerrar() {
     const desde = hoy.toISOString().split('T')[0];
     const hasta = desde;
 
-    const res = await fetch(${API_URL}/detalle?desde=${desde}&hasta=${hasta});
+    const res = await fetch(`${API_URL}/detalle?desde=${desde}&hasta=${hasta}`);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
     if (!Array.isArray(data)) throw new Error(data.error || "Respuesta inválida del servidor");
 
-    const abiertos = data.filter(r => (r.ESTATUS || "").toUpperCase() === "ABIERTO");
+    // Agregué trim() para que no se pierdan por espacios
+    const abiertos = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "ABIERTO");
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
@@ -1687,9 +1687,10 @@ async function cargarPermisosParaCerrar() {
     });
 
   } catch (err) {
-    cont.innerHTML = <p style="color:red;">Q28K_ERROR: ${err.message || err}</p>;
+    cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message || err}</p>`;
   }
 }
+
 // 2. Tu función para cerrar permiso
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
