@@ -1186,8 +1186,8 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
 }
 
 async function descargarCSV_ATS() {
-  const ini = document.getElementById('fecha-ini').value;
-  const fin = document.getElementById('fecha-fin').value;
+  const ini = document.getElementById('f-ini-sso').value;
+  const fin = document.getElementById('f-fin-sso').value;
 
   if (!ini ||!fin) {
     alert('Selecciona fecha inicio y fin');
