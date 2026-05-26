@@ -1613,7 +1613,7 @@ async function finalizarTareaOT(folioOT, btn) {
   }
 }
         
-const API_URL = 'http://172.16.0.1:3000/api/sso'; // tu endpoint Node
+const API_URL = 'http://172.16.0.1:3000/api/sso';
 
 // ✅ CARGAR ATS ABIERTOS
 async function cargarPermisosParaCerrar() {
@@ -1622,15 +1622,19 @@ async function cargarPermisosParaCerrar() {
   cont.innerHTML = "Cargando...";
 
   try {
-    // Usa el endpoint de detalle para traer todos los registros del día
-    const desde = '2026-05-26'; // cámbialo por tu filtro real
-    const hasta = '2026-05-26';
-    
-    const res = await fetch(`${API_URL}/detalle?modulo=SSO&desde=${desde}&hasta=${hasta}`);
+    const hoy = new Date();
+    const desde = hoy.toISOString().split('T')[0]; // yyyy-mm-dd
+    const hasta = desde;
+
+    const res = await fetch(`${API_URL}/detalle?desde=${desde}&hasta=${hasta}`);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    const abiertos = data.filter(r => r.ESTATUS === "ABIERTO");
+    if (!Array.isArray(data)) {
+      throw new Error(data.error || "Respuesta inválida del servidor");
+    }
+
+    const abiertos = data.filter(r => (r.ESTATUS || "").toUpperCase() === "ABIERTO");
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
@@ -1642,56 +1646,13 @@ async function cargarPermisosParaCerrar() {
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
       div.innerHTML = `
-        <span><b>${p.FOLIO}</b> - ${p.NOMBRES} - ${p.AREA}</span>
+        <span><b>${p.FOLIO}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}</span>
         <button onclick="cerrarPermiso('${p.FOLIO}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
       cont.appendChild(div);
     });
 
   } catch (err) {
     cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message || err}</p>`;
-  }
-}
-
-// ✅ CERRAR PERMISO ATS - BLINDADO
-async function cerrarPermiso(f, btn) {
-  if (!confirm("¿Cerrar permiso " + f + "?")) return;
-
-  const boton = btn || window.event?.target;
-  if (boton) {
-    boton.disabled = true;
-    boton.innerText = "CERRANDO...";
-  }
-
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: "cerrarATS",
-        folio: (f || "").toString().trim(),
-        usuario: "ADMIN"
-      })
-    });
-
-    const data = await res.json();
-
-    window.datosVinculadosATS_Cierre = null;
-    const divCierre = document.getElementById('ot-datos-vinculados-cierre');
-    if (divCierre) divCierre.innerHTML = '';
-
-    if (data.ok) {
-      alert("✅ " + data.mensaje);
-      cargarPermisosParaCerrar(); // recarga la lista
-    } else {
-      alert("❌ " + data.error);
-    }
-  } catch (err) {
-    alert("❌ ERROR DE RED: " + err);
-  } finally {
-    if (boton) {
-      boton.disabled = false;
-      boton.innerText = "CERRAR";
-    }
   }
 }
 
