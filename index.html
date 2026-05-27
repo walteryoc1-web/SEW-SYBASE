@@ -2139,17 +2139,12 @@ function agregarInvolucradoInc() {
     const cont = document.getElementById('contenedor-involucrados-inc');
     if (!cont) return;
     
-    const esTecnico = cont.id === 'contenedor-tec-agregado';
-    
     const d = document.createElement('div');
-    d.style.cssText = "display:flex; gap:10px; margin-top:5px;";
-    d.innerHTML = `<input type="text" class="${esTecnico ? 'tec-id-clase' : 'inc-id-clase'}" 
-                         placeholder="ID" 
-                         onblur="${esTecnico ? 'checkTecAgregado(this)' : 'checkInvolucradoIncidente(this)'}" 
-                         style="flex:1;">
-                   <button type="button" onclick="this.parentElement.remove()" 
-                           style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
-                   <div class="${esTecnico ? 'tec-resultado' : 'inc-resultado'}" style="display:none;"></div>`;
+    d.className = 'inc-bloque'; // <- esto faltaba
+    d.style.cssText = "display:flex; gap:10px; margin-top:5px; flex-wrap:wrap;";
+    d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;">
+                   <button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
+                   <div class="inc-resultado" style="display:none; width:100%;"></div>`;
     cont.appendChild(d);
 }
        
