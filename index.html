@@ -317,20 +317,7 @@
         <div class="inc-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
     </div>
 </div>
-        <!-- 3. TÉCNICO AGREGADO -->
-<label style="font-weight:bold; color:#e67e22; display:block; margin-top:15px;">3. 👨‍🔧 TÉCNICO AGREGADO</label>
-<div id="contenedor-tec-agregado">
-    <div class="tec-bloque" style="margin-top:5px;">
-        <div style="display:flex; gap:10px;">
-            <input type="text" class="tec-id-clase" placeholder="ID técnico"
-                   onblur="checkTecAgregado(this)" style="flex:1;">
-            <button type="button" class="btn" style="width:50px; background:#e67e22; color:white;"
-                    onclick="agregarTecAgregado()">+</button>
-        </div>
-        <div class="tec-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
-    </div>
-</div>
-        
+              
         <label style="font-weight:bold; display:block; margin-top:15px;">Estado de Salud:</label>
         <select id="inc-salud"><option value="SIN_AFECTADOS">No hay afectados</option></select>
         <!-- 3. ACCIONES Y RIESGO -->
@@ -2078,6 +2065,73 @@ async function vincularDatosPermiso(folioATS) {
         alert("❌ Error: " + e.message);
         console.error(e);
         document.getElementById('datos-vinculados-sso').innerHTML = '';
+    }
+}
+       async function checkInvolucradoIncidente(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
+    
+    if (!id) {
+        if(box) box.style.display = 'none';
+        return;
+    }
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+
+    try {
+        const r = await fetch(`http://172.16.0.1:3000/api/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            return;
+        }
+
+        const t = data.data;
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
+    }
+}
+
+async function checkTecAgregado(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
+    
+    if (!id) {
+        if(box) box.style.display = 'none';
+        return;
+    }
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+
+    try {
+        const r = await fetch(`http://172.16.0.1:3000/api/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            return;
+        }
+
+        const t = data.data;
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
     }
 }
    
