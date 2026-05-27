@@ -1811,22 +1811,9 @@ async function checkInvolucradoIncidente(inp) {
 function agregarInvolucradoInc() {
     const cont = document.getElementById('contenedor-involucrados-inc');
     if (!cont) return;
-
     const d = document.createElement('div');
-    d.style.cssText = "margin-top:5px;";
-
-    d.innerHTML = `
-        <div style="display:flex; gap:10px;">
-            <input type="text" class="inc-id-clase" placeholder="ID colaborador" 
-                   onblur="checkInvolucradoIncidente(this)" style="flex:1;">
-            <button type="button" onclick="this.parentElement.parentElement.remove()" 
-                    style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
-        </div>
-        <div class="inc-resultado" style="display:none; margin-top:5px; padding:5px; 
-                                        background:#f0f0f0; border-radius:5px; font-size:14px;">
-        </div>
-    `;
-    
+    d.style.cssText = "display:flex; gap:10px; margin-top:5px;";
+    d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;"><button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>`;
     cont.appendChild(d);
 }
 
