@@ -2167,65 +2167,71 @@ async function enviarIncidenteCompleto() {
     if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
 
     // 1. Recoger IDs de involucrados
-   const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
-    .map(i => i.value.toUpperCase().trim())
-    .filter(v => v);
+    const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc.inc-id-clase'))
+     .map(i => i.value.toUpperCase().trim())
+     .filter(v => v);
 
     if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
 
-    // 2. Convertir IDs a "Nombre (ID)" usando tu DB_MASTER
+    // 2. Convertir IDs a "Nombre (ID)"
     const involucrados = ids.map(id => {
       const t = DB_MASTER.TECNICO?.find(x => x.id.toString() === id);
       return t? `${t.nombre} (${id})` : id;
     }).join(" | ");
 
-    // 3. Armar payload con los mismos nombres que usa el backend
+    // 3. Armar payload con los MISMO nombres que usa el backend
     const payload = {
       folio: window.datosVinculados.folioATS,
       area: window.datosVinculados.fase,
       ubicacion: window.datosVinculados.ubi,
-      trabajo: window.datosVinculados.tipo,
-      involucrados: involucrados,
-      salud: document.getElementById('inc-salud').value,
-      intervencion: document.getElementById('inc-intervencion-momento').value,
       tipoEvento: document.getElementById('inc-tipo').value,
       gravedad: document.getElementById('inc-gravedad').value,
       riesgo: document.getElementById('inc-riesgo').value,
       contaminacion: document.getElementById('inc-contaminacion').value,
       estructura: document.getElementById('inc-estructura').value,
       reparacion: document.getElementById('inc-reparacion').value,
-      obsEstructura: document.getElementById('inc-obs-estructura').value,
       reincidencia: document.getElementById('inc-reincidencia').value,
-      seguridad: document.getElementById('inc-riesgo-seguridad').value,
-      recomendacion: document.getElementById('inc-recomendacion').value,
-      estadoFinal: document.getElementById('inc-estado-final').value
+      estadoFinal: document.getElementById('inc-estado-final').value,
+      salud: document.getElementById('inc-salud').value,
+      involucrados: involucrados,
+      recomendacion: document.getElementById('inc-recomendacion').value
     };
 
     // 4. Validar campos obligatorios
-    const camposObligatorios = ['trabajo', 'tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
+    const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
     for (let campo of camposObligatorios) {
       if (!payload[campo] || payload[campo].includes('disabled selected')) {
         throw new Error(`Selecciona una opción válida en ${campo}`);
       }
     }
 
-    // 5. Enviar y recibir PDF
+    // 5. Guardar en SQL y obtener folio
     const res = await fetch("http://172.16.0.1:3000/api/registrarIncidente", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(err);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const folio = data.folio;
+
+    // 6. Descargar el PDF
+    btn.innerText = "DESCARGANDO PDF... ⏳";
+
+    const pdfRes = await fetch(`http://172.16.0.1:3000/api/incidente/pdf/${folio}`);
+
+    if (!pdfRes.ok) {
+      const errText = await pdfRes.text();
+      throw new Error('Error generando PDF: ' + errText);
     }
 
-    const blob = await res.blob();
+    const blob = await pdfRes.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `INCIDENTE_${payload.folio}.pdf`;
+    a.download = `${folio}.pdf`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2234,7 +2240,7 @@ async function enviarIncidenteCompleto() {
     alert("✅ INFORME SSO REGISTRADO CORRECTAMENTE");
     document.getElementById('ui-incidentes-sso').style.display = 'none';
     document.getElementById('ui-monitor-sso').style.display = 'block';
-    location.reload();
+    setTimeout(() => location.reload(), 1000);
 
   } catch (e) {
     alert("❌ Error: " + e.message);
@@ -2243,7 +2249,9 @@ async function enviarIncidenteCompleto() {
     btn.disabled = false;
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
-}       
+}
+
+       
    </script>
 </body>
 </html>
