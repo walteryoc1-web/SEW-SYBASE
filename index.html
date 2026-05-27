@@ -2167,9 +2167,9 @@ async function enviarIncidenteCompleto() {
     if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
 
     // 1. Recoger IDs de involucrados
-    const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc.inc-id-clase'))
-     .map(i => i.value.toUpperCase().trim())
-     .filter(v => v);
+   const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
+    .map(i => i.value.toUpperCase().trim())
+    .filter(v => v);
 
     if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
 
