@@ -1782,13 +1782,13 @@ function checkTecnicoOperaciones(id) {
     if(btn) btn.disabled = false;
 }
 
-async function checkInvolucradoIncidente(inp) {
+async function checkTecAgregado(inp) {
     const id = inp.value.trim().toUpperCase();
-    const box = inp.closest('div[style*="margin-top:5px"]').querySelector('.inc-resultado');
+    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
     const btn = document.getElementById('btn-env');
 
     if (!id) {
-        if(box) box.style.display = 'none';
+        box.style.display = 'none';
         if(btn) btn.disabled = false;
         return;
     }
@@ -1831,7 +1831,7 @@ async function checkInvolucradoIncidente(inp) {
         if(btn) btn.disabled = true;
     }
 }
-   unction agregarTecAgregado() {
+       function agregarTecAgregado() {
     const cont = document.getElementById('contenedor-tec-agregado');
     if (!cont) return;
 
