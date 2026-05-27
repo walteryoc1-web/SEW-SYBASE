@@ -2166,23 +2166,20 @@ async function enviarIncidenteCompleto() {
   try {
     if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
 
-    // 1. Recoger IDs de involucrados
-   const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
-  .map(i => {
-    console.log('Valor del input:', i.value); // <-- agrega esto
-    return i.value.toUpperCase().trim();
-  })
-  .filter(v => v);
+    // SOLO ESTE BLOQUE DE IDS
+    const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
+      .map(i => i.value.toUpperCase().trim())
+      .filter(v => v);
 
-console.log('IDs encontrados:', ids);
-if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
-    // 2. Convertir IDs a "Nombre (ID)"
+    console.log('IDs encontrados:', ids); // para debug
+
+    if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
+
     const involucrados = ids.map(id => {
       const t = DB_MASTER.TECNICO?.find(x => x.id.toString() === id);
-      return t? `${t.nombre} (${id})` : id;
+      return t ? `${t.nombre} (${id})` : id;
     }).join(" | ");
 
-    // 3. Armar payload
     const payload = {
       folio: window.datosVinculados.folioATS,
       area: window.datosVinculados.fase,
@@ -2199,7 +2196,6 @@ if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
       involucrados: involucrados,
       recomendacion: document.getElementById('inc-recomendacion').value
     };
-
     // 4. Validar campos obligatorios
     const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
     for (let campo of camposObligatorios) {
