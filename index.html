@@ -549,8 +549,8 @@ async function checkSSO_Dinamico(inp) {
     if(btn) btn.disabled = true;
 
     try {
-        const res = await fetch(`http://172.16.0.1:3000/api/tecnico/buscar?id=${id}`);
-        const data = await res.json();
+        const res = await fetch(`/api/tecnico/buscar?id=${id}`);
+const data = await res.json();
 
         if (!data.ok) {
             box.innerText = "❌ " + data.mensaje;
