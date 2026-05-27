@@ -775,7 +775,25 @@ function llenarDesplegablesSSO() {
     }
     llenarSelectTecnico();
 }
+function checkInvolucradoIncidente(inp) {
+    const id = inp.value.toUpperCase().trim();
+    const persona = DB_MASTER.TECNICO?.find(x => x.id.toString().toUpperCase() === id);
+    inp.style.background = persona? "#e8f5e9" : "#fff";
+    inp.style.border = persona? "2px solid #27ae60" : "1px solid #ccc";
+}
 
+function agregarInvolucradoInc() {
+    const cont = document.getElementById('contenedor-involucrados-inc');
+    if (!cont) return;
+    const d = document.createElement('div');
+    d.style.cssText = "display:flex; gap:10px; margin-top:5px;";
+    d.innerHTML = <input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;"><button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>;
+    cont.appendChild(d);
+}
+
+window.onload = () => {
+    cargarCerebroSistema();
+};
 function llenarSelectTecnico() {
     const selTec = document.getElementById('tu-select-tecnico');
     if (!selTec) return;
