@@ -1772,14 +1772,11 @@ async function checkInvolucradoIncidente(inp) {
     if(btn) btn.disabled = true;
 
     try {
-        const res = await fetch(`/api/logistica?id=${id}&categoria=TECNICO`);
-        const data = await res.json();
-
-        if (!data.ok) {
-            box.innerText = "❌ Código no encontrado";
-            if(btn) btn.disabled = true;
-            return;
-        }
+       const r = await fetch("http://172.16.0.1:3000/api/logistica", {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify(payload)
+        });
 
         const t = data.data;
 
