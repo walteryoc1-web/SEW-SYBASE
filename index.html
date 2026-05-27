@@ -2135,39 +2135,15 @@ window.checkInvolucradoIncidente = async function(inp) {
     }
 }
 
-window.checkTecAgregado = async function(inp) {
-    const id = inp.value.trim().toUpperCase();
-    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
-    
-    if (!id) {
-        if(box) box.style.display = 'none';
-        return;
-    }
-
-    if(box) {
-        box.innerText = "⏳ Buscando...";
-        box.style.display = 'block';
-    }
-
-    try {
-        const r = await fetch(`http://172.16.0.1:3000/api/buscar?categoria=TECNICO&id=${id}`);
-        const data = await r.json();
-
-        if (!data.ok) {
-            if(box) box.innerText = "❌ Código no encontrado";
-            return;
-        }
-
-        const t = data.data;
-        if(box) {
-            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
-            box.style.display = 'block';
-        }
-
-    } catch (err) {
-        if(box) box.innerText = "❌ Error de conexión";
-    }
+function agregarInvolucradoInc() {
+    const cont = document.getElementById('contenedor-involucrados-inc');
+    if (!cont) return;
+    const d = document.createElement('div');
+    d.style.cssText = "display:flex; gap:10px; margin-top:5px;";
+    d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;"><button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>`;
+    cont.appendChild(d);
 }
+
    </script>
 </body>
 </html>
