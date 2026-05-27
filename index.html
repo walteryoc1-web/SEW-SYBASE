@@ -544,16 +544,27 @@ function checkSSO_Dinamico(inp) {
         return;
     }
 
-    if (!DB_MASTER.TECNICO) {
+    // Usa la misma data que pilotos, solo cambia la categoría a TECNICO
+    if (!DB_MASTER.TECNICO &&!DB_MASTER.PILOTO) {
         box.innerText = "⏳ Cargando datos...";
         box.style.display = 'block';
         if(btn) btn.disabled = false;
         return;
     }
 
-    const t = getRegistro('TECNICO', id);
+    // getRegistro debe buscar en PILOTO si TECNICO no existe separado
+    const t = getRegistro('TECNICO', id) || getRegistro('PILOTO', id);
+
     if (!t) {
         box.innerText = "❌ Código no encontrado";
+        box.style.display = 'block';
+        if(btn) btn.disabled = true;
+        return;
+    }
+
+    // Checa que sea técnico, por si agarró un piloto por error
+    if ((t.categoria || t.tipo || '').toString().trim().toUpperCase()!== 'TECNICO') {
+        box.innerText = "❌ El código no es de un técnico";
         box.style.display = 'block';
         if(btn) btn.disabled = true;
         return;
@@ -570,15 +581,6 @@ function checkSSO_Dinamico(inp) {
     box.innerText = `👨‍🔧 ${t.nombre} (${t.extra2})`;
     box.style.display = 'block';
     if(btn) btn.disabled = false;
-}
-
-function agregarFilaEjecutor() {
-    const cont = document.getElementById('contenedor-ejecutores');
-    const div = document.createElement('div');
-    div.className = 'grupo-ejecutor';
-    div.style.marginTop = "10px";
-    div.innerHTML = `<div style="display:flex; gap:10px;"><input type="text" class="p-id-clase" placeholder="ID" oninput="checkSSO_Dinamico(this)" style="flex:1;"><button type="button" onclick="this.parentElement.parentElement.remove()" style="background:red; color:white; border-radius:50%; width:30px; border:none;">-</button></div><div class="personal-box-clase" style="font-weight:bold; color:var(--verde-oscuro); display:none; padding:10px; background:#f0fdf0; border:1px dashed var(--verde); font-size:13px; margin-top:5px;"></div>`;
-    cont.appendChild(div);
 }
 // ===== PILOTO LOGISTICA =====
 function checkPiloto(inp) {
