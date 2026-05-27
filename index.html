@@ -2101,7 +2101,41 @@ async function vincularDatosPermiso(folioATS) {
     }
 }
 
-async function checkTecAgregado(inp) {
+window.checkInvolucradoIncidente = async function(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
+    
+    if (!id) {
+        if(box) box.style.display = 'none';
+        return;
+    }
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+
+    try {
+        const r = await fetch(`http://172.16.0.1:3000/api/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            return;
+        }
+
+        const t = data.data;
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
+    }
+}
+
+window.checkTecAgregado = async function(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
     
@@ -2134,7 +2168,6 @@ async function checkTecAgregado(inp) {
         if(box) box.innerText = "❌ Error de conexión";
     }
 }
-   
    </script>
 </body>
 </html>
