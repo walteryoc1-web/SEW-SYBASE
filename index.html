@@ -1758,46 +1758,61 @@ function checkTecnicoOperaciones(id) {
 
 async function checkInvolucradoIncidente(inp) {
     const id = inp.value.trim().toUpperCase();
-    const box = inp.parentElement.nextElementSibling; // esto agarra el div.inc-resultado
+    const box = inp.closest('div[style*="margin-top:5px"]').querySelector('.inc-resultado');
     const btn = document.getElementById('btn-env');
 
     if (!id) {
-        box.style.display = 'none';
+        if(box) box.style.display = 'none';
         if(btn) btn.disabled = false;
         return;
     }
 
-    box.innerText = "⏳ Buscando...";
-    box.style.display = 'block';
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
     if(btn) btn.disabled = true;
 
     try {
-       const r = await fetch("http://172.16.0.1:3000/api/logistica", {
+        const payload = { id: id, categoria: 'TECNICO' }; // <-- aquí lo declaras
+
+        const r = await fetch("http://172.16.0.1:3000/api/logistica", {
             method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
+            headers: {'Content-Type': 'application/json'}, // usa json, no text/plain
             body: JSON.stringify(payload)
         });
+
+        const data = await r.json(); // <-- esto te faltaba
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            if(btn) btn.disabled = true;
+            return;
+        }
 
         const t = data.data;
 
         if ((t.EXTRA3 || "ACTIVO").toString().trim().toUpperCase() === 'INACTIVO') {
             alert("🚫 TÉCNICO BLOQUEADO en sistema.");
             inp.value = "";
-            box.style.display = 'none';
+            if(box) box.style.display = 'none';
             if(btn) btn.disabled = true;
             return;
         }
 
-        box.innerText = `👨‍🔧 ${t.NOMBRE} (${t.EXTRA2})`;
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE} (${t.EXTRA2})`;
+            box.style.display = 'block';
+        }
         if(btn) btn.disabled = false;
 
     } catch (err) {
-        box.innerText = "❌ Error de conexión";
+        if(box) box.innerText = "❌ Error de conexión";
         console.error(err);
         if(btn) btn.disabled = true;
     }
 }
-function agregarInvolucradoInc() {
+       function agregarInvolucradoInc() {
     const cont = document.getElementById('contenedor-involucrados-inc');
     if (!cont) return;
     const d = document.createElement('div');
