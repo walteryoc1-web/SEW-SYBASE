@@ -2051,6 +2051,15 @@ async function vincularDatosPermiso(folioATS) {
         if (!data.ok) throw new Error(data.error);
 
         const p = data.datos;
+
+        // GUARDA ESTO PARA QUE FUNCIONE enviarIncidenteCompleto
+        window.datosVinculados = {
+            folioATS: folioATS,
+            fase: p.area,
+            ubi: p.lugar,
+            tipo: p.tipo
+        };
+
         div.innerHTML = `
           <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
             <b>✅ SSO VINCULADO</b><br>
@@ -2065,6 +2074,7 @@ async function vincularDatosPermiso(folioATS) {
         alert("❌ Error: " + e.message);
         console.error(e);
         document.getElementById('datos-vinculados-sso').innerHTML = '';
+        window.datosVinculados = null; // limpia si falla
     }
 }
        async function checkInvolucradoIncidente(inp) {
