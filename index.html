@@ -1772,7 +1772,7 @@ async function checkInvolucradoIncidente(inp) {
     if(btn) btn.disabled = true;
 
     try {
-        const res = await fetch(`/api/logistica/buscar-personal?id=${id}&categoria=TECNICO`);
+        const res = await fetch(`/api/logistica?id=${id}&categoria=TECNICO`);
         const data = await res.json();
 
         if (!data.ok) {
