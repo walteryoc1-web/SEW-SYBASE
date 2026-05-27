@@ -1239,24 +1239,17 @@ async function descargarCSV_Incidentes() {
     return;
   }
 
-  try {
-    const url = `http://172.16.0.1:3000/export-incidentes?desde=${ini}&hasta=${fin}`;
+  const url = `http://172.16.0.1:3000/export-incidentes?desde=${ini}&hasta=${fin}`;
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Error " + res.status);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Error " + res.status);
 
-    const csv = await res.text();
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `INCIDENTES_${ini}_al_${fin}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-
-  } catch(e) {
-    alert("❌ Error de descarga: " + e.message);
-  }
+  const csv = await res.text();
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `INCIDENTES_${ini}_al_${fin}.csv`;
+  link.click();
 }
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
