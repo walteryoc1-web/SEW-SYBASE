@@ -317,6 +317,19 @@
         <div class="inc-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
     </div>
 </div>
+        <!-- 3. TÉCNICO AGREGADO -->
+<label style="font-weight:bold; color:#e67e22; display:block; margin-top:15px;">3. 👨‍🔧 TÉCNICO AGREGADO</label>
+<div id="contenedor-tec-agregado">
+    <div class="tec-bloque" style="margin-top:5px;">
+        <div style="display:flex; gap:10px;">
+            <input type="text" class="tec-id-clase" placeholder="ID técnico"
+                   onblur="checkTecAgregado(this)" style="flex:1;">
+            <button type="button" class="btn" style="width:50px; background:#e67e22; color:white;"
+                    onclick="agregarTecAgregado()">+</button>
+        </div>
+        <div class="tec-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
+    </div>
+</div>
         
         <label style="font-weight:bold; display:block; margin-top:15px;">Estado de Salud:</label>
         <select id="inc-salud"><option value="SIN_AFECTADOS">No hay afectados</option></select>
@@ -1818,16 +1831,65 @@ async function checkInvolucradoIncidente(inp) {
         if(btn) btn.disabled = true;
     }
 }
-       function agregarInvolucradoInc() {
-    const cont = document.getElementById('contenedor-involucrados-inc');
+   unction agregarTecAgregado() {
+    const cont = document.getElementById('contenedor-tec-agregado');
     if (!cont) return;
+
     const d = document.createElement('div');
-    d.style.cssText = "display:flex; gap:10px; margin-top:5px;";
-    d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;"><button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>`;
+    d.className = "tec-bloque";
+    d.style.cssText = "margin-top:5px;";
+    d.innerHTML = `
+        <div style="display:flex; gap:10px;">
+            <input type="text" class="tec-id-clase" placeholder="ID técnico"
+                   onblur="checkTecAgregado(this)" style="flex:1;">
+            <button type="button" onclick="this.parentElement.parentElement.remove()"
+                    style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
+        </div>
+        <div class="tec-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
+    `;
     cont.appendChild(d);
 }
 
-window.onload = () => {
+function checkTecAgregado(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
+    const btn = document.getElementById('btn-env');
+
+    if (!id) {
+        box.style.display = 'none';
+        if(btn) btn.disabled = false;
+        return;
+    }
+
+    if (!DB_MASTER.TECNICO) {
+        box.innerText = "⏳ Cargando datos...";
+        box.style.display = 'block';
+        if(btn) btn.disabled = false;
+        return;
+    }
+
+    const t = DB_MASTER.TECNICO[id];
+    if (!t) {
+        box.innerText = "❌ Código no encontrado";
+        box.style.display = 'block';
+        if(btn) btn.disabled = true;
+        return;
+    }
+
+    if ((t.ATRIBUTO_3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
+        alert("🚫 TÉCNICO BLOQUEADO en sistema.");
+        inp.value = "";
+        box.style.display = 'none';
+        if(btn) btn.disabled = true;
+        return;
+    }
+
+    box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+    box.style.display = 'block';
+    if(btn) btn.disabled = false;
+}
+       
+       window.onload = () => {
     cargarCerebroSistema();
 };
 
