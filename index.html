@@ -533,7 +533,7 @@ function abrirModulo(rol) {
     }
 }
        // ===== TÉCNICO SSO =====
-function checkSSO_Dinamico(inp) {
+async function checkSSO_Dinamico(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = inp.parentElement.nextElementSibling;
     const btn = document.getElementById('btn-sso');
@@ -544,43 +544,38 @@ function checkSSO_Dinamico(inp) {
         return;
     }
 
-    // Usa la misma data que pilotos, solo cambia la categoría a TECNICO
-    if (!DB_MASTER.TECNICO &&!DB_MASTER.PILOTO) {
-        box.innerText = "⏳ Cargando datos...";
+    box.innerText = "⏳ Buscando...";
+    box.style.display = 'block';
+    if(btn) btn.disabled = true;
+
+    try {
+        const res = await fetch(`http://172.16.0.1:3000/api/tecnico/buscar?id=${id}`);
+        const data = await res.json();
+
+        if (!data.ok) {
+            box.innerText = "❌ " + data.mensaje;
+            box.style.display = 'block';
+            if(btn) btn.disabled = true;
+            return;
+        }
+
+        const t = data.data;
+        if ((t.EXTRA3 || "ACTIVO").toString().trim().toUpperCase() === 'INACTIVO') {
+            alert("🚫 TÉCNICO BLOQUEADO en sistema.");
+            inp.value = "";
+            box.style.display = 'none';
+            if(btn) btn.disabled = true;
+            return;
+        }
+
+        box.innerText = `👨‍🔧 ${t.NOMBRE} (${t.EXTRA2})`;
         box.style.display = 'block';
         if(btn) btn.disabled = false;
-        return;
+
+    } catch (err) {
+        box.innerText = "❌ Error de conexión";
+        console.error(err);
     }
-
-    // getRegistro debe buscar en PILOTO si TECNICO no existe separado
-    const t = getRegistro('TECNICO', id) || getRegistro('PILOTO', id);
-
-    if (!t) {
-        box.innerText = "❌ Código no encontrado";
-        box.style.display = 'block';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    // Checa que sea técnico, por si agarró un piloto por error
-    if ((t.categoria || t.tipo || '').toString().trim().toUpperCase()!== 'TECNICO') {
-        box.innerText = "❌ El código no es de un técnico";
-        box.style.display = 'block';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    if ((t.extra3 || "ACTIVO").toString().trim().toUpperCase() === 'INACTIVO') {
-        alert("🚫 TÉCNICO BLOQUEADO en sistema.");
-        inp.value = "";
-        box.style.display = 'none';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    box.innerText = `👨‍🔧 ${t.nombre} (${t.extra2})`;
-    box.style.display = 'block';
-    if(btn) btn.disabled = false;
 }
 // ===== PILOTO LOGISTICA =====
 function checkPiloto(inp) {
