@@ -533,7 +533,7 @@ function abrirModulo(rol) {
     }
 }
        // ===== TÉCNICO SSO =====
-async function checkSSO_Dinamico(inp) {
+async function checkTecnico(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = inp.parentElement.nextElementSibling;
     const btn = document.getElementById('btn-sso');
@@ -549,8 +549,8 @@ async function checkSSO_Dinamico(inp) {
     if(btn) btn.disabled = true;
 
     try {
-        const res = await fetch(`/api/tecnico/buscar?id=${id}`);
-const data = await res.json();
+        const res = await fetch(`/api/logistica?id=${id}&categoria=TECNICO`);
+        const data = await res.json();
 
         if (!data.ok) {
             box.innerText = "❌ " + data.mensaje;
@@ -560,6 +560,7 @@ const data = await res.json();
         }
 
         const t = data.data;
+
         if ((t.EXTRA3 || "ACTIVO").toString().trim().toUpperCase() === 'INACTIVO') {
             alert("🚫 TÉCNICO BLOQUEADO en sistema.");
             inp.value = "";
@@ -575,9 +576,11 @@ const data = await res.json();
     } catch (err) {
         box.innerText = "❌ Error de conexión";
         console.error(err);
+        if(btn) btn.disabled = true;
     }
 }
-// ===== PILOTO LOGISTICA =====
+       
+       // ===== PILOTO LOGISTICA =====
 function checkPiloto(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = document.getElementById('piloto-box');
