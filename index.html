@@ -2135,7 +2135,15 @@ window.checkInvolucradoIncidente = async function(inp) {
     }
 }
 
-function agregarTecAgregado() {
+function agregarInvolucradoInc() {
+    const cont = document.getElementById('contenedor-involucrados-inc');
+    if (!cont) return;
+    const d = document.createElement('div');
+    d.style.cssText = "display:flex; gap:10px; margin-top:5px;";
+    d.innerHTML = <input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;"><button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>;
+    cont.appendChild(d);
+}
+       function agregarTecAgregado() {
     const cont = document.getElementById('contenedor-tec-agregado');
     if (!cont) return;
     const d = document.createElement('div');
