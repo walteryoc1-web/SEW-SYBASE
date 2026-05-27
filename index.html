@@ -309,8 +309,7 @@
         <label style="font-weight:bold; color:#3498db; display:block; margin-top:15px;">2. 👥 COLABORADORES AFECTADOS</label>
         <div id="contenedor-involucrados-inc">
             <div style="display:flex; gap:10px; margin-top:5px;">
-              <input type="text" class="inc-id-clase" placeholder="ID colaborador" 
-           onblur="checkInvolucradoIncidente(this)" style="flex:1;">
+             <input type="text" class="inc-id-clase" placeholder="ID colaborador" onblur="checkInvolucradoIncidente(this)" style="flex:1;">
                 <button type="button" class="btn" style="width:50px; background:#3498db; color:white;" onclick="agregarInvolucradoInc()">+</button>
             </div>
         </div>
@@ -545,14 +544,14 @@ function checkSSO(inp) {
         return;
     }
 
-    if (!DB_MASTER.PILOTO) {
+    if (!DB_MASTER.TECNICO) {
         box.innerText = "⏳ Cargando datos...";
         box.style.display = 'block';
         if(btn) btn.disabled = false;
         return;
     }
 
-    const t = getRegistro('TECNICO', id);
+    const t = getRegistro('PILOTO', id);
     if (!t) {
         box.innerText = "❌ Código no encontrado";
         box.style.display = 'block';
