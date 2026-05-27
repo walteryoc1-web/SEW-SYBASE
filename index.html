@@ -532,10 +532,10 @@ function abrirModulo(rol) {
             document.getElementById('login').style.display='block';
     }
 }
-       // ===== TÉCNICO SSO =====
-function checkSSO(inp) {
+ // ===== TÉCNICO SSO =====
+function checkSSO_Dinamico(inp) {
     const id = inp.value.trim().toUpperCase();
-    const box = document.getElementById('sso-box');
+    const box = inp.parentElement.nextElementSibling;
     const btn = document.getElementById('btn-sso');
 
     if (!id) {
@@ -551,7 +551,7 @@ function checkSSO(inp) {
         return;
     }
 
-    const t = getRegistro('PILOTO', id);
+    const t = getRegistro('TECNICO', id);
     if (!t) {
         box.innerText = "❌ Código no encontrado";
         box.style.display = 'block';
@@ -559,7 +559,7 @@ function checkSSO(inp) {
         return;
     }
 
-    if ((t.extra3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
+    if ((t.extra3 || "ACTIVO").toString().trim().toUpperCase() === 'INACTIVO') {
         alert("🚫 TÉCNICO BLOQUEADO en sistema.");
         inp.value = "";
         box.style.display = 'none';
@@ -567,10 +567,20 @@ function checkSSO(inp) {
         return;
     }
 
-    box.innerText = `👨‍🔧 ${t.nombre} (${t.extra1}) cliente:(${t.extra4})- Lic: ${t.extra2 || 'N/A'}`;
+    box.innerText = `👨‍🔧 ${t.nombre} (${t.extra2})`;
     box.style.display = 'block';
     if(btn) btn.disabled = false;
 }
+
+function agregarFilaEjecutor() {
+    const cont = document.getElementById('contenedor-ejecutores');
+    const div = document.createElement('div');
+    div.className = 'grupo-ejecutor';
+    div.style.marginTop = "10px";
+    div.innerHTML = `<div style="display:flex; gap:10px;"><input type="text" class="p-id-clase" placeholder="ID" oninput="checkSSO_Dinamico(this)" style="flex:1;"><button type="button" onclick="this.parentElement.parentElement.remove()" style="background:red; color:white; border-radius:50%; width:30px; border:none;">-</button></div><div class="personal-box-clase" style="font-weight:bold; color:var(--verde-oscuro); display:none; padding:10px; background:#f0fdf0; border:1px dashed var(--verde); font-size:13px; margin-top:5px;"></div>`;
+    cont.appendChild(div);
+}
+
        
        // ===== PILOTO LOGISTICA =====
 function checkPiloto(inp) {
@@ -1774,15 +1784,8 @@ async function checkInvolucradoIncidente(inp) {
     if(btn) btn.disabled = true;
 
     try {
-        const payload = { id: id, categoria: 'TECNICO' }; // <-- aquí lo declaras
-
-        const r = await fetch("http://172.16.0.1:3000/api/logistica", {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}, // usa json, no text/plain
-            body: JSON.stringify(payload)
-        });
-
-        const data = await r.json(); // <-- esto te faltaba
+        const r = await fetch(`/api/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
 
         if (!data.ok) {
             if(box) box.innerText = "❌ Código no encontrado";
@@ -1792,7 +1795,7 @@ async function checkInvolucradoIncidente(inp) {
 
         const t = data.data;
 
-        if ((t.EXTRA3 || "ACTIVO").toString().trim().toUpperCase() === 'INACTIVO') {
+        if ((t.ATRIBUTO_3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
             alert("🚫 TÉCNICO BLOQUEADO en sistema.");
             inp.value = "";
             if(box) box.style.display = 'none';
@@ -1801,7 +1804,7 @@ async function checkInvolucradoIncidente(inp) {
         }
 
         if(box) {
-            box.innerText = `👨‍🔧 ${t.NOMBRE} (${t.EXTRA2})`;
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
             box.style.display = 'block';
         }
         if(btn) btn.disabled = false;
