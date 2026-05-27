@@ -307,16 +307,16 @@
          <!-- 2. COLABORADORES AFECTADOS -->
         <label style="font-weight:bold; color:#3498db; display:block; margin-top:15px;">2. 👥 COLABORADORES AFECTADOS</label>
         <div id="contenedor-involucrados-inc">
-            <div class="inc-bloque" style="margin-top:5px;">
-                <div style="display:flex; gap:10px;">
-                    <input type="text" class="inc-id-clase" placeholder="ID colaborador" 
-                           onblur="checkInvolucradoIncidente(this)" style="flex:1;">
-                    <button type="button" class="btn" style="width:50px; background:#3498db; color:white;" 
-                            onclick="agregarInvolucradoInc()">+</button>
-                </div>
-                <div class="inc-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
-            </div>
+    <div class="inc-bloque" style="margin-top:5px;">
+        <div style="display:flex; gap:10px;">
+            <input type="text" class="inc-id-clase" placeholder="ID colaborador"
+                   onblur="checkInvolucradoIncidente(this)" style="flex:1;">
+            <button type="button" class="btn" style="width:50px; background:#3498db; color:white;"
+                    onclick="agregarInvolucradoInc()">+</button>
         </div>
+        <div class="inc-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
+    </div>
+</div>
         
         <label style="font-weight:bold; display:block; margin-top:15px;">Estado de Salud:</label>
         <select id="inc-salud"><option value="SIN_AFECTADOS">No hay afectados</option></select>
