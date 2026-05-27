@@ -533,9 +533,9 @@ function abrirModulo(rol) {
     }
 }
        // ===== TÉCNICO SSO =====
-async function checkTecnico(inp) {
+function checkSSO(inp) {
     const id = inp.value.trim().toUpperCase();
-    const box = inp.parentElement.nextElementSibling;
+    const box = document.getElementById('sso-box');
     const btn = document.getElementById('btn-sso');
 
     if (!id) {
@@ -544,40 +544,32 @@ async function checkTecnico(inp) {
         return;
     }
 
-    box.innerText = "⏳ Buscando...";
-    box.style.display = 'block';
-    if(btn) btn.disabled = true;
-
-    try {
-        const res = await fetch(`/api/logistica?id=${id}&categoria=TECNICO`);
-        const data = await res.json();
-
-        if (!data.ok) {
-            box.innerText = "❌ " + data.mensaje;
-            box.style.display = 'block';
-            if(btn) btn.disabled = true;
-            return;
-        }
-
-        const t = data.data;
-
-        if ((t.EXTRA3 || "ACTIVO").toString().trim().toUpperCase() === 'INACTIVO') {
-            alert("🚫 TÉCNICO BLOQUEADO en sistema.");
-            inp.value = "";
-            box.style.display = 'none';
-            if(btn) btn.disabled = true;
-            return;
-        }
-
-        box.innerText = `👨‍🔧 ${t.NOMBRE} (${t.EXTRA2})`;
+    if (!DB_MASTER.TECNICO) {
+        box.innerText = "⏳ Cargando datos...";
         box.style.display = 'block';
         if(btn) btn.disabled = false;
-
-    } catch (err) {
-        box.innerText = "❌ Error de conexión";
-        console.error(err);
-        if(btn) btn.disabled = true;
+        return;
     }
+
+    const t = getRegistro('TECNICO', id);
+    if (!t) {
+        box.innerText = "❌ Código no encontrado";
+        box.style.display = 'block';
+        if(btn) btn.disabled = true;
+        return;
+    }
+
+    if ((t.extra3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
+        alert("🚫 TÉCNICO BLOQUEADO en sistema.");
+        inp.value = "";
+        box.style.display = 'none';
+        if(btn) btn.disabled = true;
+        return;
+    }
+
+    box.innerText = `👨‍🔧 ${t.nombre} (${t.extra1}) cliente:(${t.extra4})- Lic: ${t.extra2 || 'N/A'}`;
+    box.style.display = 'block';
+    if(btn) btn.disabled = false;
 }
        
        // ===== PILOTO LOGISTICA =====
