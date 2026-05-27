@@ -2219,6 +2219,19 @@ async function enviarIncidenteCompleto() {
 
     // 6. Descargar el PDF
     btn.innerText = "DESCARGANDO PDF... ⏳";
+      const contenedor = document.getElementById('contenedor-involucrados-inc');
+const inputs = document.querySelectorAll('#contenedor-involucrados-inc.inc-id-clase');
+
+console.log('Contenedor existe:', contenedor);
+console.log('Inputs encontrados:', inputs.length);
+
+const ids = Array.from(inputs)
+ .map(i => i.value.toUpperCase().trim())
+ .filter(v => v);
+
+console.log('IDs limpios:', ids);
+
+if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
 
     const pdfRes = await fetch(`http://172.16.0.1:3000/api/incidente/pdf/${folio}`);
 
