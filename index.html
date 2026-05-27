@@ -1230,12 +1230,36 @@ async function descargarCSV_ATS() {
     alert("❌ Error de descarga: " + e.message);
   }
 }
+async function descargarCSV_Incidentes() {
+  const ini = document.getElementById('f-ini-sso').value;
+  const fin = document.getElementById('f-fin-sso').value;
 
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin');
+    return;
+  }
+
+  try {
+    const url = `http://172.16.0.1:3000/export-incidentes?desde=${ini}&hasta=${fin}`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Error " + res.status);
+
+    const csv = await res.text();
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `INCIDENTES_${ini}_al_${fin}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+  } catch(e) {
+    alert("❌ Error de descarga: " + e.message);
+  }
+}
 function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
-}
-function descargarCSV_Incidentes() {
-    procesarDescargaUniversal("reporteIncidentes", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Incidentes");
 }
 function descargarCSV_Medico() {
     procesarDescargaUniversal("reporteMedico", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Control_Medico");
