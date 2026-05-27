@@ -305,22 +305,14 @@
         </div>
         <div id="datos-vinculados-sso"></div>
 
-        <label style="font-weight:bold; color:#3498db; display:block; margin-top:15px;">
- 2. 👥 COLABORADORES AFECTADOS
-</label>
-<div id="contenedor-involucrados-inc">
-    <div style="margin-top:5px;">
-        <div style="display:flex; gap:10px;">
-            <input type="text" class="inc-id-clase" placeholder="ID colaborador" 
-                   onblur="checkInvolucradoIncidente(this)" style="flex:1;">
-            <button type="button" onclick="this.parentElement.parentElement.remove()" 
-                    style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
+         <!-- 2. COLABORADORES AFECTADOS -->
+        <label style="font-weight:bold; color:#3498db; display:block; margin-top:15px;">2. 👥 COLABORADORES AFECTADOS</label>
+        <div id="contenedor-involucrados-inc">
+            <div style="display:flex; gap:10px; margin-top:5px;">
+                <input type="text" class="inc-id-clase" placeholder="ID colaborador" onblur="checkInvolucradoIncidente(this)" style="flex:1;">
+                <button type="button" class="btn" style="width:50px; background:#3498db; color:white;" onclick="agregarInvolucradoInc()">+</button>
+            </div>
         </div>
-        <div class="inc-resultado" style="display:none; margin-top:5px; padding:5px; 
-                                        background:#f0f0f0; border-radius:5px; font-size:14px;">
-        </div>
-    </div>
-</div>
         
         <label style="font-weight:bold; display:block; margin-top:15px;">Estado de Salud:</label>
         <select id="inc-salud"><option value="SIN_AFECTADOS">No hay afectados</option></select>
