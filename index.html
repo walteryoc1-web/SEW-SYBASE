@@ -2265,26 +2265,28 @@ async function enviarIncidenteCompleto() {
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
-       async function cargarTiposTrabajo() {
-  const res = await fetch('/api/config/tipos-trabajo');
-  const data = await res.json();
-  
-  const selector = document.getElementById('p-tipo');
-  selector.innerHTML = '<option value="">Selecciona un tipo</option>';
-  
-  data.forEach(item => {
-    const option = document.createElement('option');
-    option.value = item.valor;       
-    option.textContent = item.descripcion; 
-    selector.appendChild(option);
-  });
+      async function cargarTiposMedico() {
+  try {
+    const res = await fetch('/api/config/tipos-medico');
+    const data = await res.json();
+
+    const select = document.getElementById('med-tipo');
+    select.innerHTML = '<option value="">Selecciona</option>';
+
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.NOMBRE_VALOR;      // usa el mismo valor para value y text
+      option.textContent = item.NOMBRE_VALOR; // CONSULTA FAMILIAR
+      select.appendChild(option);
+    });
+
+    select.dispatchEvent(new Event('change'));
+  } catch (err) {
+    console.error('Error cargando tipos médico:', err);
+  }
 }
 
-// Carga los tipos al entrar
-document.addEventListener('DOMContentLoaded', async () => {
-  await cargarTiposTrabajo();
-  actualizarChecklist(); 
-});
+document.addEventListener('DOMContentLoaded', cargarTiposMedico);
        </script>
 </body>
 </html>
