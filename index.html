@@ -362,7 +362,7 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
                 <input type="text" id="med-id" placeholder="ID COLABORADOR" style="text-transform:uppercase;">
                 <input type="date" id="med-fecha">
-                <select id="med-tipo"><option>Pre-empleo</option><option selected>Control Periódico</option><option>Post-Incidente</option></select>
+                <select id="p-tipo" onchange="actualizarChecklist()"></select>
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background:#f9; padding:20px; border-radius:15px; margin-bottom:20px;">
                 <div><label style="font-size:11px;">💉 GLUCOSA</label><input type="number" id="med-glucosa"></div>
@@ -2265,6 +2265,26 @@ async function enviarIncidenteCompleto() {
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
+       async function cargarTiposTrabajo() {
+  const res = await fetch('/api/config/tipos-trabajo');
+  const data = await res.json();
+  
+  const selector = document.getElementById('p-tipo');
+  selector.innerHTML = '<option value="">Selecciona un tipo</option>';
+  
+  data.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.valor;       
+    option.textContent = item.descripcion; 
+    selector.appendChild(option);
+  });
+}
+
+// Carga los tipos al entrar
+document.addEventListener('DOMContentLoaded', async () => {
+  await cargarTiposTrabajo();
+  actualizarChecklist(); 
+});
        </script>
 </body>
 </html>
