@@ -362,7 +362,7 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
                 <input type="text" id="med-id" placeholder="ID COLABORADOR" style="text-transform:uppercase;">
                 <input type="date" id="med-fecha">
-                <select id="p-tipo" onchange="actualizarChecklist()"></select>
+                <select id="med-tipo" onchange="actualizarChecklistMedico()"></select>
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background:#f9; padding:20px; border-radius:15px; margin-bottom:20px;">
                 <div><label style="font-size:11px;">💉 GLUCOSA</label><input type="number" id="med-glucosa"></div>
@@ -2265,28 +2265,26 @@ async function enviarIncidenteCompleto() {
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
-      async function cargarTiposMedico() {
-  try {
-    const res = await fetch('/api/config/tipos-medico');
-    const data = await res.json();
+      function actualizarChecklistMedico() {
+    const selector = document.getElementById('med-tipo');
+    if (!selector || !selector.value) return;
+    
+    const tipoElegido = selector.value.toUpperCase().trim();
+    console.log('Tipo médico elegido:', tipoElegido);
 
-    const select = document.getElementById('med-tipo');
-    select.innerHTML = '<option value="">Selecciona</option>';
+    const contCheck = document.getElementById('contenedor-checklist-medico');
+    const lEpp = document.getElementById('lista-epp-medico');
+    
+    if(contCheck) contCheck.style.display = 'block';
+    if(lEpp) lEpp.innerHTML = "<b>✅ EPP REQUERIDO:</b>";
 
-    data.forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.NOMBRE_VALOR;      // usa el mismo valor para value y text
-      option.textContent = item.NOMBRE_VALOR; // CONSULTA FAMILIAR
-      select.appendChild(option);
-    });
-
-    select.dispatchEvent(new Event('change'));
-  } catch (err) {
-    console.error('Error cargando tipos médico:', err);
-  }
+    // Ajusta DB_MASTER.MEDICO_EPP a tu tabla real
+    if (DB_MASTER.MEDICO_EPP) {
+      DB_MASTER.MEDICO_EPP.filter(e => e.extra1.toUpperCase() === tipoElegido)
+        .forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
+    }
 }
-
-document.addEventListener('DOMContentLoaded', cargarTiposMedico);
+       
        </script>
 </body>
 </html>
