@@ -2265,25 +2265,6 @@ async function enviarIncidenteCompleto() {
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
-       async function cargarTiposMedico() {
-  const res = await fetch('/api/config/tipos-medico');
-  const data = await res.json();
-  
-  const selector = document.getElementById('med-tipo');
-  selector.innerHTML = '';
-  
-  data.forEach(item => {
-    const option = document.createElement('option');
-    option.value = item.ID_CODIGO;      // TME-001
-    option.textContent = item.NOMBRE_VALOR; // CONSULTA FAMILIAR
-    selector.appendChild(option);
-  });
-
-  // dispara el cambio para que se cargue el checklist
-  selector.dispatchEvent(new Event('change'));
-}
-
-document.addEventListener('DOMContentLoaded', cargarTiposMedico);
-   </script>
+       </script>
 </body>
 </html>
