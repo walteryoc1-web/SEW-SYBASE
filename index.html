@@ -438,6 +438,7 @@ async function cargarCerebroSistema() {
         const res = await fetch(URL_SCRIPT + "/admin"); 
         DB_MASTER = await res.json();
         console.log("✅ Cerebro Sincronizado", DB_MASTER);
+        llenarSelectTipoMedico();
         return true;
     } catch (e) {
         console.error(e);
