@@ -2265,25 +2265,54 @@ async function enviarIncidenteCompleto() {
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
-      function actualizarChecklistMedico() {
-    const selector = document.getElementById('med-tipo');
-    if (!selector || !selector.value) return;
-    
-    const tipoElegido = selector.value.toUpperCase().trim();
-    console.log('Tipo médico elegido:', tipoElegido);
+     function actualizarChecklistMedico() {
+  const selector = document.getElementById('med-tipo');
+  if (!selector || !selector.value) return;
+  
+  const tipoElegido = selector.value.toUpperCase().trim();
+  console.log('Tipo médico elegido:', tipoElegido);
 
-    const contCheck = document.getElementById('contenedor-checklist-medico');
-    const lEpp = document.getElementById('lista-epp-medico');
-    
-    if(contCheck) contCheck.style.display = 'block';
-    if(lEpp) lEpp.innerHTML = "<b>✅ EPP REQUERIDO:</b>";
+  const contCheck = document.getElementById('contenedor-checklist-medico');
+  const lEpp = document.getElementById('lista-epp-medico');
+  
+  if (contCheck) contCheck.style.display = 'block';
+  if (lEpp) lEpp.innerHTML = "<b>✅ EPP REQUERIDO:</b>";
 
-    // Ajusta DB_MASTER.MEDICO_EPP a tu tabla real
-    if (DB_MASTER.MEDICO_EPP) {
-      DB_MASTER.MEDICO_EPP.filter(e => e.extra1.toUpperCase() === tipoElegido)
-        .forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
-    }
+  if (DB_MASTER.MEDICO_EPP) {
+    DB_MASTER.MEDICO_EPP.filter(e => e.extra1.toUpperCase() === tipoElegido)
+      .forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
+  }
 }
+
+async function cargarTiposMedico() {
+  try {
+    const res = await fetch('/api/config/tipos-medico');
+    const data = await res.json();
+    console.log('Tipos médico recibidos:', data); // aquí dentro
+
+    const select = document.getElementById('med-tipo');
+    select.innerHTML = '<option value="">Selecciona</option>';
+
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.NOMBRE_VALOR;
+      option.textContent = item.NOMBRE_VALOR;
+      select.appendChild(option);
+    });
+
+    select.dispatchEvent(new Event('change'));
+  } catch (err) {
+    console.error('Error cargando tipos médico:', err);
+  }
+}
+
+function crearCheck(texto) {
+  const div = document.createElement('div');
+  div.innerHTML = `<label class="chk-label"><input type="checkbox" class="chk-input" checked> ${texto}</label>`;
+  return div;
+}
+
+document.addEventListener('DOMContentLoaded', cargarTiposMedico);       
        
        </script>
 </body>
