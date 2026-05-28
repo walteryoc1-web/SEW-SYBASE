@@ -2265,7 +2265,7 @@ async function enviarIncidenteCompleto() {
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
-     function llenarSelectTipoMedico() {
+    function llenarSelectTipoMedico() {
     const sel = document.getElementById('med-tipo');
     if (!sel) return;
 
@@ -2281,9 +2281,9 @@ async function enviarIncidenteCompleto() {
         .forEach(t => {
             sel.add(new Option(t.nombre, t.nombre));
         });
-} 
-       llenarSelectTipoMedico();
-};
-       </script>
+}
+
+llenarSelectTipoMedico();
+   </script>
 </body>
 </html>
