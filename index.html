@@ -983,7 +983,7 @@ async function enviarPermisoSSO() {
     const id = document.getElementById('med-id').value.trim();
     if (!id) throw new Error("Falta el ID del colaborador");
 
-    const payload = {
+     const payload = {
       id: id,
      fecha: document.getElementById('med-fecha').value,
       tipo: document.getElementById('med-tipo').value,
