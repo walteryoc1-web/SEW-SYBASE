@@ -1337,8 +1337,9 @@ async function descargarCSV_Medico() {
   }
 }
 async function descargarCSV_Extintores() {
-  const ini = document.getElementById('f-inicio')?.value;
-  const fin = document.getElementById('f-fin')?.value;
+  // USA LOS INPUTS DE SSO, NO LOS DE LOGISTICA
+  const ini = document.getElementById('f-ini-sso')?.value;
+  const fin = document.getElementById('f-fin-sso')?.value;
 
   if (!ini ||!fin) {
     alert('Selecciona fecha inicio y fin');
@@ -1346,7 +1347,6 @@ async function descargarCSV_Extintores() {
   }
 
   try {
-       // AHORA:
     const url = `http://172.16.0.1:3000/export-extintores?desde=${ini}&hasta=${fin}`;
 
     const res = await fetch(url);
@@ -1364,7 +1364,7 @@ async function descargarCSV_Extintores() {
     alert('Error al descargar: ' + err.message);
     console.error(err);
   }
-}       
+}
        function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
