@@ -2343,26 +2343,49 @@ async function enviarIncidenteCompleto() {
 }
 console.log(DB_MASTER.TIPO_EVENTO)
 llenarSelectTipoMedico();
-       function llenarSelectAgenteExtintor() {
-  const sel = document.getElementById('ext-agente');
-  if (!sel) return;
+     async function enviarExtintor() {
+  const btn = document.querySelector('button[onclick="enviarExtintor()"]');
+  btn.disabled = true;
+  btn.innerText = "REGISTRANDO... ⏳";
 
-  sel.innerHTML = '<option disabled selected>Selecciona Agente</option>';
+  try {
+    const payload = {
+      id: document.getElementById('ext-id').value.trim(),
+      fecha: document.getElementById('ext-fecha').value,
+      agente: document.getElementById('ext-agente').value,
+      ubicacion: document.getElementById('ext-ubicacion').value,
+      obs: document.getElementById('ext-obs').value
+    };
 
-  if (!DB_MASTER.TIPO_AGENTE) {
-    sel.innerHTML = '<option disabled>Cargando...</option>';
-    return;
-  }
+    // VALIDACIONES AQUÍ ↓↓
+    if (!payload.fecha) throw new Error("Selecciona la fecha");
+    
+    // Este es el que me preguntas
+    const agente = document.getElementById('ext-agente').value;
+    if (!agente) throw new Error("Selecciona un agente extintor");
 
-  DB_MASTER.TIPO_AGENTE
-    .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
-    .forEach(t => {
-      const opt = new Option(
-        decodeURIComponent(escape(t.nombre)),
-        decodeURIComponent(escape(t.nombre))
-      );
-      sel.add(opt);
+    // Ya validado, ahora sí guardas
+    const res = await fetch("http://172.16.0.1:3000/api/registrarExtintor", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
+
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    // Descargar PDF
+    window.open(`http://172.16.0.1:3000/api/extintor/pdf/${data.idReg}`, '_blank');
+    
+    alert("Registro guardado correctamente");
+    btn.disabled = false;
+    btn.innerText = "GUARDAR";
+
+  } catch (err) {
+    alert(err.message);
+    btn.disabled = false;
+    btn.innerText = "GUARDAR";
+  }
 }
    </script>
 </body>
