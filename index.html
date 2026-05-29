@@ -1056,51 +1056,73 @@ async function enviarPermisoSSO() {
   }
 }     
        
-       async function enviarInspeccionExtintor() {
+     async function enviarInspeccionExtintor() {
+  const btn = document.querySelector('button[onclick="enviarInspeccionExtintor()"]');
+  btn.disabled = true;
+  btn.innerText = "REGISTRANDO... ⏳";
+
+  try {
     const id = document.getElementById('ext-id').value.trim();
-    if (!id) {
-        alert("❌ Falta el ID");
-        return;
-    }
+    if (!id) throw new Error("Falta el ID del extintor");
 
     const payload = {
-        id_extintor: id,
-        ubicacion: document.getElementById('ext-ubi').value.trim(),
-        agente_nombre: document.getElementById('ext-agente').value.trim(),
-        presion: document.getElementById('ext-presion').value,
-        manguera: document.getElementById('ext-manguera').value,
-        seguro: document.getElementById('ext-seguro').value,
-        vencimiento: document.getElementById('ext-vence').value,
-        observaciones: document.getElementById('ext-obs').value.trim()
+      id_extintor: id,
+      ubicacion: document.getElementById('ext-ubi').value.trim(),
+      agente_nombre: document.getElementById('ext-agente').value.trim(),
+      presion: document.getElementById('ext-presion').value,
+      manguera: document.getElementById('ext-manguera').value,
+      seguro: document.getElementById('ext-seguro').value,
+      vencimiento: document.getElementById('ext-vence').value,
+      observaciones: document.getElementById('ext-obs').value
     };
 
-    try {
-        // 1. Guardar en BD
-        const res = await fetch('/api/extintor/registrar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+    if (!payload.ubicacion) throw new Error("Falta la ubicación");
+    if (!payload.agente_nombre) throw new Error("Falta el nombre del agente");
 
-        const json = await res.json();
-        
-        if (!json.ok) {
-            alert("❌ " + json.error);
-            return;
-        }
+    // 1. Guardar en SQL
+    const res = await fetch("http://172.16.0.1:3000/api/extintor/registrar", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-        const folio = json.folio;
-        alert("✅ GUARDADO. Folio: " + folio);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
 
-        // 2. Descargar PDF con el folio que regresó Sybase
-        window.open(`/api/extintor/pdf/${folio}`, '_blank');
+    const folio = data.folio;
+    console.log('Generando PDF de extintor:', folio);
 
-    } catch (err) {
-        alert("❌ ERROR DE RED: " + err.message);
-        console.error(err);
+    // 2. Descargar PDF de EXTINTOR
+    const pdfRes = await fetch(`http://172.16.0.1:3000/api/extintor/pdf/${folio}?t=${Date.now()}`);
+
+    if (!pdfRes.ok) {
+      const errText = await pdfRes.text();
+      throw new Error('Error generando PDF: ' + errText);
     }
-}
 
+    const blob = await pdfRes.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `EXT_${folio}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    alert("✅ EXTINTOR REGISTRADO Y PDF GENERADO");
+    document.getElementById('form-extintor')?.reset();
+    document.getElementById('ext-id').value = id;
+
+  } catch (err) {
+    alert("❌ Error: " + err.message);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "REGISTRAR EXTINTOR 🧯";
+  }
+}
+       
 // ===== OT =====
 async function enviarOT() {
     const btn = document.querySelector('#ui-operaciones button[onclick*="enviarOT"]');
