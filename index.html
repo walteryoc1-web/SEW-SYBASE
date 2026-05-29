@@ -386,7 +386,7 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
                 <input type="text" id="ext-id" placeholder="ID EXT-XXX">
                 <input type="text" id="ext-ubi" placeholder="UBICACIÓN">
-                <select id="ext-agente"><option>PQS (ABC)</option><option>CO2</option><option>Agua</option></select>
+                <select id="ext-agente" onchange="actualizarChecklistExtintor()"></select>
             </div>
             <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background:#f4f7f6; padding:20px; border-radius:15px;">
                 <div><label style="font-size:11px;">Presión OK?</label><select id="ext-presion"><option>Si</option><option>No</option></select></div>
@@ -442,6 +442,7 @@ async function cargarCerebroSistema() {
         DB_MASTER = await res.json();
         console.log("✅ Cerebro Sincronizado", DB_MASTER);
         llenarSelectTipoMedico();
+        llenarSelectAgenteExtintor();
         return true;
     } catch (e) {
         console.error(e);
@@ -2342,6 +2343,27 @@ async function enviarIncidenteCompleto() {
 }
 console.log(DB_MASTER.TIPO_EVENTO)
 llenarSelectTipoMedico();
+       function llenarSelectAgenteExtintor() {
+  const sel = document.getElementById('ext-agente');
+  if (!sel) return;
+
+  sel.innerHTML = '<option disabled selected>Selecciona Agente</option>';
+
+  if (!DB_MASTER.TIPO_AGENTE) {
+    sel.innerHTML = '<option disabled>Cargando...</option>';
+    return;
+  }
+
+  DB_MASTER.TIPO_AGENTE
+    .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
+    .forEach(t => {
+      const opt = new Option(
+        decodeURIComponent(escape(t.nombre)),
+        decodeURIComponent(escape(t.nombre))
+      );
+      sel.add(opt);
+    });
+}
    </script>
 </body>
 </html>
