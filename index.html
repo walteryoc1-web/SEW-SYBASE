@@ -1346,7 +1346,9 @@ async function descargarCSV_Extintores() {
   }
 
   try {
+       // AHORA:
     const url = `http://172.16.0.1:3000/export-extintores?desde=${ini}&hasta=${fin}`;
+
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error " + res.status);
 
@@ -1362,8 +1364,7 @@ async function descargarCSV_Extintores() {
     alert('Error al descargar: ' + err.message);
     console.error(err);
   }
-}
-       
+}       
        function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
