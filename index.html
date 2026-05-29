@@ -1017,10 +1017,11 @@ async function enviarPermisoSSO() {
 
     const idFicha = data.idFicha;
 
-    // 2. Descargar el PDF
-    btn.innerText = "DESCARGANDO PDF... ⏳";
-    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ficha/pdf/${idFicha}`);
+   const folio = window.datosVinculados.folioATS;
+console.log('Generando PDF de incidente:', folio); 
 
+const pdfRes = await fetch(`http://172.16.0.1:3000/api/incidente/pdf/${folio}`);
+      
     if (!pdfRes.ok) {
       const errText = await pdfRes.text();
       throw new Error('Error generando PDF: ' + errText);
