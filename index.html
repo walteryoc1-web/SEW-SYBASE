@@ -602,7 +602,7 @@ function checkPiloto(inp) {
         return;
     }
 
-    if (!DB_MASTER.PILOTO) {
+    if (!DB_MASTER ||!DB_MASTER.PILOTO) {
         box.innerText = "⏳ Cargando datos...";
         box.style.display = 'block';
         if(btn) btn.disabled = false;
@@ -610,6 +610,10 @@ function checkPiloto(inp) {
     }
 
     const p = getRegistro('PILOTO', id);
+    
+    // DEBUG: quítalo cuando ya jale
+    console.log("ID buscado:", id, "Registro:", p);
+
     if (!p) {
         box.innerText = "❌ Código no encontrado";
         box.style.display = 'block';
@@ -617,20 +621,27 @@ function checkPiloto(inp) {
         return;
     }
 
-    if ((p.extra3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
-        alert("🚫 PILOTO BLOQUEADO en sistema.");
+    // Checa bloqueo. Si extra3 no existe, asume ACTIVO
+    const estado = String(p.extra3 || p.STATUS || p.ESTADO || "ACTIVO").trim().toUpperCase();
+    
+    if (estado === 'BLOQUEADO' || estado === 'INACTIVO' || estado === 'BAJA') {
+        alert(`🚫 PILOTO ${estado} en sistema.`);
         inp.value = "";
         box.style.display = 'none';
         if(btn) btn.disabled = true;
         return;
     }
 
-    // Muestra nombre, extra1 y licencia extra2
-    box.innerText = `👨‍✈️ ${p.nombre} (${p.extra1}) cliente:(${p.extra4})- Lic: ${p.extra2 || 'N/A'}`;
+    // Muestra nombre, extra1 y licencia extra2. Si no existen, pone N/A
+    const nombre = p.nombre || p.NOMBRE || 'N/A';
+    const placa = p.extra1 || p.PLACA || 'N/A';
+    const cliente = p.extra4 || p.CLIENTE || 'N/A';
+    const licencia = p.extra2 || p.LICENCIA || 'N/A';
+
+    box.innerText = `👨‍✈️ ${nombre} (${placa}) cliente:(${cliente})- Lic: ${licencia}`;
     box.style.display = 'block';
     if(btn) btn.disabled = false;
-}
-     async function enviar() {
+}     async function enviar() {
     try {
         const id = document.getElementById('id-in').value.trim().toUpperCase();
         if(!id) throw new Error("Ingresa ID de piloto");
