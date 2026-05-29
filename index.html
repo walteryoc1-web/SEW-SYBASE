@@ -418,22 +418,11 @@ function llenarSelect(selectId, categoria, primerOpcionTexto = null) {
 }
 
        // Busca registro en DB_MASTER por ID/CODIGO/MATRICULA
-function getRegistro(tabla, id) {
-  if (!window.DB_MASTER ||!DB_MASTER[tabla]) return null;
-
-  const idLimpio = String(id).trim().toUpperCase();
-
-  return DB_MASTER[tabla].find(r => {
-    const clave = String(
-      r.id || r.ID ||
-      r.codigo || r.CODIGO ||
-      r.matricula || r.MATRICULA ||
-      r.id_piloto || r.ID_PILOTO ||
-      r.usuario || r.USUARIO || ''
-    ).trim().toUpperCase();
-
-    return clave === idLimpio;
-  }) || null;
+function getRegistro(categoria, id) {
+    if (!DB_MASTER[categoria]) return null;
+    return DB_MASTER[categoria].find(x =>
+        x.id.toString().trim().toUpperCase() === id.toString().trim().toUpperCase()
+    );
 }
 
 function esActivo(categoria, id) {
@@ -444,6 +433,7 @@ function esActivo(categoria, id) {
     const estado = (registro.extra3 || "ACTIVO").toString().trim().toUpperCase();
     return estado === "ACTIVO";
 }
+
 
        
 // ===== ARRANQUE =====
