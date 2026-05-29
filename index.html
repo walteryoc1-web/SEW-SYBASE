@@ -1336,12 +1336,38 @@ async function descargarCSV_Medico() {
     alert("Error al descargar CSV: " + err.message);
   }
 }
-     function descargarCSV() {
+async function descargarCSV_Extintores() {
+  const ini = document.getElementById('f-inicio')?.value;
+  const fin = document.getElementById('f-fin')?.value;
+
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin');
+    return;
+  }
+
+  try {
+    const url = `http://172.16.0.1:3000/export-extintores?desde=${ini}&hasta=${fin}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Error " + res.status);
+
+    const csv = await res.text();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `EXTINTORES_${ini}_al_${fin}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch(err) {
+    alert('Error al descargar: ' + err.message);
+    console.error(err);
+  }
+}
+       
+       function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
-function descargarCSV_Extintores() {
-    procesarDescargaUniversal("reporteExtintor", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Extintores");
-}
+
 function descargarCSV_OT() {
     const ini = document.getElementById('f-ini-ot')?.value || document.getElementById('f-ini-sso').value;
     const fin = document.getElementById('f-fin-ot')?.value || document.getElementById('f-fin-sso').value;
