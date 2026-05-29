@@ -1337,7 +1337,6 @@ async function descargarCSV_Medico() {
   }
 }
 async function descargarCSV_Extintores() {
-  // USA LOS INPUTS DE SSO, NO LOS DE LOGISTICA
   const ini = document.getElementById('f-ini-sso')?.value;
   const fin = document.getElementById('f-fin-sso')?.value;
 
@@ -1348,7 +1347,6 @@ async function descargarCSV_Extintores() {
 
   try {
     const url = `http://172.16.0.1:3000/export-extintores?desde=${ini}&hasta=${fin}`;
-
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error " + res.status);
 
