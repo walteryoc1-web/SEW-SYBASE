@@ -675,6 +675,27 @@ function checkPiloto(inp) {
     }
 }
 /// ===== PÍLDORAS =====
+
+       async function actualizarPildoras() {
+    try {
+        const hoy = new Date();
+        const ini = document.getElementById('f-inicio')?.value || hoy.toISOString().split('T')[0];
+        const fin = document.getElementById('f-fin')?.value || hoy.toISOString().split('T')[0];
+
+        const rLog = await fetch(http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()});
+        const dLog = await rLog.json();
+
+        if (dLog.ok) {
+            document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0');
+        }
+
+    } catch(e) {
+        console.error("Error pildoras logistica:", e);
+        document.getElementById('count-pendientes').innerText = '00';
+    }
+}
+
+       
 async function cargarPildorasSSO() {
   try {
     const hoySSO = new Date().toISOString().split('T')[0];
