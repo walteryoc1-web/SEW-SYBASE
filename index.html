@@ -441,7 +441,7 @@ function esActivo(categoria, id) {
     if (!DB_MASTER ||!DB_MASTER[categoria]) return true;
     const registro = getRegistro(categoria, id);
     if (!registro) return false;
-    const estado = (registro.extra3 || "ACTIVO").toString().trim().toUpperCase();
+   const estado = (registro.STATUS || registro.ESTADO || registro.extra3 || "ACTIVO").toString().trim().toUpperCase();
     return estado === "ACTIVO";
 }
 
