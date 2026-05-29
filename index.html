@@ -419,10 +419,21 @@ function llenarSelect(selectId, categoria, primerOpcionTexto = null) {
 
        // Busca registro en DB_MASTER por ID/CODIGO/MATRICULA
 function getRegistro(categoria, id) {
-    if (!DB_MASTER[categoria]) return null;
-    return DB_MASTER[categoria].find(x =>
-        x.id.toString().trim().toUpperCase() === id.toString().trim().toUpperCase()
-    );
+  if (!DB_MASTER ||!DB_MASTER[categoria] ||!id) return null;
+
+  const idLimpio = String(id).trim().toUpperCase();
+
+  return DB_MASTER[categoria].find(x => {
+    const clave = String(
+      x.id || x.ID ||
+      x.codigo || x.CODIGO ||
+      x.matricula || x.MATRICULA ||
+      x.id_piloto || x.ID_PILOTO ||
+      x.usuario || x.USUARIO || ''
+    ).trim().toUpperCase();
+
+    return clave === idLimpio;
+  }) || null;
 }
 
 function esActivo(categoria, id) {
