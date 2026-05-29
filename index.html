@@ -407,11 +407,14 @@ let datosVinculados = null;
 let datosVinculadosATS_Cierre = null;
 
 // ===== UTILIDADES BASE =====
-function getRegistro(categoria, id) {
-    if (!DB_MASTER[categoria]) return null;
-    return DB_MASTER[categoria].find(x =>
-        x.id.toString().trim().toUpperCase() === id.toString().trim().toUpperCase()
-    );
+function llenarSelect(selectId, categoria, primerOpcionTexto = null) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const placeholder = primerOpcionTexto || sel.options[0]?.text || 'Selecciona';
+    sel.innerHTML = `<option disabled selected>${placeholder}</option>`;
+
+    DB_MASTER[categoria]?.filter(x => (x.extra3 || "ACTIVO").toUpperCase() === "ACTIVO")
+    .forEach(x => sel.add(new Option(x.nombre_valor, x.nombre_valor))); // <- usa nombre_valor
 }
 
 function esActivo(categoria, id) {
@@ -2227,7 +2230,7 @@ async function enviarIncidenteCompleto() {
   folio: window.datosVinculados.folioATS,
   area: window.datosVinculados.fase,
   ubicacion: window.datosVinculados.ubi,
-  
+
   tipoEvento: document.getElementById('inc-tipo').value,
   gravedad: document.getElementById('inc-gravedad').value,
   riesgo: document.getElementById('inc-riesgo').value,
@@ -2237,7 +2240,7 @@ async function enviarIncidenteCompleto() {
   reincidencia: document.getElementById('inc-reincidencia').value,
   estadoFinal: document.getElementById('inc-estado-final').value,
   salud: document.getElementById('inc-salud').value,
-  
+
   involucrados: involucrados,
   recomendacion: document.getElementById('inc-recomendacion').value,
   tecnico_principal: document.getElementById('inc-tecnico')?.value || null
