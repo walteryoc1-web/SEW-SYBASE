@@ -2224,21 +2224,24 @@ async function enviarIncidenteCompleto() {
     }).join(" | ");
 
     const payload = {
-      folio: window.datosVinculados.folioATS,
-      area: window.datosVinculados.fase,
-      ubicacion: window.datosVinculados.ubi,
-      tipoEvento: document.getElementById('inc-tipo').value,
-      gravedad: document.getElementById('inc-gravedad').value,
-      riesgo: document.getElementById('inc-riesgo').value,
-      contaminacion: document.getElementById('inc-contaminacion').value,
-      estructura: document.getElementById('inc-estructura').value,
-      reparacion: document.getElementById('inc-reparacion').value,
-      reincidencia: document.getElementById('inc-reincidencia').value,
-      estadoFinal: document.getElementById('inc-estado-final').value,
-      salud: document.getElementById('inc-salud').value,
-      involucrados: involucrados,
-      recomendacion: document.getElementById('inc-recomendacion').value
-    };
+  folio: window.datosVinculados.folioATS,
+  area: window.datosVinculados.fase,
+  ubicacion: window.datosVinculados.ubi,
+  
+  tipoEvento: document.getElementById('inc-tipo').options[document.getElementById('inc-tipo').selectedIndex].text,
+  gravedad: document.getElementById('inc-gravedad').options[document.getElementById('inc-gravedad').selectedIndex].text,
+  riesgo: document.getElementById('inc-riesgo').options[document.getElementById('inc-riesgo').selectedIndex].text,
+  contaminacion: document.getElementById('inc-contaminacion').options[document.getElementById('inc-contaminacion').selectedIndex].text,
+  estructura: document.getElementById('inc-estructura').options[document.getElementById('inc-estructura').selectedIndex].text,
+  reparacion: document.getElementById('inc-reparacion').options[document.getElementById('inc-reparacion').selectedIndex].text,
+  reincidencia: document.getElementById('inc-reincidencia').options[document.getElementById('inc-reincidencia').selectedIndex].text,
+  estadoFinal: document.getElementById('inc-estado-final').options[document.getElementById('inc-estado-final').selectedIndex].text,
+  salud: document.getElementById('inc-salud').options[document.getElementById('inc-salud').selectedIndex].text,
+  
+  involucrados: involucrados,
+  recomendacion: document.getElementById('inc-recomendacion').value,
+  tecnico_principal: document.getElementById('inc-tecnico')?.options[document.getElementById('inc-tecnico').selectedIndex]?.text || null
+};
     // 4. Validar campos obligatorios
     const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
     for (let campo of camposObligatorios) {
