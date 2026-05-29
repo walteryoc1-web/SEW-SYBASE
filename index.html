@@ -1347,7 +1347,8 @@ async function descargarCSV_Extintores() {
 
   try {
     const url = `http://172.16.0.1:3000/export-extintores?desde=${ini}&hasta=${fin}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { mode: 'cors' });
+
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
@@ -1359,7 +1360,7 @@ async function descargarCSV_Extintores() {
     link.click();
     document.body.removeChild(link);
   } catch(err) {
-    alert('Error al descargar: ' + err.message);
+    alert('Error: Bloqueado por HTTPS. Usa http en vez de https o ponle SSL al Node.\n\nDetalle: ' + err.message);
     console.error(err);
   }
 }
