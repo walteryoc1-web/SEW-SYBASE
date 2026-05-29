@@ -1003,6 +1003,12 @@ async function enviarPermisoSSO() {
     if (!payload.fecha) throw new Error("Selecciona la fecha");
     if (!payload.tipo || payload.tipo.includes('disabled selected')) throw new Error("Selecciona un tipo de atención");
 
+      const temp = Number(payload.temp);
+    if(payload.temp && (temp < 30 || temp > 99.9)) {
+      throw new Error("Temperatura fuera de rango. Usa valores entre 30 y 99.9°C");
+    }
+
+
     // 1. Guardar en SQL
     const res = await fetch("http://172.16.0.1:3000/api/registrarFichaMedica", {
       method: 'POST',
@@ -2294,22 +2300,26 @@ async function enviarIncidenteCompleto() {
     btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
-    function llenarSelectTipoMedico() {
-    const sel = document.getElementById('med-tipo');
-    if (!sel) return;
+  function llenarSelectTipoMedico() {
+  const sel = document.getElementById('med-tipo');
+  if (!sel) return;
 
-    sel.innerHTML = '<option disabled selected>Selecciona Tipo Médico</option>';
+  sel.innerHTML = '<option disabled selected>Selecciona Tipo Médico</option>';
 
-    if (!DB_MASTER.TIPO_MEDICO) {
-        sel.innerHTML = '<option disabled>Cargando...</option>';
-        return;
-    }
+  if (!DB_MASTER.TIPO_MEDICO) {
+    sel.innerHTML = '<option disabled>Cargando...</option>';
+    return;
+  }
 
-    DB_MASTER.TIPO_MEDICO
-        .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
-        .forEach(t => {
-            sel.add(new Option(t.nombre, t.nombre));
-        });
+  DB_MASTER.TIPO_MEDICO
+    .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
+    .forEach(t => {
+      const opt = new Option(
+        decodeURIComponent(escape(t.nombre)), // <-- fuerza utf8
+        decodeURIComponent(escape(t.nombre))
+      );
+      sel.add(opt);
+    });
 }
 console.log(DB_MASTER.TIPO_EVENTO)
 llenarSelectTipoMedico();
