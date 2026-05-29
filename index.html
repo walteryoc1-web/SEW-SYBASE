@@ -721,99 +721,45 @@ async function actualizarPildoras() {
   } catch(e) { console.error("LOG:", e); }
 }
 
-// Al entrar al módulo SUPERVISOR o SSO
+async function cargarCerradosSSO() {
+  const cont = document.getElementById('contenedor-cerrados-sso');
+  if (!cont) return;
+
+  cont.innerHTML = "Cargando...";
+
+  try {
+    const hoy = new Date();
+    const desde = hoy.toISOString().split('T')[0];
+    const hasta = desde;
+
+    const res = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=cerrados&desde=${desde}&hasta=${hasta}&t=${Date.now()}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data)) throw new Error("Respuesta inválida");
+
+    const cerrados = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "CERRADO");
+
+    cont.innerHTML = "";
+    if (cerrados.length === 0) {
+      cont.innerHTML = "<p>No hay ATS cerrados</p>";
+      return;
+    }
+
+    cerrados.forEach(p => {
+      const div = document.createElement('div');
+      div.innerHTML = `<b>${p.FOLIO}</b> - ${p.NOMBRES} - ${p.FECHA_CIERRE}`;
+      cont.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error("Error cerrados:", err);
+    cont.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+  }
+}
+      
+cargarCerradosSSO();
 actualizarPildoras();
 setInterval(actualizarPildoras, 30000);
-
-async function cargarCerradosSSO() {
-  const cont = document.getElementById('contenedor-cerrados-sso');
-  if (!cont) return;
-
-  cont.innerHTML = "Cargando...";
-
-  try {
-    const hoy = new Date();
-    const desde = hoy.toISOString().split('T')[0];
-    const hasta = desde;
-
-    const res = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=cerrados&desde=${desde}&hasta=${hasta}&t=${Date.now()}`);
-    const data = await res.json();
-
-    if (!Array.isArray(data)) throw new Error("Respuesta inválida");
-
-    const cerrados = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "CERRADO");
-
-    cont.innerHTML = "";
-    if (cerrados.length === 0) {
-      cont.innerHTML = "<p>No hay ATS cerrados</p>";
-      return;
-    }
-
-    cerrados.forEach(p => {
-      const div = document.createElement('div');
-      div.innerHTML = `<b>${p.FOLIO}</b> - ${p.NOMBRES} - ${p.FECHA_CIERRE}`;
-      cont.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error("Error cerrados:", err);
-    cont.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-  }
-}
-
-// Ejecuta al cargar
-cargarCerradosSSO();
-actualizarPildoras();
-setInterval(actualizarPildoras, 30000); 
-
-       
-async function cargarCerradosSSO() {
-  const cont = document.getElementById('contenedor-cerrados-sso');
-  if (!cont) return;
-
-  cont.innerHTML = "Cargando...";
-
-  try {
-    const hoy = new Date();
-    const desde = hoy.toISOString().split('T')[0];
-    const hasta = desde;
-
-    // Cambia la URL para que use el mismo endpoint con accion=cerrados
-    const res = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=cerrados&desde=${desde}&hasta=${hasta}&t=${Date.now()}`);
-    const data = await res.json();
-
-    if (!Array.isArray(data)) throw new Error("Respuesta inválida");
-
-    console.log("ESTATUS crudos:", data.map(r => `"${r.ESTATUS}"`));
-
-    // Ya viene filtrado del backend, pero deja el filter por si acaso
-    const cerrados = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "CERRADO");
-
-    console.log("Cerrados filtrados:", cerrados.length, cerrados);
-
-    cont.innerHTML = "";
-    if (cerrados.length === 0) {
-      cont.innerHTML = "<p>No hay ATS cerrados</p>";
-      return;
-    }
-
-    cerrados.forEach(p => {
-      const div = document.createElement('div');
-      div.innerHTML = `<b>${p.FOLIO}</b> - ${p.NOMBRES} - ${p.FECHA_CIERRE}`;
-      cont.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error("Error cerrados:", err);
-    cont.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-  }
-}
-// Ejecuta las funciones
-cargarPildorasSSO();
-cargarCerradosSSO();
-       function actualizarPildoras() {
-  cargarPildorasSSO();
-}
         
         // ===== DESPLEGABLES =====
 function llenarDesplegablesLogistica() {
