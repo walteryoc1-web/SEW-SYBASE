@@ -814,7 +814,7 @@ function llenarSelect(selectId, categoria, primerOpcionTexto = null) {
     const placeholder = primerOpcionTexto || sel.options[0]?.text || 'Selecciona';
     sel.innerHTML = `<option disabled selected>${placeholder}</option>`;
     DB_MASTER[categoria]?.filter(x => (x.extra3 || "ACTIVO").toUpperCase() === "ACTIVO")
-      .forEach(x => sel.add(new Option(x.nombre, x.id)));
+     .forEach(x => sel.add(new Option(x.nombre, x.nombre))); 
 }
 
 function actualizarUbicaciones() {
