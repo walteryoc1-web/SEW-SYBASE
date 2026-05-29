@@ -986,9 +986,9 @@ async function enviarPermisoSSO() {
     const id = document.getElementById('med-id').value.trim();
     if (!id) throw new Error("Falta el ID del colaborador");
 
-     const payload = {
+    const payload = {
       id: id,
-     fecha: document.getElementById('med-fecha').value,
+      fecha: document.getElementById('med-fecha').value,
       tipo: document.getElementById('med-tipo').value,
       glucosa: document.getElementById('med-glucosa').value,
       presion: document.getElementById('med-presion').value,
@@ -1000,10 +1000,8 @@ async function enviarPermisoSSO() {
       obs: document.getElementById('med-obs').value
     };
 
-    // Validación
     if (!payload.fecha) throw new Error("Selecciona la fecha");
     if (!payload.tipo || payload.tipo.includes('disabled selected')) throw new Error("Selecciona un tipo de atención");
-    if (!payload.resultado) throw new Error("Ingresa el resultado/diagnóstico");
 
     // 1. Guardar en SQL
     const res = await fetch("http://172.16.0.1:3000/api/registrarFichaMedica", {
@@ -1016,12 +1014,11 @@ async function enviarPermisoSSO() {
     if (!data.ok) throw new Error(data.error);
 
     const idFicha = data.idFicha;
+    console.log('Generando PDF de ficha:', idFicha);
 
-   const folio = window.datosVinculados.folioATS;
-console.log('Generando PDF de incidente:', folio); 
+    // 2. Descargar PDF de FICHA MÉDICA
+    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ficha/pdf/${idFicha}?t=${Date.now()}`);
 
-const pdfRes = await fetch(`http://172.16.0.1:3000/api/incidente/pdf/${folio}`);
-      
     if (!pdfRes.ok) {
       const errText = await pdfRes.text();
       throw new Error('Error generando PDF: ' + errText);
@@ -1031,7 +1028,7 @@ const pdfRes = await fetch(`http://172.16.0.1:3000/api/incidente/pdf/${folio}`);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `MED_${id}.pdf`;
+    a.download = `MED_${idFicha}.pdf`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1048,8 +1045,7 @@ const pdfRes = await fetch(`http://172.16.0.1:3000/api/incidente/pdf/${folio}`);
     btn.disabled = false;
     btn.innerText = "REGISTRAR FICHA ⚕️";
   }
-}
-       async function enviarInspeccionExtintor() {
+}       async function enviarInspeccionExtintor() {
     const id = document.getElementById('ext-id').value.trim();
     if (!id) {
         alert("❌ Falta el ID");
