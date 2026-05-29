@@ -441,8 +441,10 @@ async function cargarCerebroSistema() {
         const res = await fetch(URL_SCRIPT + "/admin"); 
         DB_MASTER = await res.json();
         console.log("✅ Cerebro Sincronizado", DB_MASTER);
+        
         llenarSelectTipoMedico();
         llenarSelectAgenteExtintor();
+        
         return true;
     } catch (e) {
         console.error(e);
@@ -2344,26 +2346,16 @@ async function enviarIncidenteCompleto() {
 console.log(DB_MASTER.TIPO_EVENTO)
 llenarSelectTipoMedico();
        
-   function llenarSelectAgenteExtintor() {
+  function llenarSelectAgenteExtintor() {
   const sel = document.getElementById('ext-agente');
   if (!sel) return;
-
-  sel.innerHTML = '<option disabled selected>Selecciona Agente</option>';
-
-  if (!DB_MASTER.AGENTE_EXT) {
-    sel.innerHTML = '<option disabled>Cargando...</option>';
-    return;
-  }
-
-  DB_MASTER.AGENTE_EXT
-    .filter(x => (x.estado || "ACTIVO").toUpperCase() === "ACTIVO")
-    .forEach(t => {
-      const opt = new Option(
-        decodeURIComponent(escape(t.nombre)),
-        t.id // guardas el ID como value, mejor para BD
-      );
-      sel.add(opt);
-    });
+  
+  const agentes = DB_MASTER.AGENTE_EXTINTOR || [];
+  
+  sel.innerHTML = '<option value="">Seleccione agente...</option>' +
+    agentes.map(a => 
+      `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
+    ).join('');
 }
    </script>
 </body>
