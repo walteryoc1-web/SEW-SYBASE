@@ -1367,6 +1367,9 @@ async function descargarCSV_Medico() {
     alert("Error al descargar CSV: " + err.message);
   }
 }
+       function descargarCSV() {
+    procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
+
 function descargarCSV_Extintores() {
     procesarDescargaUniversal("reporteExtintor", document.getElementById('f-ini-sso').value, document.getElementById('f-fin-sso').value, "Extintores");
 }
