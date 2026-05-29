@@ -1004,8 +1004,8 @@ async function enviarPermisoSSO() {
     if (!payload.tipo || payload.tipo.includes('disabled selected')) throw new Error("Selecciona un tipo de atención");
 
       const temp = Number(payload.temp);
-    if(payload.temp && (temp < 30 || temp > 99.9)) {
-      throw new Error("Temperatura fuera de rango. Usa valores entre 30 y 99.9°C");
+    if(payload.temp && (temp < 35 || temp > 40)) {
+      throw new Error("Temperatura fuera de rango. Usa valores entre 35 y 40°C");
     }
 
 
