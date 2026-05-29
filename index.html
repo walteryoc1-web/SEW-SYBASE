@@ -1054,7 +1054,9 @@ async function enviarPermisoSSO() {
     btn.disabled = false;
     btn.innerText = "REGISTRAR FICHA ⚕️";
   }
-}       async function enviarInspeccionExtintor() {
+}     
+       
+       async function enviarInspeccionExtintor() {
     const id = document.getElementById('ext-id').value.trim();
     if (!id) {
         alert("❌ Falta el ID");
@@ -1062,38 +1064,40 @@ async function enviarPermisoSSO() {
     }
 
     const payload = {
-        action: "registrarExtintor",
-        id: id,
-        ubi: document.getElementById('ext-ubi').value,
-        agente: document.getElementById('ext-agente').value,
+        id_extintor: id,
+        ubicacion: document.getElementById('ext-ubi').value.trim(),
+        agente_nombre: document.getElementById('ext-agente').value.trim(),
         presion: document.getElementById('ext-presion').value,
         manguera: document.getElementById('ext-manguera').value,
         seguro: document.getElementById('ext-seguro').value,
-        vence: document.getElementById('ext-vence').value,
-        obs: document.getElementById('ext-obs').value
+        vencimiento: document.getElementById('ext-vence').value,
+        observaciones: document.getElementById('ext-obs').value.trim()
     };
 
     try {
-        const res = await fetch(URL_SCRIPT, {
+        // 1. Guardar en BD
+        const res = await fetch('/api/extintor/registrar', {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        const txt = await res.text();
-        if (txt.startsWith("Q28K_ERROR")) {
-            alert("❌ " + txt);
+        const json = await res.json();
+        
+        if (!json.ok) {
+            alert("❌ " + json.error);
             return;
         }
 
-        if (txt.length > 500) {
-            descargarBase64PDF(txt, `EXT_${id}.pdf`);
-            alert("✅ GUARDADO Y PDF GENERADO");
-        } else {
-            alert("❌ Error: " + txt);
-        }
+        const folio = json.folio;
+        alert("✅ GUARDADO. Folio: " + folio);
+
+        // 2. Descargar PDF con el folio que regresó Sybase
+        window.open(`/api/extintor/pdf/${folio}`, '_blank');
+
     } catch (err) {
         alert("❌ ERROR DE RED: " + err.message);
+        console.error(err);
     }
 }
 
