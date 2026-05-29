@@ -691,7 +691,7 @@ function checkPiloto(inp) {
         const ini = document.getElementById('f-inicio')?.value || hoy.toISOString().split('T')[0];
         const fin = document.getElementById('f-fin')?.value || hoy.toISOString().split('T')[0];
 
-        const rLog = await fetch(http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()});
+        const rLog = await fetch(`http:////172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`);
         const dLog = await rLog.json();
 
         if (dLog.ok) {
