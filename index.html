@@ -974,53 +974,78 @@ async function enviarPermisoSSO() {
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
-       
-       async function enviarFichaMedica() {
+   async function enviarFichaMedica() {
+  const btn = document.querySelector('button[onclick="enviarFichaMedica()"]');
+  btn.disabled = true;
+  btn.innerText = "REGISTRANDO... ⏳";
+
+  try {
     const id = document.getElementById('med-id').value.trim();
-    if (!id) {
-        alert("❌ Falta el ID");
-        return;
-    }
+    if (!id) throw new Error("Falta el ID del colaborador");
 
     const payload = {
-        action: "registrarMedico",
-        id: id,
-        fecha: document.getElementById('med-fecha').value,
-        tipo: document.getElementById('med-tipo').value,
-        glucosa: document.getElementById('med-glucosa').value,
-        presion: document.getElementById('med-presion').value,
-        temp: document.getElementById('med-temp').value,
-        peso: document.getElementById('med-peso').value,
-        oxigeno: document.getElementById('med-oxigeno').value,
-        ritmo: document.getElementById('med-ritmo').value,
-        resultado: document.getElementById('med-resultado').value,
-        obs: document.getElementById('med-obs').value
+      id: id,
+      fecha: document.getElementById('med-fecha').value,
+      tipo: document.getElementById('med-tipo').value,
+      glucosa: document.getElementById('med-glucosa').value,
+      presion: document.getElementById('med-presion').value,
+      temp: document.getElementById('med-temp').value,
+      peso: document.getElementById('med-peso').value,
+      oxigeno: document.getElementById('med-oxigeno').value,
+      ritmo: document.getElementById('med-ritmo').value,
+      resultado: document.getElementById('med-resultado').value,
+      obs: document.getElementById('med-obs').value
     };
 
-    try {
-        const res = await fetch(URL_SCRIPT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
-        });
+    // Validación
+    if (!payload.fecha) throw new Error("Selecciona la fecha");
+    if (!payload.tipo || payload.tipo.includes('disabled selected')) throw new Error("Selecciona un tipo de atención");
+    if (!payload.resultado) throw new Error("Ingresa el resultado/diagnóstico");
 
-        const txt = await res.text();
-        if (txt.startsWith("Q28K_ERROR")) {
-            alert("❌ " + txt);
-            return;
-        }
+    // 1. Guardar en SQL
+    const res = await fetch("http://172.16.0.1:3000/api/registrarFichaMedica", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-        if (txt.length > 500) {
-            descargarBase64PDF(txt, `MED_${id}.pdf`);
-            alert("✅ GUARDADO Y PDF GENERADO");
-        } else {
-            alert("❌ Error: " + txt);
-        }
-    } catch (err) {
-        alert("❌ ERROR DE RED: " + err.message);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const idFicha = data.idFicha;
+
+    // 2. Descargar el PDF
+    btn.innerText = "DESCARGANDO PDF... ⏳";
+    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ficha/pdf/${idFicha}`);
+
+    if (!pdfRes.ok) {
+      const errText = await pdfRes.text();
+      throw new Error('Error generando PDF: ' + errText);
     }
+
+    const blob = await pdfRes.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `MED_${id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
+    document.getElementById('form-ficha-medica')?.reset();
+    document.getElementById('med-id').value = id;
+
+  } catch (err) {
+    alert("❌ Error: " + err.message);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "REGISTRAR FICHA ⚕️";
+  }
 }
-async function enviarInspeccionExtintor() {
+       async function enviarInspeccionExtintor() {
     const id = document.getElementById('ext-id').value.trim();
     if (!id) {
         alert("❌ Falta el ID");
