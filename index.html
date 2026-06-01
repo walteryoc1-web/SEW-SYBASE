@@ -2437,12 +2437,26 @@ llenarSelectTipoMedico();
     ).join('');
 }
 async function cargarCatalogosOT() {
+  console.log('1. Entrando a cargarCatalogosOT');
+  
   try {
-    const res = await fetch('/api/ot/catalogos');
-    const { prioridades, departamentos } = await res.json();
+    const url = 'http://172.16.0.1:3000/api/ot/catalogos';
+    console.log('2. Fetching:', url);
+    
+    const res = await fetch(url);
+    console.log('3. Status:', res.status);
+    
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    
+    const data = await res.json();
+    console.log('4. Data recibida:', data);
+    
+    const { prioridades, departamentos } = data;
     
     const selPrioridad = document.getElementById('ot-prioridad');
     const selDepto = document.getElementById('ot-depto');
+    
+    console.log('5. Selects encontrados:', !!selPrioridad, !!selDepto);
     
     selPrioridad.innerHTML = '<option disabled selected>Prioridad</option>';
     selDepto.innerHTML = '<option disabled selected>Departamento</option>';
@@ -2455,8 +2469,11 @@ async function cargarCatalogosOT() {
       selDepto.innerHTML += `<option value="${val}">${val}</option>`;
     });
     
+    console.log('6. Listo, opciones agregadas');
+    
   } catch(err) {
-    console.error('Error cargando catálogos OT:', err);
+    console.error('ERROR cargando catálogos:', err);
+    alert('Error catálogos: ' + err.message); // temporal para ver el error
   }
 }
 
