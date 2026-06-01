@@ -2436,6 +2436,32 @@ llenarSelectTipoMedico();
       `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
     ).join('');
 }
+       function llenarDesplegablesOT() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
+  
+  if (!selPrio || !selDepto) return;
+
+  const prioridades = DB_MASTER.PRIORIDAD?.filter(x => (x.extra3||"ACTIVO").toUpperCase() === "ACTIVO") || [];
+  const deptos = DB_MASTER.DEPARTAMENTO?.filter(x => (x.extra3||"ACTIVO").toUpperCase() === "ACTIVO") || [];
+
+  console.log('Prioridades encontradas:', prioridades.length);
+  console.log('Departamentos encontrados:', deptos.length);
+
+  selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>' +
+    prioridades.map(p => 
+      `<option value="${p.nombre}">${p.nombre}</option>`
+    ).join('');
+
+  selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>' +
+    deptos.map(d => 
+      `<option value="${d.nombre}">${d.nombre}</option>`
+    ).join('');
+}
+       function mostrarUIOperaciones() {
+  document.getElementById('ui-operaciones').style.display = 'block';
+  llenarDesplegablesOT();
+}
        
    </script>
 </body>
