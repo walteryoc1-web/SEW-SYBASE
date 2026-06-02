@@ -2436,26 +2436,19 @@ llenarSelectTipoMedico();
       `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
     ).join('');
 }
-       async function llenarDesplegablesOT() {
+    async function llenarSelectOT() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
-  if (!selPrio || !selDepto) return;
+  
+  const res = await fetch('http://172.16.0.1:3000/api/ot/catalogos');
+  const data = await res.json();
+  if (!data.ok) return;
 
-  try {
-    const res = await fetch("/api/ot/catalogos");
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
+  selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>' + 
+    data.prioridades.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
 
-    selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>' +
-      data.prioridades.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
-
-    selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>' +
-      data.departamentos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
-
-    console.log('OT cargado:', data.prioridades.length, 'prioridades,', data.departamentos.length, 'deptos');
-  } catch (e) {
-    console.error('Error cargando OT:', e);
-  }
+  selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>' + 
+    data.departamentos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
 }
 
 function mostrarUIOperaciones() {
