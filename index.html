@@ -2423,7 +2423,7 @@ async function mostrarUIOperaciones() {
   
   DB_MASTER = await res.json();
   
-  llenarDesplegablesOperaciones(); // ahora sí usa DEPARTAMENTO
+  llenarDesplegablesOperaciones(); // 
 }
 
 function llenarDesplegablesOperaciones() {
@@ -2436,11 +2436,11 @@ function llenarDesplegablesOperaciones() {
     DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
   }
   
-  // Depto usa DEPARTAMENTO, no DEPTO_OT
+  
   if (DB_MASTER.DEPARTAMENTO) {
     selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
     DB_MASTER.DEPARTAMENTO.forEach(d => {
-      selDepto.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
+      selDepto.add(new Option(d.nombre, d.id));
     });
   }
   
