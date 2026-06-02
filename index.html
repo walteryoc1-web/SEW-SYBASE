@@ -2413,23 +2413,33 @@ llenarSelectTipoMedico();
 }
    
 function llenarDesplegablesOT() {
-  // DEPARTAMENTOS
   const selDepto = document.getElementById('ot-depto');
-  if(selDepto) {
-    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-    DB_MASTER.DEPARTAMENTO?.filter(x => x.ATRIBUTO_3 === "ACTIVO")
-      .forEach(d => selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR)));
-    console.log('Deptos:', selDepto.options.length - 1);
-  }
-
-  // PRIORIDAD 
   const selPrio = document.getElementById('ot-prioridad');
-  if(selPrio) {
-    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
-    DB_MASTER.PRIORIDAD?.filter(x => x.ATRIBUTO_3 === "ACTIVO")
-      .forEach(p => selPrio.add(new Option(p.NOMBRE_VALOR, p.NOMBRE_VALOR)));
-    console.log('Prioridades:', selPrio.options.length - 1);
-  }
+  
+  if(!selDepto) return console.error('No existe #ot-depto');
+
+  // Limpiar selects
+  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+  if(selPrio) selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
+
+  // DB_MASTER viene separado por categoría
+  const deptos = DB_MASTER.DEPARTAMENTO || [];
+  const prios = DB_MASTER.PRIORIDAD || [];
+
+  // Pintar departamentos ACTIVOS
+  deptos.filter(x => x.ATRIBUTO_3 === "ACTIVO")
+    .forEach(d => {
+      selDepto.add(new Option(d.NOMBRE, d.CODIGO));
+    });
+
+  // Pintar prioridades ACTIVAS  
+  prios.filter(x => x.ATRIBUTO_3 === "ACTIVO")
+    .forEach(p => {
+      if(selPrio) selPrio.add(new Option(p.NOMBRE, p.CODIGO));
+    });
+
+  console.log('✅ Deptos cargados:', selDepto.options.length - 1);
+  console.log('✅ Prioridades cargadas:', selPrio ? selPrio.options.length - 1 : 0);
 }
 
 async function mostrarUIOperaciones() {
