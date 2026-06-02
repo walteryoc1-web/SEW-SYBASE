@@ -2413,20 +2413,22 @@ llenarSelectTipoMedico();
 }
    
 async function mostrarUIOperaciones() {
+  alert('1. Entré a mostrarUIOperaciones'); // Si no sale esto, la función nunca se llama
+  
   document.getElementById('ui-operaciones').style.display = 'block';
   
   try {
+    alert('2. Antes del fetch'); // Si sale 1 pero no 2, se trabó antes
     const res = await fetch(`${URL_SCRIPT}/api/db_master`);
+    alert('3. Después del fetch'); // Si no sale 3, el fetch se colgó
     DB_MASTER = await res.json();
-    console.log('DB_MASTER cargado. Deptos:', DB_MASTER.DEPARTAMENTO?.length, 'Prios:', DB_MASTER.PRIORIDAD?.length);
-    
-    // Llama directo, sin setTimeout. Ya el div es visible
+    alert('4. DB cargado: ' + DB_MASTER.DEPARTAMENTO?.length);
     llenarSelectOT();
-    
+    alert('5. Pinté select');
   } catch (err) {
-    console.error('Error cargando DB_MASTER:', err);
+    alert('ERROR: ' + err.message);
   }
-} // <-- Solo 1 llave de cierre
+}
 
 function llenarSelectOT() {
   const selDepto = document.getElementById('ot-depto');
