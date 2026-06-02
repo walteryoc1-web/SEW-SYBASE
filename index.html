@@ -2441,38 +2441,34 @@ function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
   const selPrio = document.getElementById('ot-prioridad');
   
-  if (!selDepto) {
-    console.log('❌ No existe ot-depto');
-    return;
-  }
+  if (!selDepto) return console.log('❌ No existe ot-depto');
 
-  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+  // Limpia todo
+  selDepto.innerHTML = '';
+  
+  // Option default
+  const opt0 = document.createElement('option');
+  opt0.disabled = true;
+  opt0.selected = true;
+  opt0.textContent = 'Selecciona Depto';
+  selDepto.appendChild(opt0);
 
-  const deptos = DB_MASTER.DEPARTAMENTO || [];
-  console.log('Deptos crudos:', deptos.length);
-
-  const activos = deptos.filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO");
-  console.log('Deptos activos:', activos.length);
-
+  const activos = (DB_MASTER.DEPARTAMENTO || []).filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO");
+  
   activos.forEach(d => {
-    const nombre = decodeURIComponent(escape(d.nombre));
-    const texto = nombre + ' [' + d.id + ']'; // <-- aquí le agregamos el ID para diferenciarlos
-    const opt = new Option(texto, decodeURIComponent(escape(d.id)));
-    selDepto.add(opt);
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = d.nombre + ' [' + d.id + ']';
+    selDepto.appendChild(opt);
   });
 
-  // Mismo para prioridad
-  if(selPrio) {
-    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
-    (DB_MASTER.PRIORIDAD || [])
-      .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
-      .forEach(p => {
-        const nombre = decodeURIComponent(escape(p.nombre));
-        const texto = nombre + ' [' + p.id + ']'; // <-- también aquí
-        selPrio.add(new Option(texto, decodeURIComponent(escape(p.id))));
-      });
-  }
-}       
+  
+  selDepto.size = 1;
+  
+  console.log('Total options:', selDepto.options.length);
+  alert('Metí ' + activos.length + ' deptos. Total: ' + selDepto.options.length);
+}
+       
    </script>
 </body>
 </html>
