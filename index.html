@@ -2412,50 +2412,37 @@ llenarSelectTipoMedico();
     ).join('');
 }
    
-// ===== FORZAR LLENADO CUANDO ABRES EL MÓDULO =====
-const originalMostrarUI = mostrarUIOperaciones;
-mostrarUIOperaciones = async function() {
-  console.log('1. mostrarUIOperaciones llamada');
+window.mostrarUIOperaciones = async function() {
+  console.log('Entré a mostrarUIOperaciones');
+  
   document.getElementById('ui-operaciones').style.display = 'block';
   
   try {
+    console.log('Fetch a:', URL_SCRIPT + '/db_master');
     const res = await fetch(URL_SCRIPT + '/db_master');
-    console.log('2. Status fetch:', res.status);
-    DB_MASTER = await res.json();
-    console.log('3. DB_MASTER:', DB_MASTER.DEPARTAMENTO?.length, 'deptos');
     
-    // Esperar 200ms por si el HTML tarda
-    setTimeout(() => {
-      console.log('4. Intentando llenar select...');
-      llenarSelectOT();
-    }, 200);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    
+    DB_MASTER = await res.json();
+    console.log('DB OK:', DB_MASTER.DEPARTAMENTO?.length);
+    
+    llenarSelectOT();
     
   } catch (err) {
-    console.error('ERROR FETCH:', err);
+    console.error('ERROR:', err.message);
+    alert('Error cargando datos: ' + err.message + '\nRevisa que la página no esté en HTTPS pidiendo HTTP');
   }
 }
 
 function llenarSelectOT() {
   const selDepto = document.getElementById('ot-depto');
-  console.log('5. Select encontrado:', !!selDepto);
-  
-  if (!selDepto) return;
+  if (!selDepto) return console.error('No existe ot-depto');
   
   const deptos = DB_MASTER.DEPARTAMENTO || [];
-  console.log('6. Deptos a pintar:', deptos);
+  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>' + 
+    deptos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
   
-  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  
-  deptos.forEach(d => {
-    selDepto.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
-  });
-  
-  console.log('7. Options finales:', selDepto.options.length);
-}
-
-// Función dummy por si no la tienes
-function actualizarChecklistSelectOT() {
-  console.log('8. Cambiaste depto a:', document.getElementById('ot-depto').value);
+  console.log('Select pintado con', deptos.length, 'deptos');
 }
    
    </script>
