@@ -2437,19 +2437,15 @@ async function mostrarUIOperaciones() {
   }
 }
 
-function llenarDesplegablesOT(intento = 1) {
+function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
+  console.log('Select existe:', !!selDepto);
+  console.log('DB_MASTER existe:', !!DB_MASTER);
+  console.log('DEPARTAMENTO:', DB_MASTER.DEPARTAMENTO);
+  console.log('Length:', DB_MASTER.DEPARTAMENTO?.length);
   
-  if (!selDepto) {
-    if (intento > 10) return console.log('❌ Select nunca apareció después de 5 seg');
-    console.log(`Intento ${intento}: select no existe aún, reintentando...`);
-    setTimeout(() => llenarDesplegablesOT(intento + 1), 500);
-    return;
-  }
-
-  console.log('✅ Select encontrado en intento', intento);
+  if (!selDepto) return;
   
-  // Limpia y llena con createElement
   selDepto.innerHTML = '';
   const opt0 = document.createElement('option');
   opt0.disabled = true;
@@ -2458,16 +2454,17 @@ function llenarDesplegablesOT(intento = 1) {
   selDepto.appendChild(opt0);
 
   const activos = (DB_MASTER.DEPARTAMENTO || []).filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO");
+  console.log('Activos:', activos.length, activos);
   
   activos.forEach(d => {
     const opt = document.createElement('option');
     opt.value = d.id;
     opt.textContent = d.nombre + ' [' + d.id + ']';
     selDepto.appendChild(opt);
+    console.log('Agregada:', d.id);
   });
 
-  console.log('Metí', activos.length, 'opciones. Total:', selDepto.options.length);
-  alert('✅ Listo! Options: ' + selDepto.options.length);
+  alert('Total options: ' + selDepto.options.length);
 }
        
    </script>
