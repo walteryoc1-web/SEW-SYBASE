@@ -142,6 +142,41 @@
     </div>
 </div>
     
+<!-- 6. UI OPERACIONES (OT) -->
+<div id="ui-operaciones" class="card-compacta" style="display:none; border-top: 8px solid #3498db;">
+    <h3 style="color:#2980b9; margin:0;">Módulo de Operaciones</h3>
+    
+  <!-- ✅ SECCIÓN APERTURA OT -->
+<div id="ot-seccion-apertura">
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <button type="button" class="btn" style="background:#3498db; color:white; font-size:11px;" onclick="setOrigenOT('SISTEMA')">GENERAR FOLIO</button>
+        <button type="button" class="btn" style="background:#95a5a6; color:white; font-size:11px;" onclick="setOrigenOT('SAP')">MANUAL / SAP</button>
+    </div>
+
+    <input type="text" id="ot-folio" placeholder="Folio OT">
+    <input type="text" id="ot-id-tec" placeholder="ID Técnico" oninput="checkTecnicoOperaciones(this.value)">
+    <div id="ot-tec-box" style="display:none; padding:10px; background:#e1f5fe; border:1px dashed #3498db; font-size:12px; margin-bottom:10px; text-align:left;"></div>
+
+    <select id="ot-prioridad"></select>
+    <select id="ot-depto"></select>
+    <textarea id="ot-descripcion" placeholder="Descripción de la tarea..."></textarea>
+
+    <button type="button" class="btn" style="background:#2ecc71; color:white;" onclick="enviarOT()">🚀 ABRIR ORDEN</button>
+
+    <button type="button" class="btn" style="background:#f39c12; color:white; margin-top:15px; font-size:13px;" onclick="mostrarSeccionCierre()">🔒 CERRAR ORDEN DE TRABAJO</button>
+
+    <div style="background:#f4f7f6; padding:10px; border-radius:10px; margin-top:15px; border:1px solid #ddd;">
+        <p style="margin:0 0 5px; font-size:10px; font-weight:bold; color:#666;">DESCARGAR REPORTES OT</p>
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <input type="date" id="f-ini-ot" style="padding:5px; font-size:11px;">
+            <input type="date" id="f-fin-ot" style="padding:5px; font-size:11px;">
+        </div>
+        <button type="button" class="btn" onclick="descargarCSV_OT()" style="background:#2980b9; color:white; padding:10px; font-size:11px;">📥 DESCARGAR EXCEL OT</button>
+    </div>
+
+        <button type="button" class="btn-salir" onclick="salir()">CERRAR SESIÓN</button>
+</div>
+
 <!-- ✅ SECCIÓN CIERRE OT -->
 <div id="ot-seccion-cierre" style="display:none;">
     <input type="text" id="ot-folio-cierre" placeholder="Folio OT a finalizar">
@@ -159,15 +194,16 @@
 
     <textarea id="ot-comentarios-cierre" placeholder="Observaciones finales..."></textarea>
 
-    <button class="btn" style="background:#27ae60; color:white;"
+    <button type="button" class="btn" style="background:#27ae60; color:white;"
             onclick="finalizarTareaOT(document.getElementById('ot-folio-cierre').value, this)">
         ✅ FINALIZAR TAREA
     </button>
 
-    <button class="btn-salir" style="background:#95a5a6;" onclick="cancelarCierre()">VOLVER</button>
+    <button type="button" class="btn-salir" style="background:#95a5a6;" onclick="cancelarCierre()">VOLVER</button>
 </div>
 </div>
-   <!-- UI ADMIN DATOS MAESTROS -->
+
+    <!-- UI ADMIN DATOS MAESTROS -->
 <div id="ui-admin-datos" class="rescatada" style="display:none;">
     <div style="background:#2d3436; color:white; padding:20px; text-align:center;">
         <h2 style="margin:0; font-size:20px;">ADMIN - DATOS MAESTROS</h2>
