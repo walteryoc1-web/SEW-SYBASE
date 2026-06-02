@@ -2411,35 +2411,72 @@ llenarSelectTipoMedico();
       `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
     ).join('');
 }
-    function llenarSelectOT() {
-  const selPrio = document.getElementById('ot-prioridad');
-  const selDepto = document.getElementById('ot-depto');
-  
-  console.log('Selects encontrados:', selPrio, selDepto); // debug
-  
-  if (!selPrio || !selDepto) return;
-
-  const prios = DB_MASTER.PRIORIDAD || [];
-  const deptos = DB_MASTER.DEPARTAMENTO || [];
-  
-  selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>' +
-    prios.filter(p => (p.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
-         .map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
-
-  selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>' +
-    deptos.filter(d => (d.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
-          .map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
-}
+    const URL_SCRIPT = 'http://172.16.0.1:3000/api';
+let DB_MASTER = {};
 
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
   
+  try {
+    // Carga DB_MASTER cada vez que abres el módulo
+    const res = await fetch(`${URL_SCRIPT}/api/db_master`);
+    DB_MASTER = await res.json();
+    console.log('DB_MASTER cargado. Deptos:', DB_MASTER.DEPARTAMENTO?.length, 'Prios:', DB_MASTER.PRIORIDAD?.length);
+    
+    // Espera 50ms por si el DOM tarda
+    setTimeout(llenarSelectOT, 50);
+    
+  } catch (err) {
+    console.error('Error cargando DB_MASTER:', err);
+  }
+}
+
+function llenarSelectOT() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
   
-  const res = await fetch(`${URL_SCRIPT}/api/db_master`);
-  DB_MASTER = await res.json();
-  console.log('DB_MASTER cargado:', DB_MASTER.DEPARTAMENTO.length, 'deptos');
+  console.log('Selects encontrados:', selPrio, selDepto);
+  console.log('DB_MASTER actual:', DB_MASTER);
   
-  llenarSelectOT();
+  if (!selPrio || !selDepto) {
+    console.error('ERROR: No existen los selects. Revisa los ID en HTML');
+    return;
+  }
+
+  const prios = DB_MASTER.PRIORIDAD || [];
+  const deptos = DB_MASTER.DEPARTAMENTO || [];
+
+  // Limpia y llena Prioridad - SIN FILTRO para probar
+  selPrio.innerHTML = '';
+  const optP0 = document.createElement('option');
+  optP0.text = 'Prioridad';
+  optP0.disabled = true;
+  optP0.selected = true;
+  selPrio.add(optP0);
+  
+  prios.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.nombre;
+    opt.text = p.nombre;
+    selPrio.add(opt);
+  });
+
+  // Limpia y llena Departamento - SIN FILTRO para probar
+  selDepto.innerHTML = '';
+  const optD0 = document.createElement('option');
+  optD0.text = 'Departamento';
+  optD0.disabled = true;
+  optD0.selected = true;
+  selDepto.add(optD0);
+  
+  deptos.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.nombre;
+    opt.text = d.nombre;
+    selDepto.add(opt);
+  });
+  
+  console.log('Selects llenados. Options depto:', selDepto.options.length);
 }
 
 
