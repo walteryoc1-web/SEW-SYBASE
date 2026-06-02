@@ -2432,55 +2432,38 @@ async function mostrarUIOperaciones() {
 }
 
 function llenarSelectOT() {
-  const selPrio = document.getElementById('ot-prioridad');
-  const selDepto = document.getElementById('ot-depto');
-  
-  console.log('Selects encontrados:', selPrio, selDepto);
-  console.log('DB_MASTER actual:', DB_MASTER);
-  
-  if (!selPrio || !selDepto) {
-    console.error('ERROR: No existen los selects. Revisa los ID en HTML');
-    return;
+  try {
+    const selPrio = document.getElementById('ot-prioridad');
+    const selDepto = document.getElementById('ot-depto');
+    
+    console.log('Selects:', selPrio, selDepto);
+    if (!selPrio || !selDepto) return console.error('Selects no existen');
+
+    // Convierte a array seguro, por si viene undefined
+    const prios = Array.isArray(DB_MASTER.PRIORIDAD) ? DB_MASTER.PRIORIDAD : [];
+    const deptos = Array.isArray(DB_MASTER.DEPARTAMENTO) ? DB_MASTER.DEPARTAMENTO : [];
+    
+    console.log('Cantidad prios:', prios.length, 'deptos:', deptos.length);
+
+    // Usa innerHTML de un jalón, es más rápido que add()
+    let htmlPrio = '<option disabled selected>Prioridad</option>';
+    prios.slice(0, 200).forEach(p => { // slice 200 por si hay miles
+      htmlPrio += `<option value="${p.nombre}">${p.nombre}</option>`;
+    });
+    selPrio.innerHTML = htmlPrio;
+
+    let htmlDepto = '<option disabled selected>Departamento</option>';
+    deptos.slice(0, 200).forEach(d => {
+      htmlDepto += `<option value="${d.nombre}">${d.nombre}</option>`;
+    });
+    selDepto.innerHTML = htmlDepto;
+    
+    console.log('Listo. Options depto:', selDepto.options.length);
+    
+  } catch (err) {
+    console.error('TRONÓ llenarSelectOT:', err);
   }
-
-  const prios = DB_MASTER.PRIORIDAD || [];
-  const deptos = DB_MASTER.DEPARTAMENTO || [];
-
-  // Limpia y llena Prioridad - SIN FILTRO para probar
-  selPrio.innerHTML = '';
-  const optP0 = document.createElement('option');
-  optP0.text = 'Prioridad';
-  optP0.disabled = true;
-  optP0.selected = true;
-  selPrio.add(optP0);
-  
-  prios.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.nombre;
-    opt.text = p.nombre;
-    selPrio.add(opt);
-  });
-
-  // Limpia y llena Departamento - SIN FILTRO para probar
-  selDepto.innerHTML = '';
-  const optD0 = document.createElement('option');
-  optD0.text = 'Departamento';
-  optD0.disabled = true;
-  optD0.selected = true;
-  selDepto.add(optD0);
-  
-  deptos.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d.nombre;
-    opt.text = d.nombre;
-    selDepto.add(opt);
-  });
-  
-  console.log('Selects llenados. Options depto:', selDepto.options.length);
 }
-
-
-       
    </script>
 </body>
 </html>
