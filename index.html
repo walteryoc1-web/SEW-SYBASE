@@ -2411,7 +2411,6 @@ llenarSelectTipoMedico();
       `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
     ).join('');
 }
-   
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
   
@@ -2423,18 +2422,18 @@ async function mostrarUIOperaciones() {
   
   DB_MASTER = await res.json();
   
-  // Espera 1 segundo a que el HTML se pinte completo
-  setTimeout(() => {
-    const sel = document.getElementById('ot-depto');
-    sel.innerHTML = '<option>Selecciona Depto</option>';
-    
-    DB_MASTER.DEPARTAMENTO.forEach(d => {
-      console.log('Agregando:', d); // mira qué trae cada depto
-      sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
-    });
-  }, 1000);
-}
-       
+  console.log('KEYS QUE TRAE EL BACKEND:', Object.keys(DB_MASTER)); // mira qué nombre real tiene
+  
+  // Usa DEPTO_OT como en tu función que SÍ jala
+  const sel = document.getElementById('ot-depto');
+  sel.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+  
+  (DB_MASTER.DEPTO_OT || []).forEach(d => {
+    sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
+  });
+  
+  console.log('Deptos cargados:', sel.options.length - 1);
+}       
    </script>
 </body>
 </html>
