@@ -2414,16 +2414,20 @@ llenarSelectTipoMedico();
    
 function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
-  if(!selDepto || !DB_MASTER?.TABLA) return; // blindaje extra
-  
+  if(!selDepto) return console.error('No existe ot-depto');
+
   selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  
-  DB_MASTER.TABLA
-    .filter(x => x.CATEGORIA === "DEPARTAMENTO" && x.ATRIBUTO_3 === "ACTIVO")
-    .forEach(d => selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR)));
+
+  // Tu DB_MASTER ya viene separado por categoría, no hay TABLA
+  DB_MASTER.DEPARTAMENTO?.filter(x =>
+    x.ATRIBUTO_3 === "ACTIVO"
+  ).forEach(d => {
+    selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR));
+  });
+
+  console.log('Deptos pintados:', selDepto.options.length - 1);
 }
 
-// Llamarla solo después del fetch
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
   try {
