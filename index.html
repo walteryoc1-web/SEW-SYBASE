@@ -2412,17 +2412,27 @@ llenarSelectTipoMedico();
     ).join('');
 }
    
-window.DB_MASTER = window.DB_MASTER || {}; // al inicio del archivo
-
 function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
-  if(!selDepto) return;
+  if(!selDepto || !DB_MASTER?.TABLA) return; // blindaje extra
   
   selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  const tabla = DB_MASTER?.TABLA || [];
   
-  tabla.filter(x => x.CATEGORIA === "DEPARTAMENTO" && x.ATRIBUTO_3 === "ACTIVO")
-       .forEach(d => selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR)));
+  DB_MASTER.TABLA
+    .filter(x => x.CATEGORIA === "DEPARTAMENTO" && x.ATRIBUTO_3 === "ACTIVO")
+    .forEach(d => selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR)));
+}
+
+// Llamarla solo después del fetch
+async function mostrarUIOperaciones() {
+  document.getElementById('ui-operaciones').style.display = 'block';
+  try {
+    const res = await fetch(URL_SCRIPT + '/db_master');
+    DB_MASTER = await res.json();
+    llenarDesplegablesOT(); // aquí sí hay datos
+  } catch(e) {
+    console.error('No se pudo cargar DB_MASTER:', e);
+  }
 }
    </script>
 </body>
