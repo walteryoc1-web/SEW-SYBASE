@@ -2436,20 +2436,30 @@ async function mostrarUIOperaciones() {
     console.error('❌ Error cargando DB_MASTER:', e);
   }
 }
-let yaLlenado = false;
-
 function llenarDesplegablesOT() {
-  if (yaLlenado) return; // si ya llenó, no borra nada
-  yaLlenado = true;
+  const cont = document.getElementById('cont-depto');
+  cont.innerHTML = ''; // borra todo
   
-  const sel = document.getElementById('ot-depto');
+  const sel = document.createElement('select');
+  sel.id = 'ot-depto';
+  sel.style.width = '350px';
+  sel.style.height = '40px';
+  sel.style.fontSize = '16px';
+  
+  // Placeholder
+  sel.add(new Option('Selecciona Depto', '', true, true));
+  
+  // Opciones reales
   const deptos = DB_MASTER.DEPARTAMENTO || [];
-  
   deptos.forEach(d => {
     if ((d.extra3 || 'ACTIVO').toUpperCase() !== 'INACTIVO') {
       sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
     }
   });
+  
+  cont.appendChild(sel);
+  
+  console.log('Select creado con', sel.options.length, 'options');
 }
        
    </script>
