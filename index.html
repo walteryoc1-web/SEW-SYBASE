@@ -2414,45 +2414,52 @@ llenarSelectTipoMedico();
    
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
-
+  
   try {
-    console.log('1. Empezando fetch...');
-    const res = await fetch(URL_SCRIPT + '/db_master');
-    console.log('2. Status:', res.status);
+    console.log('1. Cargando DB_MASTER...');
+    
+    const res = await fetch(URL_SCRIPT + '/api/db_master', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({}) // POST necesita body aunque esté vacío
+    });
 
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    
     DB_MASTER = await res.json();
-    console.log('3. DB_MASTER completa:', DB_MASTER);
-    console.log('4. Keys:', Object.keys(DB_MASTER));
-    console.log('5. DEPARTAMENTO:', DB_MASTER.DEPARTAMENTO);
-    console.log('6. Primer depto:', DB_MASTER.DEPARTAMENTO?.[0]);
+    console.log('2. DB_MASTER cargada:', Object.keys(DB_MASTER));
+    console.log('3. Deptos:', DB_MASTER.DEPARTAMENTO?.length);
 
     llenarDesplegablesOT();
+    
   } catch(e) {
-    console.error('❌ Error:', e);
+    console.error('❌ Error cargando DB_MASTER:', e);
   }
 }
 
 function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
-  console.log('7. Elemento select:', selDepto);
-
-  if(!selDepto) return;
+  const selPrio = document.getElementById('ot-prioridad');
+  
+  if(!selDepto) {
+    console.log('❌ No existe #ot-depto');
+    return;
+  }
 
   selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+  if(selPrio) selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
 
-  const activos = DB_MASTER.DEPARTAMENTO?.filter(x => {
-    console.log('8. Filtrando:', x.id, x.nombre, x.extra3);
-    return String(x.extra3).trim().toUpperCase() === "ACTIVO";
-  }) || [];
+  // Filtrar solo ACTIVOS y usar id, nombre, extra3
+  DB_MASTER.DEPARTAMENTO?.filter(x => String(x.extra3 || '').trim().toUpperCase() === "ACTIVO")
+    .forEach(d => selDepto.add(new Option(d.nombre, d.id)));
 
-  console.log('9. Deptos activos:', activos.length, activos);
+  DB_MASTER.PRIORIDAD?.filter(x => String(x.extra3 || '').trim().toUpperCase() === "ACTIVO")
+    .forEach(p => selPrio?.add(new Option(p.nombre, p.id)));
 
-  activos.forEach(d => {
-    selDepto.add(new Option(d.nombre, d.id));
-  });
-
-  console.log('10. Options finales:', selDepto.innerHTML);
+  console.log('✅ Deptos cargados:', selDepto.options.length - 1);
+  console.log('✅ Prioridades cargadas:', selPrio?.options.length - 1);
 }
+       
    </script>
 </body>
 </html>
