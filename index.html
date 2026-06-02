@@ -2421,7 +2421,7 @@ async function mostrarUIOperaciones() {
     const res = await fetch(URL_SCRIPT + '/api/db_master', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({}) // POST necesita body aunque esté vacío
+      body: JSON.stringify({}) 
     });
 
     if(!res.ok) throw new Error('HTTP ' + res.status);
@@ -2441,23 +2441,34 @@ function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
   const selPrio = document.getElementById('ot-prioridad');
   
-  if(!selDepto) {
-    console.log('❌ No existe #ot-depto');
+  if (!selDepto) {
+    console.log('❌ No existe ot-depto');
     return;
   }
 
   selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  if(selPrio) selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
 
-  // Filtrar solo ACTIVOS y usar id, nombre, extra3
-  DB_MASTER.DEPARTAMENTO?.filter(x => String(x.extra3 || '').trim().toUpperCase() === "ACTIVO")
-    .forEach(d => selDepto.add(new Option(d.nombre, d.id)));
+  const deptos = DB_MASTER.DEPARTAMENTO || [];
+  console.log('Deptos crudos:', deptos.length);
 
-  DB_MASTER.PRIORIDAD?.filter(x => String(x.extra3 || '').trim().toUpperCase() === "ACTIVO")
-    .forEach(p => selPrio?.add(new Option(p.nombre, p.id)));
+  const activos = deptos.filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO");
+  console.log('Deptos activos:', activos.length);
 
-  console.log('✅ Deptos cargados:', selDepto.options.length - 1);
-  console.log('✅ Prioridades cargadas:', selPrio?.options.length - 1);
+  activos.forEach(d => {
+    const opt = new Option(
+      decodeURIComponent(escape(d.nombre)), 
+      decodeURIComponent(escape(d.id))
+    );
+    selDepto.add(opt);
+  });
+
+  // Mismo para prioridad
+  if(selPrio) {
+    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
+    (DB_MASTER.PRIORIDAD || [])
+      .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
+      .forEach(p => selPrio.add(new Option(decodeURIComponent(escape(p.nombre)), decodeURIComponent(escape(p.id)))));
+  }
 }
        
    </script>
