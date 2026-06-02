@@ -2430,37 +2430,42 @@ async function mostrarUIOperaciones() {
 }
 
 function llenarSelectOT() {
-  try {
-    const selPrio = document.getElementById('ot-prioridad');
-    const selDepto = document.getElementById('ot-depto');
-    
-    console.log('Selects:', selPrio, selDepto);
-    if (!selPrio || !selDepto) return console.error('Selects no existen');
+  console.log('Ejecutando llenarSelectOT...');
+  
+  // Intento 1: inmediato
+  pintarSelects();
+  
+  // Intento 2: por si el DOM tarda 500ms
+  setTimeout(pintarSelects, 500);
+  
+  // Intento 3: por si tarda 2 segundos
+  setTimeout(pintarSelects, 2000);
+}
 
-    // Convierte a array seguro, por si viene undefined
-    const prios = Array.isArray(DB_MASTER.PRIORIDAD) ? DB_MASTER.PRIORIDAD : [];
-    const deptos = Array.isArray(DB_MASTER.DEPARTAMENTO) ? DB_MASTER.DEPARTAMENTO : [];
-    
-    console.log('Cantidad prios:', prios.length, 'deptos:', deptos.length);
-
-    // Usa innerHTML de un jalón, es más rápido que add()
-    let htmlPrio = '<option disabled selected>Prioridad</option>';
-    prios.slice(0, 200).forEach(p => { // slice 200 por si hay miles
-      htmlPrio += `<option value="${p.nombre}">${p.nombre}</option>`;
-    });
-    selPrio.innerHTML = htmlPrio;
-
-    let htmlDepto = '<option disabled selected>Departamento</option>';
-    deptos.slice(0, 200).forEach(d => {
-      htmlDepto += `<option value="${d.nombre}">${d.nombre}</option>`;
-    });
-    selDepto.innerHTML = htmlDepto;
-    
-    console.log('Listo. Options depto:', selDepto.options.length);
-    
-  } catch (err) {
-    console.error('TRONÓ llenarSelectOT:', err);
+function pintarSelects() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
+  
+  if (!selPrio || !selDepto) {
+    console.warn('Selects aún no existen, reintentando...');
+    return;
   }
+  
+  const deptos = Array.isArray(DB_MASTER.DEPARTAMENTO) ? DB_MASTER.DEPARTAMENTO : [];
+  const prios = Array.isArray(DB_MASTER.PRIORIDAD) ? DB_MASTER.PRIORIDAD : [];
+  
+  console.log('Pintando. Deptos:', deptos.length, 'Prios:', prios.length);
+  console.log('Select depto antes:', selDepto.innerHTML);
+  
+  // Forzar innerHTML directo, sin add()
+  selDepto.innerHTML = '<option disabled selected>Departamento</option>' + 
+    deptos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
+  
+  selPrio.innerHTML = '<option disabled selected>Prioridad</option>' + 
+    prios.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+  
+  console.log('Select depto después:', selDepto.innerHTML);
+  console.log('Options totales:', selDepto.options.length);
 }
    </script>
 </body>
