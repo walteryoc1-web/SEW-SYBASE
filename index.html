@@ -2412,28 +2412,18 @@ llenarSelectTipoMedico();
     ).join('');
 }
    
+window.DB_MASTER = window.DB_MASTER || {}; // al inicio del archivo
+
 function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
   if(!selDepto) return;
-
+  
   selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-
-  // Blindaje: si TABLA no existe, no hagas filter
   const tabla = DB_MASTER?.TABLA || [];
   
-  tabla.filter(x =>
-    x.CATEGORIA === "DEPARTAMENTO" &&
-    x.ATRIBUTO_3 === "ACTIVO"
-  ).forEach(d => {
-    selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR));
-  });
-
-  console.log('Deptos cargados:', selDepto.options.length - 1);
+  tabla.filter(x => x.CATEGORIA === "DEPARTAMENTO" && x.ATRIBUTO_3 === "ACTIVO")
+       .forEach(d => selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR)));
 }
-
-       llenarDesplegablesOT(); // <- solo después del await
-}
-   
    </script>
 </body>
 </html>
