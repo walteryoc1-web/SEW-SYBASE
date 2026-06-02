@@ -2419,7 +2419,7 @@ async function mostrarUIOperaciones() {
   
   try {
     alert('2. Antes del fetch'); // Si sale 1 pero no 2, se trabó antes
-    const res = await fetch(`${URL_SCRIPT}/api/db_master`);
+    const res = await fetch(`${URL_SCRIPT}/db_master`);
     alert('3. Después del fetch'); // Si no sale 3, el fetch se colgó
     DB_MASTER = await res.json();
     alert('4. DB cargado: ' + DB_MASTER.DEPARTAMENTO?.length);
