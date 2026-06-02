@@ -1125,60 +1125,77 @@ async function enviarPermisoSSO() {
        
 // ===== OT =====
 async function enviarOT() {
-    const btn = document.querySelector('#ui-operaciones button[onclick*="enviarOT"]');
-    if(btn) {
-        btn.disabled = true;
-        btn.innerText = "GENERANDO OT Y PDF... ⏳";
-    }
+  const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
+  btn.disabled = true;
+  btn.innerText = "🚀 ABRIENDO ORDEN... ⏳";
 
-    try {
-        const datosOT = {
-            action: "registrarOT",
-            data: {
-                folio: document.getElementById('ot-folio')?.value.trim(),
-                idTecnico: document.getElementById('ot-id-tec')?.value.trim(),
-                prioridad: document.getElementById('ot-prioridad')?.value,
-                depto: document.getElementById('ot-depto')?.value,
-                descripcion: document.getElementById('ot-descripcion')?.value.trim(),
-                folioATS: window.datosVinculadosATS_Cierre || ""
-            }
-        };
+  try {
+    let folio = document.getElementById('ot-folio').value.trim();
+    const idTec = document.getElementById('ot-id-tec').value.trim().toUpperCase();
+    const deptoId = document.getElementById('ot-depto').value;
+    const deptoNombre = document.getElementById('ot-depto').options[document.getElementById('ot-depto').selectedIndex].text;
+    const prioridad = document.getElementById('ot-prioridad').value;
+    const descripcion = document.getElementById('ot-descripcion').value.trim();
 
-        if (!datosOT.data.folio ||!datosOT.data.idTecnico ||!datosOT.data.descripcion) {
-            throw new Error("Llena folio, técnico y descripción");
-        }
+    if(!idTec) throw new Error("Escribe ID de Técnico");
+    if(!esActivo('TECNICO', idTec)) throw new Error(`🚫 Técnico ${idTec} INACTIVO`);
+    if(!deptoId) throw new Error("Selecciona Departamento");
+    if(!prioridad) throw new Error("Selecciona Prioridad");
+    if(!descripcion) throw new Error("Escribe descripción");
 
-        if(datosOT.data.idTecnico &&!esActivo('TECNICO', datosOT.data.idTecnico)) {
-            throw new Error("Técnico INACTIVO. No se puede abrir OT");
-        }
+    if(ORIGEN_OT === 'SAP' && !folio) throw new Error("Escribe folio manual SAP");
 
-        const res = await fetch(URL_SCRIPT, {
-            method: 'POST',
-            body: JSON.stringify(datosOT),
-            headers: { 'Content-Type': 'text/plain' }
-        });
+    const tec = getRegistro('TECNICO', idTec);
+    const nombreTec = tec ? tec.nombre : idTec;
 
-        const txt = await res.text();
-        if (txt.startsWith("Q28K_ERROR")) throw new Error(txt);
+    const payload = {
+      folio_manual: ORIGEN_OT === 'SAP' ? folio : null,
+      depto_id: deptoId,
+      depto_nombre: deptoNombre,
+      prioridad: prioridad,
+      descripcion: descripcion,
+      id_tecnico: idTec,
+      nombre_tecnico: nombreTec,
+      origen: ORIGEN_OT,
+      creado_por: 'WALTER YOC'
+    };
 
-        if (txt.length > 500) {
-            descargarBase64PDF(txt, `OT_${datosOT.data.folio}.pdf`);
-            alert("✅ OT REGISTRADA Y PDF GENERADO");
-            location.reload();
-        } else {
-            alert("⚠️ Guardado sin PDF: " + txt);
-            location.reload();
-        }
+    const res = await fetch("http://172.16.0.1:3000/api/insert_movimiento", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-    } catch (e) {
-        alert("❌ Error: " + e.message);
-        if(btn) {
-            btn.disabled = false;
-            btn.innerText = "🚀 ABRIR ORDEN";
-        }
-    }
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    folio = data.folio;
+    document.getElementById('ot-folio').value = folio;
+
+    btn.innerText = "GENERANDO PDF... ⏳";
+    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ot/pdf/${folio}`);
+    if (!pdfRes.ok) throw new Error(await pdfRes.text());
+
+    const blob = await pdfRes.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${folio}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    alert("✅ ORDEN ABIERTA: " + folio);
+    setTimeout(() => location.reload(), 1000);
+
+  } catch (e) {
+    alert("❌ " + e.message);
+    btn.disabled = false;
+    btn.innerText = "🚀 ABRIR ORDEN";
+  }
 }
-
+       
 async function finalizarTareaOT(folioOT, btn) {
     if (!folioOT || folioOT.toString().trim() === "") {
         alert("❌ El folio está vacío.");
@@ -2006,70 +2023,6 @@ function checkTecAgregado(inp) {
     cargarCerebroSistema();
 };
 
-// ✅ FIX Q28K #7: ABRIR PANTALLA DE CIERRE OT
-function mostrarSeccionCierre() {
-    const seccionApertura = document.getElementById('ot-seccion-apertura');
-    if(seccionApertura) seccionApertura.style.display = 'none';
-
-    const contenedorBotones = document.querySelector('#ui-operaciones > div');
-    if(contenedorBotones) contenedorBotones.style.display = 'none';
-
-    const seccionCierre = document.getElementById('ot-seccion-cierre');
-    if(seccionCierre) {
-        seccionCierre.style.display = 'block';
-    } else {
-        alert("❌ ERROR: No existe el div con id='ot-seccion-cierre' en tu HTML");
-    }
-}
-
-// ✅ FIX Q28K #8: VOLVER A PANTALLA PRINCIPAL OT
-async function enviarOT() {
-  const btn = document.querySelector('#ui-operaciones button[onclick*="enviarOT"]');
-  btn.disabled = true;
-  btn.innerText = "GENERANDO OT Y PDF... ⏳";
-
-  try {
-    const datosOT = {
-      action: "registrarOT",
-      data: {
-        folio: document.getElementById('ot-folio')?.value.trim(),
-        idTecnico: document.getElementById('ot-id-tec')?.value.trim(),
-        prioridad: document.getElementById('ot-prioridad')?.value,
-        depto: document.getElementById('ot-depto')?.value,
-        descripcion: document.getElementById('ot-descripcion')?.value.trim(),
-        folioATS: window.datosVinculadosATS_Cierre || ""
-      }
-    };
-
-    if (!datosOT.data.folio ||!datosOT.data.idTecnico ||!datosOT.data.descripcion) {
-      throw new Error("Llena folio, técnico y descripción");
-    }
-
-    const res = await fetch(URL_SCRIPT, {
-      method: 'POST',
-      body: JSON.stringify(datosOT),
-      headers: { 'Content-Type': 'text/plain' }
-    });
-
-    const txt = await res.text();
-
-    if (txt.startsWith("Q28K_ERROR")) throw new Error(txt);
-
-    if (txt.length > 500) {
-      descargarBase64PDF(txt, `OT_${datosOT.data.folio}.pdf`);
-      alert("✅ OT REGISTRADA Y PDF GENERADO");
-      location.reload();
-    } else {
-      alert("⚠️ Guardado sin PDF: " + txt);
-      location.reload();
-    }
-
-  } catch (e) {
-    alert("❌ Error: " + e.message);
-    btn.disabled = false;
-    btn.innerText = "🚀 ABRIR ORDEN";
-  }
-}
 async function vincularATSaOT_Cierre(folioATS) {
     if (!folioATS) {
         alert("❌ Ingresa el folio ATS");
@@ -2112,54 +2065,7 @@ async function vincularATSaOT_Cierre(folioATS) {
     }
 }
 
-function cancelarCierre() {
-  const seccionCierre = document.getElementById('ot-seccion-cierre');
-  if (seccionCierre) seccionCierre.style.display = 'none';
-
-  const seccionApertura = document.getElementById('ot-seccion-apertura');
-  if (seccionApertura) seccionApertura.style.display = 'block';
-
-  const contenedorBotones = document.querySelector('#ui-operaciones > div');
-  if (contenedorBotones) contenedorBotones.style.display = 'block';
-
-  window.datosVinculadosATS_Cierre = null;
-  const divCierre = document.getElementById('ot-datos-vinculados-cierre');
-  if (divCierre) divCierre.innerHTML = '';
-  const folioCierre = document.getElementById('ot-folio-cierre');
-  if (folioCierre) folioCierre.value = '';
-  const obsCierre = document.getElementById('ot-comentarios-cierre');
-  if (obsCierre) obsCierre.value = '';
-}
-
-function salir() {
-  // Oculta todos los paneles
-  document.getElementById('ui-app').style.display = 'none';
-  document.getElementById('ui-supervisor').style.display = 'none';
-  document.getElementById('ui-monitor-sso').style.display = 'none';
-  document.getElementById('ui-seguridad').style.display = 'none';
-  document.getElementById('ui-operaciones').style.display = 'none';
-  document.getElementById('ui-admin-datos').style.display = 'none';
-  document.getElementById('ui-incidentes-sso').style.display = 'none';
-  document.getElementById('ui-medico-sso').style.display = 'none';
-  document.getElementById('ui-extintores-sso').style.display = 'none';
-
-  // Muestra el login
-  const login = document.getElementById('login');
-  if (login) login.style.display = 'block';
-
-  // Limpia todo
-  document.getElementById('id-in').value = '';
-  document.getElementById('u').value = '';
-  document.getElementById('p').value = '';
-
-  // Resetea el botón de login por si se quedó trabado
-  const btn = document.getElementById('btn-login');
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = 'INGRESAR';
-  }
-}
-   
+  
 async function vincularDatosPermiso(folioATS) {
     try {
         folioATS = folioATS.trim().toUpperCase();
