@@ -2421,26 +2421,20 @@ function llenarDesplegablesOT() {
   selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
   if(selPrio) selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
 
-  // Usar ID_CODIGO y NOMBRE_VALOR que son los campos reales
-  DB_MASTER.DEPARTAMENTO?.filter(x => x.ATRIBUTO_3 === "ACTIVO")
-    .forEach(d => {
-      selDepto.add(new Option(d.NOMBRE_VALOR, d.ID_CODIGO));
-    });
+  DB_MASTER.DEPARTAMENTO?.filter(x => String(x.extra3).trim().toUpperCase() === "ACTIVO")
+    .forEach(d => selDepto.add(new Option(d.nombre, d.id)));
 
-  DB_MASTER.PRIORIDAD?.filter(x => x.ATRIBUTO_3 === "ACTIVO")
-    .forEach(p => {
-      if(selPrio) selPrio.add(new Option(p.NOMBRE_VALOR, p.ID_CODIGO));
-    });
-
-  console.log('✅ Deptos cargados:', selDepto.options.length - 1);
+  DB_MASTER.PRIORIDAD?.filter(x => String(x.extra3).trim().toUpperCase() === "ACTIVO")
+    .forEach(p => selPrio?.add(new Option(p.nombre, p.id)));
 }
 
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
+  
   try {
     const res = await fetch(URL_SCRIPT + '/db_master');
-    DB_MASTER = await res.json();
-    llenarDesplegablesOT(); // aquí sí hay datos
+    DB_MASTER = await res.json(); // <-- aquí solo asignas, no declaras
+    llenarDesplegablesOT();
   } catch(e) {
     console.error('No se pudo cargar DB_MASTER:', e);
   }
