@@ -2436,34 +2436,20 @@ async function mostrarUIOperaciones() {
     console.error('❌ Error cargando DB_MASTER:', e);
   }
 }
+let yaLlenado = false;
+
 function llenarDesplegablesOT() {
-  const selDepto = document.getElementById('ot-depto');
-  if (!selDepto) return;
-
-  // Busca la key sin importar mayúsculas
-  const keyDepto = Object.keys(DB_MASTER).find(k => k.toLowerCase() === 'departamento');
-  const keyPrio = Object.keys(DB_MASTER).find(k => k.toLowerCase() === 'prioridad');
-
-  console.log('Key depto encontrada:', keyDepto);
-  console.log('Data:', DB_MASTER[keyDepto]);
-
-  selDepto.innerHTML = '';
-  const opt0 = document.createElement('option');
-  opt0.disabled = true;
-  opt0.selected = true;
-  opt0.textContent = 'Selecciona Depto';
-  selDepto.appendChild(opt0);
-
-  const activos = (DB_MASTER[keyDepto] || []).filter(x => (x.extra3 || "ACTIVO").toUpperCase()!== "INACTIVO");
-
-  activos.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d.id;
-    opt.textContent = d.nombre + ' [' + d.id + ']';
-    selDepto.appendChild(opt);
+  if (yaLlenado) return; // si ya llenó, no borra nada
+  yaLlenado = true;
+  
+  const sel = document.getElementById('ot-depto');
+  const deptos = DB_MASTER.DEPARTAMENTO || [];
+  
+  deptos.forEach(d => {
+    if ((d.extra3 || 'ACTIVO').toUpperCase() !== 'INACTIVO') {
+      sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
+    }
   });
-
-  alert('Key usada: ' + keyDepto + ' | Options: ' + selDepto.options.length);
 }
        
    </script>
