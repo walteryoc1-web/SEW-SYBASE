@@ -2422,18 +2422,19 @@ async function mostrarUIOperaciones() {
   
   DB_MASTER = await res.json();
   
-  console.log('KEYS QUE TRAE EL BACKEND:', Object.keys(DB_MASTER)); // mira qué nombre real tiene
+  // ESTO ES TODO EL DEBUG DEL MUNDO
+  alert('Tablas que trae backend: ' + Object.keys(DB_MASTER).join(', '));
+  alert('¿Existe DEPTO_OT?: ' + !!DB_MASTER.DEPTO_OT);
+  alert('¿Cuántos deptos?: ' + (DB_MASTER.DEPTO_OT || []).length);
   
-  // Usa DEPTO_OT como en tu función que SÍ jala
   const sel = document.getElementById('ot-depto');
-  sel.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+  if(!sel) { alert('ERROR: No existe #ot-depto en HTML'); return; }
   
+  sel.innerHTML = '<option disabled selected>Selecciona Depto</option>';
   (DB_MASTER.DEPTO_OT || []).forEach(d => {
     sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
   });
-  
-  console.log('Deptos cargados:', sel.options.length - 1);
-}       
+}
    </script>
 </body>
 </html>
