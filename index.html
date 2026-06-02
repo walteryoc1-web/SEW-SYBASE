@@ -157,7 +157,7 @@
     <input type="text" id="ot-id-tec" placeholder="ID Técnico" oninput="checkTecnicoOperaciones(this.value)">
     <div id="ot-tec-box" style="display:none; padding:10px; background:#e1f5fe; border:1px dashed #3498db; font-size:12px; margin-bottom:10px; text-align:left;"></div>
 
-   <select id="Departamento" onchange="actualizarChecklisSelectOT()"></select>
+    <select id="ot-depto" onchange="actualizarChecklistSelectOT()"></select>
     <select id="llenarSelectOT()"></select>
     <textarea id="ot-descripcion" placeholder="Descripción de la tarea..."></textarea>
 
@@ -2414,26 +2414,31 @@ llenarSelectTipoMedico();
     function llenarSelectOT() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
+  
+  console.log('Selects encontrados:', selPrio, selDepto); // debug
+  
   if (!selPrio || !selDepto) return;
 
-  selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>';
-  selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>';
+  const prios = DB_MASTER.PRIORIDAD || [];
+  const deptos = DB_MASTER.DEPARTAMENTO || [];
+  
+  selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>' +
+    prios.filter(p => (p.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
+         .map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
 
-  (DB_MASTER.PRIORIDAD || [])
-    .filter(p => (p.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
-    .forEach(p => {
-      selPrio.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
-    });
-
-  (DB_MASTER.DEPARTAMENTO || [])
-    .filter(d => (d.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
-    .forEach(d => {
-      selDepto.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
-    });
+  selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>' +
+    deptos.filter(d => (d.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
+          .map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
 }
 
-function mostrarUIOperaciones() {
+async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
+  
+  
+  const res = await fetch(`${URL_SCRIPT}/api/db_master`);
+  DB_MASTER = await res.json();
+  console.log('DB_MASTER cargado:', DB_MASTER.DEPARTAMENTO.length, 'deptos');
+  
   llenarSelectOT();
 }
 
