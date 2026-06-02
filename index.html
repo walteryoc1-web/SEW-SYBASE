@@ -2412,41 +2412,50 @@ llenarSelectTipoMedico();
     ).join('');
 }
    
-async function mostrarUIOperaciones() {
-  alert('1. Entré a mostrarUIOperaciones'); // Si no sale esto, la función nunca se llama
-  
+// ===== FORZAR LLENADO CUANDO ABRES EL MÓDULO =====
+const originalMostrarUI = mostrarUIOperaciones;
+mostrarUIOperaciones = async function() {
+  console.log('1. mostrarUIOperaciones llamada');
   document.getElementById('ui-operaciones').style.display = 'block';
   
   try {
-    alert('2. Antes del fetch'); // Si sale 1 pero no 2, se trabó antes
-    const res = await fetch(`${URL_SCRIPT}/db_master`);
-    alert('3. Después del fetch'); // Si no sale 3, el fetch se colgó
+    const res = await fetch(URL_SCRIPT + '/db_master');
+    console.log('2. Status fetch:', res.status);
     DB_MASTER = await res.json();
-    alert('4. DB cargado: ' + DB_MASTER.DEPARTAMENTO?.length);
-    llenarSelectOT();
-    alert('5. Pinté select');
+    console.log('3. DB_MASTER:', DB_MASTER.DEPARTAMENTO?.length, 'deptos');
+    
+    // Esperar 200ms por si el HTML tarda
+    setTimeout(() => {
+      console.log('4. Intentando llenar select...');
+      llenarSelectOT();
+    }, 200);
+    
   } catch (err) {
-    alert('ERROR: ' + err.message);
+    console.error('ERROR FETCH:', err);
   }
 }
 
 function llenarSelectOT() {
   const selDepto = document.getElementById('ot-depto');
-  const selPrio = document.getElementById('ot-prioridad');
+  console.log('5. Select encontrado:', !!selDepto);
   
-  if (!selDepto || !selPrio) return console.error('Selects no existen');
+  if (!selDepto) return;
   
   const deptos = DB_MASTER.DEPARTAMENTO || [];
-  const prios = DB_MASTER.PRIORIDAD || [];
+  console.log('6. Deptos a pintar:', deptos);
   
-  console.log('Pintando... Deptos:', deptos.length);
+  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
   
-  // innerHTML de un jalón = rápido, sin freeze
-  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>' + 
-    deptos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
+  deptos.forEach(d => {
+    selDepto.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+  });
   
-  selPrio.innerHTML = '<option disabled selected>Selecciona Prioridad</option>' + 
-    prios.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+  console.log('7. Options finales:', selDepto.options.length);
+}
+
+// Función dummy por si no la tienes
+function actualizarChecklistSelectOT() {
+  console.log('8. Cambiaste depto a:', document.getElementById('ot-depto').value);
 }
    
    </script>
