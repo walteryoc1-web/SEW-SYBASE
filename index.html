@@ -2437,16 +2437,20 @@ async function mostrarUIOperaciones() {
   }
 }
 
-function llenarDesplegablesOT() {
+function llenarDesplegablesOT(intento = 1) {
   const selDepto = document.getElementById('ot-depto');
-  const selPrio = document.getElementById('ot-prioridad');
   
-  if (!selDepto) return console.log('❌ No existe ot-depto');
+  if (!selDepto) {
+    if (intento > 10) return console.log('❌ Select nunca apareció después de 5 seg');
+    console.log(`Intento ${intento}: select no existe aún, reintentando...`);
+    setTimeout(() => llenarDesplegablesOT(intento + 1), 500);
+    return;
+  }
 
-  // Limpia todo
-  selDepto.innerHTML = '';
+  console.log('✅ Select encontrado en intento', intento);
   
-  // Option default
+  // Limpia y llena con createElement
+  selDepto.innerHTML = '';
   const opt0 = document.createElement('option');
   opt0.disabled = true;
   opt0.selected = true;
@@ -2462,11 +2466,8 @@ function llenarDesplegablesOT() {
     selDepto.appendChild(opt);
   });
 
-  
-  selDepto.size = 1;
-  
-  console.log('Total options:', selDepto.options.length);
-  alert('Metí ' + activos.length + ' deptos. Total: ' + selDepto.options.length);
+  console.log('Metí', activos.length, 'opciones. Total:', selDepto.options.length);
+  alert('✅ Listo! Options: ' + selDepto.options.length);
 }
        
    </script>
