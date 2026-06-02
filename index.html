@@ -2430,15 +2430,22 @@ async function mostrarUIOperaciones() {
     console.log('2. DB_MASTER cargada:', Object.keys(DB_MASTER));
     console.log('3. Deptos:', DB_MASTER.DEPARTAMENTO?.length);
 
-    llenarDesplegablesOT();
+    // ESPERA 300ms a que el HTML del cont-depto exista
+    setTimeout(llenarDesplegablesOT, 300);
     
   } catch(e) {
     console.error('❌ Error cargando DB_MASTER:', e);
   }
 }
+
 function llenarDesplegablesOT() {
   const cont = document.getElementById('cont-depto');
-  cont.innerHTML = ''; // borra todo
+  if (!cont) {
+    console.error('No existe #cont-depto');
+    return;
+  }
+  
+  cont.innerHTML = ''; 
   
   const sel = document.createElement('select');
   sel.id = 'ot-depto';
@@ -2446,15 +2453,13 @@ function llenarDesplegablesOT() {
   sel.style.height = '40px';
   sel.style.fontSize = '16px';
   
-  // Placeholder
+  
   sel.add(new Option('Selecciona Depto', '', true, true));
   
-  // Opciones reales
+  
   const deptos = DB_MASTER.DEPARTAMENTO || [];
   deptos.forEach(d => {
-    if ((d.extra3 || 'ACTIVO').toUpperCase() !== 'INACTIVO') {
-      sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
-    }
+    sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
   });
   
   cont.appendChild(sel);
