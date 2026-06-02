@@ -2412,37 +2412,26 @@ llenarSelectTipoMedico();
     ).join('');
 }
    
-window.mostrarUIOperaciones = async function() {
-  console.log('Entré a mostrarUIOperaciones');
+function llenarDesplegablesOT() {
+  const selDepto = document.getElementById('ot-depto');
+  if(!selDepto) return;
+
+  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+
+  // Blindaje: si TABLA no existe, no hagas filter
+  const tabla = DB_MASTER?.TABLA || [];
   
-  document.getElementById('ui-operaciones').style.display = 'block';
-  
-  try {
-    console.log('Fetch a:', URL_SCRIPT + '/db_master');
-    const res = await fetch(URL_SCRIPT + '/db_master');
-    
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    
-    DB_MASTER = await res.json();
-    console.log('DB OK:', DB_MASTER.DEPARTAMENTO?.length);
-    
-    llenarSelectOT();
-    
-  } catch (err) {
-    console.error('ERROR:', err.message);
-    alert('Error cargando datos: ' + err.message + '\nRevisa que la página no esté en HTTPS pidiendo HTTP');
-  }
+  tabla.filter(x =>
+    x.CATEGORIA === "DEPARTAMENTO" &&
+    x.ATRIBUTO_3 === "ACTIVO"
+  ).forEach(d => {
+    selDepto.add(new Option(d.NOMBRE_VALOR, d.NOMBRE_VALOR));
+  });
+
+  console.log('Deptos cargados:', selDepto.options.length - 1);
 }
 
-function llenarSelectOT() {
-  const selDepto = document.getElementById('ot-depto');
-  if (!selDepto) return console.error('No existe ot-depto');
-  
-  const deptos = DB_MASTER.DEPARTAMENTO || [];
-  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>' + 
-    deptos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
-  
-  console.log('Select pintado con', deptos.length, 'deptos');
+       llenarDesplegablesOT(); // <- solo después del await
 }
    
    </script>
