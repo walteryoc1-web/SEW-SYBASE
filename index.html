@@ -157,9 +157,9 @@
     <input type="text" id="ot-id-tec" placeholder="ID Técnico" oninput="checkTecnicoOperaciones(this.value)">
     <div id="ot-tec-box" style="display:none; padding:10px; background:#e1f5fe; border:1px dashed #3498db; font-size:12px; margin-bottom:10px; text-align:left;"></div>
 
-    <div id="cont-depto"></div>
-<select id="ot-prioridad"></select>
-<textarea id="ot-descripcion" placeholder="Descripción de la tarea..."></textarea>
+   <select id="ot-depto" style="width:350px; height:40px; font-size:16px;"></select>
+   <select id="ot-prioridad"></select>
+   <textarea id="ot-descripcion" placeholder="Descripción de la tarea..."></textarea>
 
     <button type="button" class="btn" style="background:#2ecc71; color:white;" onclick="enviarOT()">🚀 ABRIR ORDEN</button>
 
@@ -2426,45 +2426,32 @@ async function mostrarUIOperaciones() {
 
     if(!res.ok) throw new Error('HTTP ' + res.status);
     
-    DB_MASTER = await res.json();
-    console.log('2. DB_MASTER cargada:', Object.keys(DB_MASTER));
-    console.log('3. Deptos:', DB_MASTER.DEPARTAMENTO?.length);
+   DB_MASTER = await res.json();
+console.log('3. Deptos:', DB_MASTER.DEPARTAMENTO?.length);
 
-    // ESPERA 300ms a que el HTML del cont-depto exista
-    setTimeout(llenarDesplegablesOT, 300);
-    
+llenarDesplegablesOT();
+      
   } catch(e) {
     console.error('❌ Error cargando DB_MASTER:', e);
   }
 }
 
 function llenarDesplegablesOT() {
-  const cont = document.getElementById('cont-depto');
-  if (!cont) {
-    console.error('No existe #cont-depto');
-    return;
-  }
+  const sel = document.getElementById('ot-depto');
+  if (!sel) return;
   
-  cont.innerHTML = ''; 
+  sel.innerHTML = ''; // limpia todo
   
-  const sel = document.createElement('select');
-  sel.id = 'ot-depto';
-  sel.style.width = '350px';
-  sel.style.height = '40px';
-  sel.style.fontSize = '16px';
-  
-  
+  // Placeholder
   sel.add(new Option('Selecciona Depto', '', true, true));
   
-  
+  // Opciones - sin filtro por ahora
   const deptos = DB_MASTER.DEPARTAMENTO || [];
   deptos.forEach(d => {
     sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
   });
   
-  cont.appendChild(sel);
-  
-  console.log('Select creado con', sel.options.length, 'options');
+  console.log('Select lleno con', sel.options.length, 'options');
 }
        
    </script>
