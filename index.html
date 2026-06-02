@@ -2414,26 +2414,33 @@ llenarSelectTipoMedico();
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
   
- const res = await fetch('http://172.16.0.1:3000/api/db_master', {
-  method: 'POST',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify({}) 
-});
+  const res = await fetch('http://172.16.0.1:3000/api/db_master', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({})
+  });
   
   DB_MASTER = await res.json();
   
-  // ESTO ES TODO EL DEBUG DEL MUNDO
-  alert('Tablas que trae backend: ' + Object.keys(DB_MASTER).join(', '));
-  alert('¿Existe DEPTO_OT?: ' + !!DB_MASTER.DEPTO_OT);
-  alert('¿Cuántos deptos?: ' + (DB_MASTER.DEPTO_OT || []).length);
+  // DIAGNÓSTICO BRUTO
+  console.log('1. TODO DB_MASTER:', DB_MASTER);
+  console.log('2. KEYS:', Object.keys(DB_MASTER));
+  console.log('3. DEPTO_OT:', DB_MASTER.DEPTO_OT);
+  console.log('4. DEPARTAMENTO:', DB_MASTER.DEPARTAMENTO);
   
   const sel = document.getElementById('ot-depto');
-  if(!sel) { alert('ERROR: No existe #ot-depto en HTML'); return; }
+  if(!sel) { console.error('NO EXISTE #ot-depto'); return; }
+  
+  // Prueba con DEPTO_OT primero, si no con DEPARTAMENTO
+  const deptos = DB_MASTER.DEPTO_OT || DB_MASTER.DEPARTAMENTO || [];
   
   sel.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  (DB_MASTER.DEPTO_OT || []).forEach(d => {
-    sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
+  deptos.forEach(d => {
+    console.log('Agregando depto:', d);
+    sel.add(new Option(d.nombre || d.Nombre || d.name, d.id || d.ID || d.id_depto));
   });
+  
+  console.log('5. Select final con', sel.options.length, 'options');
 }
    </script>
 </body>
