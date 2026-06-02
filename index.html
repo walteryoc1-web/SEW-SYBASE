@@ -2422,25 +2422,28 @@ async function mostrarUIOperaciones() {
   
   DB_MASTER = await res.json();
   
-  // DIAGNÓSTICO BRUTO
-  console.log('1. TODO DB_MASTER:', DB_MASTER);
-  console.log('2. KEYS:', Object.keys(DB_MASTER));
-  console.log('3. DEPTO_OT:', DB_MASTER.DEPTO_OT);
-  console.log('4. DEPARTAMENTO:', DB_MASTER.DEPARTAMENTO);
+  llenarDesplegablesOperaciones(); // ahora sí usa DEPARTAMENTO
+}
+
+function llenarDesplegablesOperaciones() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
   
-  const sel = document.getElementById('ot-depto');
-  if(!sel) { console.error('NO EXISTE #ot-depto'); return; }
+  // Prioridad usa PRIORIDAD, no PRIORIDAD_OT
+  if (DB_MASTER.PRIORIDAD) {
+    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
+    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
+  }
   
-  // Prueba con DEPTO_OT primero, si no con DEPARTAMENTO
-  const deptos = DB_MASTER.DEPTO_OT || DB_MASTER.DEPARTAMENTO || [];
+  // Depto usa DEPARTAMENTO, no DEPTO_OT
+  if (DB_MASTER.DEPARTAMENTO) {
+    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+    DB_MASTER.DEPARTAMENTO.forEach(d => {
+      selDepto.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
+    });
+  }
   
-  sel.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  deptos.forEach(d => {
-    console.log('Agregando depto:', d);
-    sel.add(new Option(d.nombre || d.Nombre || d.name, d.id || d.ID || d.id_depto));
-  });
-  
-  console.log('5. Select final con', sel.options.length, 'options');
+  console.log('✅ Deptos cargados:', selDepto.options.length - 1);
 }
    </script>
 </body>
