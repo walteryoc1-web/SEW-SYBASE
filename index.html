@@ -2415,43 +2415,24 @@ llenarSelectTipoMedico();
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
   
-  try {
-    console.log('1. Cargando DB_MASTER...');
-    
-    const res = await fetch(URL_SCRIPT + '/api/db_master', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({}) 
-    });
-
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    
-   DB_MASTER = await res.json();
-console.log('3. Deptos:', DB_MASTER.DEPARTAMENTO?.length);
-
-llenarDesplegablesOT();
-      
-  } catch(e) {
-    console.error('❌ Error cargando DB_MASTER:', e);
-  }
-}
-
-function llenarDesplegablesOT() {
-  const sel = document.getElementById('ot-depto');
-  if (!sel) return;
-  
-  sel.innerHTML = ''; // limpia todo
-  
-  // Placeholder
-  sel.add(new Option('Selecciona Depto', '', true, true));
-  
-  // Opciones - sin filtro por ahora
-  const deptos = DB_MASTER.DEPARTAMENTO || [];
-  deptos.forEach(d => {
-    sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
+  const res = await fetch('/api/db_master', { 
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({}) 
   });
   
-  console.log('Select lleno con', sel.options.length, 'options');
+  DB_MASTER = await res.json();
+  
+  // Espera 1 segundo a que el HTML se pinte completo
+  setTimeout(() => {
+    const sel = document.getElementById('ot-depto');
+    sel.innerHTML = '<option>Selecciona Depto</option>';
+    
+    DB_MASTER.DEPARTAMENTO.forEach(d => {
+      console.log('Agregando:', d); // mira qué trae cada depto
+      sel.add(new Option(d.nombre + ' [' + d.id + ']', d.id));
+    });
+  }, 1000);
 }
        
    </script>
