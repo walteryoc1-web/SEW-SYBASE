@@ -2412,52 +2412,43 @@ llenarSelectTipoMedico();
     ).join('');
 }
    
+let DB_MASTER = {};
+
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
   
   try {
-    // Carga DB_MASTER cada vez que abres el módulo
     const res = await fetch(`${URL_SCRIPT}/api/db_master`);
     DB_MASTER = await res.json();
     console.log('DB_MASTER cargado. Deptos:', DB_MASTER.DEPARTAMENTO?.length, 'Prios:', DB_MASTER.PRIORIDAD?.length);
     
-    // Espera 50ms por si el DOM tarda
-    setTimeout(llenarSelectOT, 50);
+    // Llama directo, sin setTimeout. Ya el div es visible
+    llenarSelectOT();
     
   } catch (err) {
     console.error('Error cargando DB_MASTER:', err);
   }
-}
- llenarSelectOT(); 
-}
+} // <-- Solo 1 llave de cierre
+
 function llenarSelectOT() {
   const selDepto = document.getElementById('ot-depto');
   const selPrio = document.getElementById('ot-prioridad');
   
-  console.log('DB_MASTER:', DB_MASTER); // Para debug
+  if (!selDepto || !selPrio) return console.error('Selects no existen');
   
-  // Limpiar
-  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  selPrio.innerHTML = '<option disabled selected>Selecciona Prioridad</option>';
+  const deptos = DB_MASTER.DEPARTAMENTO || [];
+  const prios = DB_MASTER.PRIORIDAD || [];
   
-  // Llenar Deptos
-  if (DB_MASTER.DEPARTAMENTO && DB_MASTER.DEPARTAMENTO.length > 0) {
-    DB_MASTER.DEPARTAMENTO.forEach(d => {
-      selDepto.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
-    });
-  } else {
-    console.error('No hay DEPARTAMENTO en DB_MASTER');
-  }
+  console.log('Pintando... Deptos:', deptos.length);
   
-  // Llenar Prioridades
-  if (DB_MASTER.PRIORIDAD && DB_MASTER.PRIORIDAD.length > 0) {
-    DB_MASTER.PRIORIDAD.forEach(p => {
-      selPrio.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
-    });
-  } else {
-    console.error('No hay PRIORIDAD en DB_MASTER');
-  }
+  // innerHTML de un jalón = rápido, sin freeze
+  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>' + 
+    deptos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
+  
+  selPrio.innerHTML = '<option disabled selected>Selecciona Prioridad</option>' + 
+    prios.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
 }
+   
    </script>
 </body>
 </html>
