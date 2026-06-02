@@ -2436,25 +2436,32 @@ llenarSelectTipoMedico();
       `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
     ).join('');
 }
-    async function llenarSelectOT() {
+    function llenarSelectOT() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
-  
-  const res = await fetch('http://172.16.0.1:3000/api/ot/catalogos');
-  const data = await res.json();
-  if (!data.ok) return;
+  if (!selPrio || !selDepto) return;
 
-  selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>' + 
-    data.prioridades.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+  selPrio.innerHTML = '<option value="" disabled selected>Prioridad</option>';
+  selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>';
 
-  selDepto.innerHTML = '<option value="" disabled selected>Departamento</option>' + 
-    data.departamentos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
+  (DB_MASTER.PRIORIDAD || [])
+    .filter(p => (p.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
+    .forEach(p => {
+      selPrio.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+    });
+
+  (DB_MASTER.DEPARTAMENTO || [])
+    .filter(d => (d.extra3 || 'ACTIVO').toUpperCase() === 'ACTIVO')
+    .forEach(d => {
+      selDepto.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+    });
 }
 
 function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
-  llenarDesplegablesOT();
+  llenarSelectOT();
 }
+
        
    </script>
 </body>
