@@ -2436,16 +2436,17 @@ async function mostrarUIOperaciones() {
     console.error('❌ Error cargando DB_MASTER:', e);
   }
 }
-
 function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
-  console.log('Select existe:', !!selDepto);
-  console.log('DB_MASTER existe:', !!DB_MASTER);
-  console.log('DEPARTAMENTO:', DB_MASTER.DEPARTAMENTO);
-  console.log('Length:', DB_MASTER.DEPARTAMENTO?.length);
-  
   if (!selDepto) return;
-  
+
+  // Busca la key sin importar mayúsculas
+  const keyDepto = Object.keys(DB_MASTER).find(k => k.toLowerCase() === 'departamento');
+  const keyPrio = Object.keys(DB_MASTER).find(k => k.toLowerCase() === 'prioridad');
+
+  console.log('Key depto encontrada:', keyDepto);
+  console.log('Data:', DB_MASTER[keyDepto]);
+
   selDepto.innerHTML = '';
   const opt0 = document.createElement('option');
   opt0.disabled = true;
@@ -2453,18 +2454,16 @@ function llenarDesplegablesOT() {
   opt0.textContent = 'Selecciona Depto';
   selDepto.appendChild(opt0);
 
-  const activos = (DB_MASTER.DEPARTAMENTO || []).filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO");
-  console.log('Activos:', activos.length, activos);
-  
+  const activos = (DB_MASTER[keyDepto] || []).filter(x => (x.extra3 || "ACTIVO").toUpperCase()!== "INACTIVO");
+
   activos.forEach(d => {
     const opt = document.createElement('option');
     opt.value = d.id;
     opt.textContent = d.nombre + ' [' + d.id + ']';
     selDepto.appendChild(opt);
-    console.log('Agregada:', d.id);
   });
 
-  alert('Total options: ' + selDepto.options.length);
+  alert('Key usada: ' + keyDepto + ' | Options: ' + selDepto.options.length);
 }
        
    </script>
