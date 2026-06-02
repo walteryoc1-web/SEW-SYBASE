@@ -2412,32 +2412,46 @@ llenarSelectTipoMedico();
     ).join('');
 }
    
+async function mostrarUIOperaciones() {
+  document.getElementById('ui-operaciones').style.display = 'block';
+
+  try {
+    console.log('1. Empezando fetch...');
+    const res = await fetch(URL_SCRIPT + '/db_master');
+    console.log('2. Status:', res.status);
+
+    DB_MASTER = await res.json();
+    console.log('3. DB_MASTER completa:', DB_MASTER);
+    console.log('4. Keys:', Object.keys(DB_MASTER));
+    console.log('5. DEPARTAMENTO:', DB_MASTER.DEPARTAMENTO);
+    console.log('6. Primer depto:', DB_MASTER.DEPARTAMENTO?.[0]);
+
+    llenarDesplegablesOT();
+  } catch(e) {
+    console.error('❌ Error:', e);
+  }
+}
+
 function llenarDesplegablesOT() {
   const selDepto = document.getElementById('ot-depto');
-  const selPrio = document.getElementById('ot-prioridad');
-  
+  console.log('7. Elemento select:', selDepto);
+
   if(!selDepto) return;
 
   selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-  if(selPrio) selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
 
-  DB_MASTER.DEPARTAMENTO?.filter(x => String(x.extra3).trim().toUpperCase() === "ACTIVO")
-    .forEach(d => selDepto.add(new Option(d.nombre, d.id)));
+  const activos = DB_MASTER.DEPARTAMENTO?.filter(x => {
+    console.log('8. Filtrando:', x.id, x.nombre, x.extra3);
+    return String(x.extra3).trim().toUpperCase() === "ACTIVO";
+  }) || [];
 
-  DB_MASTER.PRIORIDAD?.filter(x => String(x.extra3).trim().toUpperCase() === "ACTIVO")
-    .forEach(p => selPrio?.add(new Option(p.nombre, p.id)));
-}
+  console.log('9. Deptos activos:', activos.length, activos);
 
-async function mostrarUIOperaciones() {
-  document.getElementById('ui-operaciones').style.display = 'block';
-  
-  try {
-    const res = await fetch(URL_SCRIPT + '/db_master');
-    DB_MASTER = await res.json(); // <-- aquí solo asignas, no declaras
-    llenarDesplegablesOT();
-  } catch(e) {
-    console.error('No se pudo cargar DB_MASTER:', e);
-  }
+  activos.forEach(d => {
+    selDepto.add(new Option(d.nombre, d.id));
+  });
+
+  console.log('10. Options finales:', selDepto.innerHTML);
 }
    </script>
 </body>
