@@ -2455,10 +2455,9 @@ function llenarDesplegablesOT() {
   console.log('Deptos activos:', activos.length);
 
   activos.forEach(d => {
-    const opt = new Option(
-      decodeURIComponent(escape(d.nombre)), 
-      decodeURIComponent(escape(d.id))
-    );
+    const nombre = decodeURIComponent(escape(d.nombre));
+    const texto = nombre + ' [' + d.id + ']'; // <-- aquí le agregamos el ID para diferenciarlos
+    const opt = new Option(texto, decodeURIComponent(escape(d.id)));
     selDepto.add(opt);
   });
 
@@ -2467,10 +2466,13 @@ function llenarDesplegablesOT() {
     selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
     (DB_MASTER.PRIORIDAD || [])
       .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
-      .forEach(p => selPrio.add(new Option(decodeURIComponent(escape(p.nombre)), decodeURIComponent(escape(p.id)))));
+      .forEach(p => {
+        const nombre = decodeURIComponent(escape(p.nombre));
+        const texto = nombre + ' [' + p.id + ']'; // <-- también aquí
+        selPrio.add(new Option(texto, decodeURIComponent(escape(p.id))));
+      });
   }
-}
-       
+}       
    </script>
 </body>
 </html>
