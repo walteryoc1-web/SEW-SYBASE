@@ -2428,44 +2428,35 @@ async function mostrarUIOperaciones() {
     console.error('Error cargando DB_MASTER:', err);
   }
 }
-
-function llenarSelectOT() {
-  console.log('Ejecutando llenarSelectOT...');
-  
-  // Intento 1: inmediato
-  pintarSelects();
-  
-  // Intento 2: por si el DOM tarda 500ms
-  setTimeout(pintarSelects, 500);
-  
-  // Intento 3: por si tarda 2 segundos
-  setTimeout(pintarSelects, 2000);
+ llenarSelectOT(); 
 }
-
-function pintarSelects() {
-  const selPrio = document.getElementById('ot-prioridad');
+function llenarSelectOT() {
   const selDepto = document.getElementById('ot-depto');
+  const selPrio = document.getElementById('ot-prioridad');
   
-  if (!selPrio || !selDepto) {
-    console.warn('Selects aún no existen, reintentando...');
-    return;
+  console.log('DB_MASTER:', DB_MASTER); // Para debug
+  
+  // Limpiar
+  selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+  selPrio.innerHTML = '<option disabled selected>Selecciona Prioridad</option>';
+  
+  // Llenar Deptos
+  if (DB_MASTER.DEPARTAMENTO && DB_MASTER.DEPARTAMENTO.length > 0) {
+    DB_MASTER.DEPARTAMENTO.forEach(d => {
+      selDepto.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+    });
+  } else {
+    console.error('No hay DEPARTAMENTO en DB_MASTER');
   }
   
-  const deptos = Array.isArray(DB_MASTER.DEPARTAMENTO) ? DB_MASTER.DEPARTAMENTO : [];
-  const prios = Array.isArray(DB_MASTER.PRIORIDAD) ? DB_MASTER.PRIORIDAD : [];
-  
-  console.log('Pintando. Deptos:', deptos.length, 'Prios:', prios.length);
-  console.log('Select depto antes:', selDepto.innerHTML);
-  
-  // Forzar innerHTML directo, sin add()
-  selDepto.innerHTML = '<option disabled selected>Departamento</option>' + 
-    deptos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join('');
-  
-  selPrio.innerHTML = '<option disabled selected>Prioridad</option>' + 
-    prios.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
-  
-  console.log('Select depto después:', selDepto.innerHTML);
-  console.log('Options totales:', selDepto.options.length);
+  // Llenar Prioridades
+  if (DB_MASTER.PRIORIDAD && DB_MASTER.PRIORIDAD.length > 0) {
+    DB_MASTER.PRIORIDAD.forEach(p => {
+      selPrio.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+    });
+  } else {
+    console.error('No hay PRIORIDAD en DB_MASTER');
+  }
 }
    </script>
 </body>
