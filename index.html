@@ -1216,6 +1216,7 @@ async function enviarOT() {
 }
 
 console.log('folioOT recibido en función:', folioOT, typeof folioOT);
+
 async function finalizarTareaOT(folioOT, btn) {
     folioOT = String(folioOT || '').trim().toUpperCase();
     
@@ -1224,7 +1225,9 @@ async function finalizarTareaOT(folioOT, btn) {
         return;
     }
 
-    const obs = document.getElementById('ot-comentarios-cierre').value.trim();
+    const obsInput = document.getElementById('ot-comentarios-cierre');
+    const obs = obsInput ? obsInput.value.trim() : '';
+    
     if (!obs) {
         alert("❌ Escribe las observaciones de cierre.");
         return;
@@ -1240,30 +1243,41 @@ async function finalizarTareaOT(folioOT, btn) {
 
     try {
         const folioATS = window.datosVinculadosCierre?.folioATS || "";
-        
+
         // DEBUG: quítalo cuando ya jale
         console.log('Enviando:', { folio_ot: folioOT, comentarios_cierre: obs, folio_ats: folioATS });
 
         const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ 
-    folio_ot: folio, 
-    comentarios_cierre: obs,
-    usuario: usuario
-  })
-})
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                folio_ot: folioOT,           // <-- corregido
+                comentarios_cierre: obs,
+                folio_ats: folioATS,
+                usuario: typeof usuario !== 'undefined' ? usuario : ''
+            })
+        });
 
         const data = await res.json();
+        console.log('Respuesta backend:', data);
 
         if (data.ok) {
             alert("✅ " + data.mensaje);
-            cancelarCierre();
-            window.datosVinculadosCierre = null; // limpia para la siguiente
-            if (typeof cargarOTs === 'function') cargarOTs();
-            else location.reload();
+            
+            // Solo limpia todo si realmente se cerró ahora
+            if (data.count > 0) {
+                if (typeof cancelarCierre === 'function') cancelarCierre();
+                window.datosVinculadosCierre = null;
+                if (obsInput) obsInput.value = '';
+                if (typeof cargarOTs === 'function') cargarOTs();
+                else location.reload();
+            } else {
+                // Ya estaba cerrada: solo limpia comentarios para evitar reenvíos
+                if (obsInput) obsInput.value = '';
+            }
+            
         } else {
-            alert("❌ " + data.error);
+            alert("❌ " + (data.mensaje || data.error || 'Error al cerrar OT'));
         }
     } catch (err) {
         alert("❌ ERROR DE RED: " + err.message);
@@ -1275,7 +1289,8 @@ async function finalizarTareaOT(folioOT, btn) {
         }
     }
 }
-// ===== REPORTES CSV =====
+       
+       // ===== REPORTES CSV =====
 async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
 
