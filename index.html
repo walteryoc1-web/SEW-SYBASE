@@ -1195,6 +1195,21 @@ async function enviarOT() {
     btn.innerText = "🚀 ABRIR ORDEN";
   }
 }       
+       function setOrigenOT(tipo) {
+  ORIGEN_OT = tipo;
+  const folioInput = document.getElementById('ot-folio');
+  
+  if(tipo === 'SISTEMA') {
+    folioInput.placeholder = 'Se generará automático';
+    folioInput.readOnly = true;
+    folioInput.value = '';
+    folioInput.style.background = '#f0f0f0';
+  } else {
+    folioInput.placeholder = 'Folio manual SAP';
+    folioInput.readOnly = false;
+    folioInput.style.background = 'white';
+  }
+}
 async function finalizarTareaOT(folioOT, btn) {
     if (!folioOT || folioOT.toString().trim() === "") {
         alert("❌ El folio está vacío.");
