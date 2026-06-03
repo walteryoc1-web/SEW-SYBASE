@@ -1214,6 +1214,8 @@ async function enviarOT() {
     folioInput.style.background = 'white';
   }
 }
+
+console.log('folioOT recibido en función:', folioOT, typeof folioOT);
 async function finalizarTareaOT(folioOT, btn) {
     folioOT = String(folioOT || '').trim().toUpperCase();
     
