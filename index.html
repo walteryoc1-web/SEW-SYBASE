@@ -1244,14 +1244,13 @@ async function finalizarTareaOT(folioOT, btn) {
     try {
         const folioATS = window.datosVinculadosCierre?.folioATS || "";
 
-        // DEBUG: quítalo cuando ya jale
         console.log('Enviando:', { folio_ot: folioOT, comentarios_cierre: obs, folio_ats: folioATS });
 
         const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                folio_ot: folioOT,           // <-- corregido
+                folio_ot: folioOT,
                 comentarios_cierre: obs,
                 folio_ats: folioATS,
                 usuario: typeof usuario !== 'undefined' ? usuario : ''
@@ -1264,17 +1263,12 @@ async function finalizarTareaOT(folioOT, btn) {
         if (data.ok) {
             alert("✅ " + data.mensaje);
             
-            // Solo limpia todo si realmente se cerró ahora
-            if (data.count > 0) {
-                if (typeof cancelarCierre === 'function') cancelarCierre();
-                window.datosVinculadosCierre = null;
-                if (obsInput) obsInput.value = '';
-                if (typeof cargarOTs === 'function') cargarOTs();
-                else location.reload();
-            } else {
-                // Ya estaba cerrada: solo limpia comentarios para evitar reenvíos
-                if (obsInput) obsInput.value = '';
-            }
+            // Limpia siempre que ok: true, aunque count = 0
+            if (typeof cancelarCierre === 'function') cancelarCierre();
+            window.datosVinculadosCierre = null;
+            if (obsInput) obsInput.value = '';
+            if (typeof cargarOTs === 'function') cargarOTs();
+            else location.reload();
             
         } else {
             alert("❌ " + (data.mensaje || data.error || 'Error al cerrar OT'));
@@ -1288,8 +1282,7 @@ async function finalizarTareaOT(folioOT, btn) {
             boton.innerText = "FINALIZAR";
         }
     }
-}
-       
+}       
        // ===== REPORTES CSV =====
 async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
