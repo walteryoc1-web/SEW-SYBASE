@@ -1124,6 +1124,7 @@ async function enviarPermisoSSO() {
 }
        
 // ===== OT =====
+// ===== ABRIR OT =====
 async function enviarOT() {
   const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
   btn.disabled = true;
@@ -1132,8 +1133,9 @@ async function enviarOT() {
   try {
     let folio = document.getElementById('ot-folio').value.trim();
     const idTec = document.getElementById('ot-id-tec').value.trim().toUpperCase();
-    const deptoId = document.getElementById('ot-depto').value;
-    const deptoNombre = document.getElementById('ot-depto').options[document.getElementById('ot-depto').selectedIndex].text;
+    const deptoSelect = document.getElementById('ot-depto');
+    const deptoId = deptoSelect.value;
+    const deptoNombre = deptoSelect.options[deptoSelect.selectedIndex].text;
     const prioridad = document.getElementById('ot-prioridad').value;
     const descripcion = document.getElementById('ot-descripcion').value.trim();
 
@@ -1142,14 +1144,13 @@ async function enviarOT() {
     if(!deptoId) throw new Error("Selecciona Departamento");
     if(!prioridad) throw new Error("Selecciona Prioridad");
     if(!descripcion) throw new Error("Escribe descripción");
-
-    if(ORIGEN_OT === 'SAP' && !folio) throw new Error("Escribe folio manual SAP");
+    if(ORIGEN_OT === 'SAP' &&!folio) throw new Error("Escribe folio manual SAP");
 
     const tec = getRegistro('TECNICO', idTec);
-    const nombreTec = tec ? tec.nombre : idTec;
+    const nombreTec = tec? tec.nombre : idTec;
 
     const payload = {
-      folio_manual: ORIGEN_OT === 'SAP' ? folio : null,
+      folio_manual: ORIGEN_OT === 'SAP'? folio : null,
       depto_id: deptoId,
       depto_nombre: deptoNombre,
       prioridad: prioridad,
@@ -1160,7 +1161,7 @@ async function enviarOT() {
       creado_por: 'WALTER YOC'
     };
 
-    const res = await fetch("http://172.16.0.1:3000/api/insert_movimiento", {
+    const res = await fetch(`http://172.16.0.1:3000/ot/registrar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1173,14 +1174,14 @@ async function enviarOT() {
     document.getElementById('ot-folio').value = folio;
 
     btn.innerText = "GENERANDO PDF... ⏳";
-    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ot/pdf/${folio}`);
+    const pdfRes = await fetch(`http://172.16.0.1:3000/ot/pdf/${folio}`);
     if (!pdfRes.ok) throw new Error(await pdfRes.text());
 
     const blob = await pdfRes.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${folio}.pdf`;
+    a.download = `OT_${folio}.pdf`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1194,8 +1195,7 @@ async function enviarOT() {
     btn.disabled = false;
     btn.innerText = "🚀 ABRIR ORDEN";
   }
-}
-       
+}       
 async function finalizarTareaOT(folioOT, btn) {
     if (!folioOT || folioOT.toString().trim() === "") {
         alert("❌ El folio está vacío.");
@@ -2023,47 +2023,87 @@ function checkTecAgregado(inp) {
     cargarCerebroSistema();
 };
 
+// ===== VINCULAR ATS CIERRE =====
 async function vincularATSaOT_Cierre(folioATS) {
-    if (!folioATS) {
-        alert("❌ Ingresa el folio ATS");
-        return;
+  if (!folioATS) {
+    alert("❌ Ingresa el folio ATS");
+    return;
+  }
+  try {
+    const res = await fetch(`${URL_SCRIPT}?accion=reporteSSO&t=${Date.now()}`, { cache: "no-store" });
+    const data = await res.json();
+
+    const busqueda = String(folioATS).toUpperCase().trim();
+    const encontrado = data.find(r => {
+      const d = r.datos.split(";");
+      return String(d[0] || "").toUpperCase().trim() === busqueda;
+    });
+
+    if (encontrado) {
+      const d = encontrado.datos.split(";");
+      datosVinculadosATS_Cierre = d[0];
+      document.getElementById('ot-datos-vinculados-cierre').innerHTML = `
+        <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-bottom:10px;'>
+          <b>✅ ATS VINCULADO</b><br>
+          <small>🆔 Folio: ${d[0]}</small><br>
+          <small>👤 Personal: ${d[1]}</small><br>
+          <small>📍 ${d[2]} - ${d[3]}</small>
+        </div>`;
+    } else {
+      alert("❌ Folio ATS no encontrado");
+      document.getElementById('ot-datos-vinculados-cierre').innerHTML = '';
+      datosVinculadosATS_Cierre = null;
     }
-
-    try {
-        const res = await fetch(URL_SCRIPT + "?accion=reporteSSO&t=" + Date.now(), { cache: "no-store" });
-        const data = await res.json();
-
-        const busqueda = String(folioATS).toUpperCase().trim();
-        const encontrado = data.find(r => {
-            const d = r.datos.split(";");
-            return String(d[0] || "").toUpperCase().trim() === busqueda;
-        });
-
-        if (encontrado) {
-            const d = encontrado.datos.split(";");
-            window.datosVinculadosATS_Cierre = d[0];
-
-            const div = document.getElementById('ot-datos-vinculados-cierre');
-            if (div) {
-              div.innerHTML = `
-                <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-bottom:10px;'>
-                    <b>✅ ATS VINCULADO</b><br>
-                    <small>🆔 Folio: ${d[0]}</small><br>
-                    <small>👤 Personal: ${d[1]}</small><br>
-                    <small>📍 ${d[2]} - ${d[3]}</small>
-                </div>
-              `;
-            }
-        } else {
-            alert("❌ Folio ATS no encontrado");
-            const div = document.getElementById('ot-datos-vinculados-cierre');
-            if (div) div.innerHTML = '';
-            window.datosVinculadosATS_Cierre = null;
-        }
-    } catch (e) {
-        alert("❌ Error al vincular: " + e.message);
-    }
+  } catch (e) {
+    alert("❌ Error al vincular: " + e.message);
+  }
 }
+
+// ===== FINALIZAR OT =====
+async function finalizarTareaOT(folioOT, btn) {
+  if (!folioOT || folioOT.trim() === "") {
+    alert("❌ El folio está vacío.");
+    return;
+  }
+  const obs = document.getElementById('ot-comentarios-cierre').value.trim();
+  if (!obs) {
+    alert("❌ Escribe las observaciones de cierre.");
+    return;
+  }
+  if (!confirm("¿Finalizar OT " + folioOT + "?")) return;
+
+  const boton = btn;
+  boton.disabled = true;
+  boton.innerText = "CERRANDO...";
+
+  try {
+    const res = await fetch(`${URL_SCRIPT}/ot/finalizar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        folio: folioOT.trim(),
+        obs: obs,
+        usuario: "ADMIN",
+        folioATS: datosVinculadosATS_Cierre || ""
+      })
+    });
+
+    const txt = await res.text();
+    if (txt.includes("Q28K_OK")) {
+      alert("✅ " + txt);
+      cancelarCierre();
+      location.reload();
+    } else {
+      alert("❌ " + txt);
+    }
+  } catch (err) {
+    alert("❌ ERROR DE RED: " + err);
+  } finally {
+    boton.disabled = false;
+    boton.innerText = "✅ FINALIZAR TAREA";
+  }
+}
+
 function salir() {
   // Oculta todos los paneles
   document.getElementById('ui-app').style.display = 'none';
