@@ -1160,7 +1160,7 @@ async function enviarOT() {
       id_tecnico: idTec,
       nombre_tecnico: nombreTec,
       origen: ORIGEN_OT,
-      creado_por: 'WALTER YOC'
+      creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
     const res = await fetch(${URL_SCRIPT}/ot/registrar, {
