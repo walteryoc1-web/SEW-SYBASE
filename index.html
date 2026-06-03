@@ -1200,17 +1200,18 @@ async function enviarOT() {
   }
 }       
        function setOrigenOT(tipo) {
-  ORIGEN_OT = tipo;
+  ORIGEN_OT = tipo; // ← esta línea es clave, actualiza la variable global
   const folioInput = document.getElementById('ot-folio');
   
   if(tipo === 'SISTEMA') {
     folioInput.placeholder = 'Se generará automático';
     folioInput.readOnly = true;
-    folioInput.value = '';
+    folioInput.value = "OT-" + Date.now().toString().slice(-6);
     folioInput.style.background = '#f0f0f0';
   } else {
     folioInput.placeholder = 'Folio manual SAP';
     folioInput.readOnly = false;
+    folioInput.value = '';
     folioInput.style.background = 'white';
   }
 }
