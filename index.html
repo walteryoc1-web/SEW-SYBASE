@@ -1681,7 +1681,7 @@ async function recargarDatosMaestros() {
       .catch(reject);
     });
 }
-        // ✅ FIX Q28K #3: NAVEGACIÓN SSO - AHORA SÍ OCULTA EL MONITOR
+       
         function irAIncidentes() {
     document.getElementById('ui-monitor-sso').style.display='none';
     document.getElementById('ui-incidentes-sso').style.display='block';
@@ -1710,11 +1710,7 @@ async function recargarDatosMaestros() {
             document.getElementById('ui-extintores-sso').style.display='block';
         }
 
-        function setOrigenOT(t) {
-            if(t==='SISTEMA') document.getElementById('ot-folio').value = "OT-" + Date.now().toString().slice(-6);
-        }
-
-        // ✅ FIX Q28K #7: ABRIR PANTALLA DE CIERRE OT - LA TUYA ESTÁ VACÍA
+                
 function mostrarSeccionCierre() {
     // 1. Oculta la sección de apertura de OT
     const seccionApertura = document.getElementById('ot-seccion-apertura');
