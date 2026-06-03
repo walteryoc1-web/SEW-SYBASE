@@ -2064,7 +2064,34 @@ async function vincularATSaOT_Cierre(folioATS) {
         alert("❌ Error al vincular: " + e.message);
     }
 }
+function salir() {
+  // Oculta todos los paneles
+  document.getElementById('ui-app').style.display = 'none';
+  document.getElementById('ui-supervisor').style.display = 'none';
+  document.getElementById('ui-monitor-sso').style.display = 'none';
+  document.getElementById('ui-seguridad').style.display = 'none';
+  document.getElementById('ui-operaciones').style.display = 'none';
+  document.getElementById('ui-admin-datos').style.display = 'none';
+  document.getElementById('ui-incidentes-sso').style.display = 'none';
+  document.getElementById('ui-medico-sso').style.display = 'none';
+  document.getElementById('ui-extintores-sso').style.display = 'none';
 
+  // Muestra el login
+  const login = document.getElementById('login');
+  if (login) login.style.display = 'block';
+
+  // Limpia todo
+  document.getElementById('id-in').value = '';
+  document.getElementById('u').value = '';
+  document.getElementById('p').value = '';
+
+  // Resetea el botón de login por si se quedó trabado
+  const btn = document.getElementById('btn-login');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'INGRESAR';
+  }
+}
   
 async function vincularDatosPermiso(folioATS) {
     try {
