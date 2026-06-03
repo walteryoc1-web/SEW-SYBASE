@@ -1256,6 +1256,8 @@ async function finalizarTareaOT(folioOT, btn) {
         });
 
         const data = await res.json();
+console.trace("¿Quién me está mostrando el alert?"); // <-- esto
+console.log('Respuesta backend:', data);
 
         if (data.ok) {
             alert("✅ " + data.mensaje); // <-- CORREGIDO EL +
