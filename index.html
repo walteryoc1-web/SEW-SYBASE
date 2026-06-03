@@ -1143,7 +1143,7 @@ async function enviarOT() {
     const descripcion = document.getElementById('ot-descripcion').value.trim();
 
     if(!idTec) throw new Error("Escribe ID de Técnico");
-    if(!esActivo('TECNICO', idTec)) throw new Error(`🚫 Técnico ${idTec} INACTIVO`);
+    if(!esActivo('TECNICO', idTec)) throw new Error(🚫 Técnico ${idTec} INACTIVO);
     if(!deptoId) throw new Error("Selecciona Departamento");
     if(!prioridad) throw new Error("Selecciona Prioridad");
     if(!descripcion) throw new Error("Escribe descripción");
@@ -1151,9 +1151,6 @@ async function enviarOT() {
 
     const tec = getRegistro('TECNICO', idTec);
     const nombreTec = tec? tec.nombre : idTec;
-
-    // <-- aquí agarra el usuario logueado
-    const usuarioLogueado = JSON.parse(localStorage.getItem('usuario') || '{}').nombre || 'SISTEMA';
 
     const payload = {
       folio_manual: ORIGEN_OT === 'SAP'? folio : null,
