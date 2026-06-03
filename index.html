@@ -1235,30 +1235,31 @@ async function finalizarTareaOT(folioOT, btn) {
     }
 
     try {
-        const res = await fetch(URL_SCRIPT, {
+        const folioATS = window.datosVinculadosCierre?.folioATS || "";
+
+        const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: "finalizarOT",
-                folio: folioOT.trim(),
-                obs: obs,
-                usuario: "ADMIN",
-                folioATS: window.datosVinculadosATS_Cierre || ""
+                folio_ot: folioOT.trim().toUpperCase(),
+                comentarios_cierre: obs,
+                usuario: "ADMIN", // cámbialo por window.usuarioLogueado?.usuario
+                folio_ats: folioATS
             })
         });
 
-        const txt = await res.text();
+        const data = await res.json();
 
-        if (txt.includes("Q28K_OK")) {
-            alert("✅ " + txt);
+        if (data.ok) {
+            alert("✅ " + data.mensaje);
             cancelarCierre();
             if (typeof cargarOTs === 'function') cargarOTs();
             else location.reload();
         } else {
-            alert("❌ " + txt);
+            alert("❌ " + data.error);
         }
     } catch (err) {
-        alert("❌ ERROR DE RED: " + err);
+        alert("❌ ERROR DE RED: " + err.message);
     } finally {
         if (boton) {
             boton.disabled = false;
@@ -1266,7 +1267,6 @@ async function finalizarTareaOT(folioOT, btn) {
         }
     }
 }
-
 // ===== REPORTES CSV =====
 async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
