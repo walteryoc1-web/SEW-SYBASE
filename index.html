@@ -1123,7 +1123,6 @@ async function enviarPermisoSSO() {
   }
 }
        
-// ===== OT =====
 // ===== ABRIR OT =====
 async function enviarOT() {
   const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
@@ -1161,7 +1160,7 @@ async function enviarOT() {
       creado_por: 'WALTER YOC'
     };
 
-    const res = await fetch(`http://172.16.0.1:3000/ot/registrar`, {
+    const res = await fetch(`${URL_SCRIPT}/ot/registrar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1174,7 +1173,7 @@ async function enviarOT() {
     document.getElementById('ot-folio').value = folio;
 
     btn.innerText = "GENERANDO PDF... ⏳";
-    const pdfRes = await fetch(`http://172.16.0.1:3000/ot/pdf/${folio}`);
+    const pdfRes = await fetch(`${URL_SCRIPT}/ot/pdf/${folio}`);
     if (!pdfRes.ok) throw new Error(await pdfRes.text());
 
     const blob = await pdfRes.blob();
