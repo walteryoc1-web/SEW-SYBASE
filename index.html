@@ -1244,8 +1244,6 @@ async function finalizarTareaOT(folioOT, btn) {
     try {
         const folioATS = window.datosVinculadosCierre?.folioATS || "";
 
-        console.log('Enviando:', { folio_ot: folioOT, comentarios_cierre: obs, folio_ats: folioATS });
-
         const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1258,12 +1256,11 @@ async function finalizarTareaOT(folioOT, btn) {
         });
 
         const data = await res.json();
-        console.log('Respuesta backend:', data);
 
         if (data.ok) {
-            alert("✅ " CERRADO CON EXITO);
+            alert("✅ " + data.mensaje); // <-- CORREGIDO EL +
             
-            // Limpia siempre que ok: true, aunque count = 0
+            // Limpia siempre que ok: true
             if (typeof cancelarCierre === 'function') cancelarCierre();
             window.datosVinculadosCierre = null;
             if (obsInput) obsInput.value = '';
@@ -1282,7 +1279,7 @@ async function finalizarTareaOT(folioOT, btn) {
             boton.innerText = "FINALIZAR";
         }
     }
-}       
+}
        // ===== REPORTES CSV =====
 async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
