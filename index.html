@@ -2039,38 +2039,47 @@ function checkTecAgregado(inp) {
 
 // ===== VINCULAR ATS CIERRE =====
 async function vincularATSaOT_Cierre(folioATS) {
-  if (!folioATS) {
-    alert("❌ Ingresa el folio ATS");
-    return;
-  }
-  try {
-    const res = await fetch(`${URL_SCRIPT}?accion=reporteSSO&t=${Date.now()}`, { cache: "no-store" });
-    const data = await res.json();
+    try {
+        folioATS = folioATS.trim().toUpperCase();
+        if (!folioATS) throw new Error("Ingresa el folio ATS");
 
-    const busqueda = String(folioATS).toUpperCase().trim();
-    const encontrado = data.find(r => {
-      const d = r.datos.split(";");
-      return String(d[0] || "").toUpperCase().trim() === busqueda;
-    });
+        const div = document.getElementById('ot-datos-vinculados-cierre');
+        div.innerHTML = '';
 
-    if (encontrado) {
-      const d = encontrado.datos.split(";");
-      datosVinculadosATS_Cierre = d[0];
-      document.getElementById('ot-datos-vinculados-cierre').innerHTML = `
-        <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-bottom:10px;'>
-          <b>✅ ATS VINCULADO</b><br>
-          <small>🆔 Folio: ${d[0]}</small><br>
-          <small>👤 Personal: ${d[1]}</small><br>
-          <small>📍 ${d[2]} - ${d[3]}</small>
-        </div>`;
-    } else {
-      alert("❌ Folio ATS no encontrado");
-      document.getElementById('ot-datos-vinculados-cierre').innerHTML = '';
-      datosVinculadosATS_Cierre = null;
+        const r = await fetch(`http://172.16.0.1:3000/api/sso/vincularPermiso?folio=${encodeURIComponent(folioATS)}`, {
+            method: 'GET'
+        });
+
+        const data = await r.json();
+
+        if (!data.ok) throw new Error(data.error);
+
+        const p = data.datos;
+
+        // GUARDA ESTO PARA CUANDO FINALICES LA OT
+        window.datosVinculadosCierre = {
+            folioATS: folioATS,
+            fase: p.area,
+            ubi: p.lugar,
+            tipo: p.tipo
+        };
+
+        div.innerHTML = `
+          <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
+            <b>✅ ATS VINCULADO</b><br>
+            <small>🏢 Área: ${p.area}</small><br>
+            <small>📍 Lugar: ${p.lugar}</small><br>
+            <small>🔧 Tipo: ${p.tipo || 'N/A'}</small>
+          </div>
+        `;
+        alert("✅ ATS VINCULADO");
+
+    } catch(e) {
+        alert("❌ Error: " + e.message);
+        console.error(e);
+        document.getElementById('ot-datos-vinculados-cierre').innerHTML = '';
+        window.datosVinculadosCierre = null; // limpia si falla
     }
-  } catch (e) {
-    alert("❌ Error al vincular: " + e.message);
-  }
 }
 
 // ===== FINALIZAR OT =====
