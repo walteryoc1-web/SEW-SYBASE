@@ -1215,7 +1215,9 @@ async function enviarOT() {
   }
 }
 async function finalizarTareaOT(folioOT, btn) {
-    if (!folioOT || folioOT.toString().trim() === "") {
+    folioOT = String(folioOT || '').trim().toUpperCase();
+    
+    if (!folioOT) {
         alert("❌ El folio está vacío.");
         return;
     }
@@ -1236,14 +1238,17 @@ async function finalizarTareaOT(folioOT, btn) {
 
     try {
         const folioATS = window.datosVinculadosCierre?.folioATS || "";
+        
+        // DEBUG: quítalo cuando ya jale
+        console.log('Enviando:', { folio_ot: folioOT, comentarios_cierre: obs, folio_ats: folioATS });
 
         const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                folio_ot: folioOT.trim().toUpperCase(),
+                folio_ot: folioOT,
                 comentarios_cierre: obs,
-                usuario: "ADMIN", // cámbialo por window.usuarioLogueado?.usuario
+                usuario: "ADMIN",
                 folio_ats: folioATS
             })
         });
@@ -1253,6 +1258,7 @@ async function finalizarTareaOT(folioOT, btn) {
         if (data.ok) {
             alert("✅ " + data.mensaje);
             cancelarCierre();
+            window.datosVinculadosCierre = null; // limpia para la siguiente
             if (typeof cargarOTs === 'function') cargarOTs();
             else location.reload();
         } else {
@@ -1260,6 +1266,7 @@ async function finalizarTareaOT(folioOT, btn) {
         }
     } catch (err) {
         alert("❌ ERROR DE RED: " + err.message);
+        console.error(err);
     } finally {
         if (boton) {
             boton.disabled = false;
