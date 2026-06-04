@@ -84,12 +84,12 @@
         <div class="pildora" style="border-bottom-color: #9b59b6;"><h3>Abiertos</h3><p id="sso-riesgo">00</p></div>
         <div class="pildora" style="border-bottom-color: #16a085;"><h3>Cerrados</h3><p id="sso-cerrados">00</p></div>
     </div>
-    <!-- REIMPRESIÓN DE FOLIO -->
-<div style="display:flex; gap:4px; margin:12px auto 0; max-width:800px; padding:0 10px;">
+    <!-- REIMPRESIÓN FOLIO -->
+<div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:4px; margin:12px auto 0; max-width:800px; padding:0 10px;">
   <input type="text" id="rep-folio" placeholder="FOLIO" 
-    style="flex:2; padding:8px; font-size:10px; border:1px solid #ccc; border-radius:6px; text-transform:uppercase; text-align:center; height:32px;">
+    style="padding:8px; font-size:10px; border:1px solid #ccc; border-radius:6px; text-transform:uppercase; text-align:center; height:34px; box-sizing:border-box;">
   
-  <select id="rep-tipo" style="flex:0.8; padding:8px; font-size:10px; border:1px solid #ccc; border-radius:6px; height:32px;">
+  <select id="rep-tipo" style="padding:8px; font-size:10px; border:1px solid #ccc; border-radius:6px; height:34px; box-sizing:border-box;">
     <option disabled selected>Tipo</option>
     <option value="permiso">ATS</option>
     <option value="ot">OT</option>
@@ -99,10 +99,11 @@
   </select>
 
   <button type="button" class="btn" onclick="reimprimirDoc()" 
-    style="flex:0.9; background:#27ae60; color:white; padding:8px; font-size:9px; border-radius:6px; height:32px; font-weight:bold;">
-    🖨️ DUPLICADO
+    style="background:#27ae60; color:white; padding:8px; font-size:9px; border-radius:6px; height:34px; font-weight:bold; border:none; box-sizing:border-box;">
+    🖨️ REIMPRIMIR
   </button>
 </div>
+    
     <div style="display:flex; gap:10px; justify-content:center; margin: 15px auto 25px; max-width:800px;">
         <button class="btn" style="background:#d63031; color:white; flex:1; font-size:11px; padding:15px 5px;" onclick="irAIncidentes()">🚨 REPORTAR<br>INCIDENTE</button>
         <button class="btn" style="background:#16a085; color:white; flex:1; font-size:11px; padding:15px 5px;" onclick="irAMedico()">⚕️ CONTROL<br>MÉDICO</button>
