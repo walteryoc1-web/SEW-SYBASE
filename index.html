@@ -1077,20 +1077,33 @@ const payload = {
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
 
-alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
+    // === LIMPIAR TODO EL FORMULARIO CEO ===
+    document.getElementById('med-id').value = '';
+    document.getElementById('med-tipo').value = '';
+    document.getElementById('med-glucosa').value = '';
+    document.getElementById('med-presion').value = '';
+    document.getElementById('med-temp').value = '';
+    document.getElementById('med-peso').value = '';
+    document.getElementById('med-oxigeno').value = '';
+    document.getElementById('med-ritmo').value = '';
+    document.getElementById('med-obs').value = '';
+    document.getElementById('med-resultado').value = 'APTO';
 
-let intentos = 0;
-const intervalo = setInterval(() => {
-  const input = document.getElementById('med-id');
-  if(input) {
-    input.value = '';
-    input.removeAttribute('value');
-    input.defaultValue = '';
+    // Fecha de hoy para la siguiente ficha
+    document.getElementById('med-fecha').value = new Date().toISOString().split('T')[0];
+
+    // Poner foco en ID para la siguiente ficha
+    document.getElementById('med-id').focus();
+
+  } catch (error) {
+    alert("❌ ERROR: " + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "REGISTRAR FICHA ⚕️";
   }
-  intentos++;
-  if(intentos > 20) clearInterval(intervalo); // para a los 1 seg
-}, 50);
-     async function enviarInspeccionExtintor() {
+}
+       
+       async function enviarInspeccionExtintor() {
   const btn = document.querySelector('button[onclick="enviarInspeccionExtintor()"]');
   btn.disabled = true;
   btn.innerText = "REGISTRANDO... ⏳";
