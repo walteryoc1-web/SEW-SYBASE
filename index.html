@@ -2297,11 +2297,12 @@ async function enviarIncidenteCompleto() {
   reincidencia: document.getElementById('inc-reincidencia').value,
   estadoFinal: document.getElementById('inc-estado-final').value,
   salud: document.getElementById('inc-salud').value,
+  creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
 
   involucrados: involucrados,
   recomendacion: document.getElementById('inc-recomendacion').value,
-  tecnico_principal: document.getElementById('inc-tecnico')?.value || null,
-  creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
+  tecnico_principal: document.getElementById('inc-tecnico')?.value || null
+  
 };
     // 4. Validar campos obligatorios
     const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
