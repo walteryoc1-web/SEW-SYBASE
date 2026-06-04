@@ -671,7 +671,8 @@ function checkPiloto(inp) {
     box.innerText = `👨‍✈️ ${nombre} (${placa}) cliente:(${cliente})- Lic: ${licencia}`;
     box.style.display = 'block';
     if(btn) btn.disabled = false;
-}     async function enviar() {
+}    
+      async function enviar() {
     try {
         const id = document.getElementById('id-in').value.trim().toUpperCase();
         if(!id) throw new Error("Ingresa ID de piloto");
@@ -681,18 +682,27 @@ function checkPiloto(inp) {
         const p = getRegistro('PILOTO', id);
         if(!p) throw new Error("Piloto no encontrado en BD_CONFIG");
 
-     const payload = {
-  departamento: 'LOGISTICA',
-  id_piloto: id,
-  nombre_piloto: p.nombre,
-  movimiento: document.getElementById('mov').value || '', 
-  producto: document.getElementById('prod').value || '',  
-  cliente: p.extra4 || '',                                
-  placa_unidad: p.extra1 || '',  // <- aquí
-  ciclo_terpac: document.getElementById('CicloTer').value || null,
-  ciclo_epq: document.getElementById('CicloEPQ').value || null
-   creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
-};       
+        const payload = {
+          departamento: 'LOGISTICA',
+          id_piloto: id,
+          nombre_piloto: p.nombre,
+          movimiento: document.getElementById('mov').value || '', 
+          producto: document.getElementById('prod').value || '',  
+          cliente: p.extra4 || '',                                
+          placa_unidad: p.extra1 || '',  
+          ciclo_terpac: document.getElementById('CicloTer').value || null,
+          ciclo_epq: document.getElementById('CicloEPQ').value || null, // ← coma aquí
+          creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
+        };
+
+        console.log('Payload:', payload);
+        // aquí va tu fetch...
+
+    } catch(err) {
+        alert(err.message);
+        console.error(err);
+    }
+}
 
 
         const r = await fetch("http://172.16.0.1:3000/api/logistica", {
