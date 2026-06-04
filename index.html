@@ -2300,7 +2300,8 @@ async function enviarIncidenteCompleto() {
 
   involucrados: involucrados,
   recomendacion: document.getElementById('inc-recomendacion').value,
-  tecnico_principal: document.getElementById('inc-tecnico')?.value || null
+  tecnico_principal: document.getElementById('inc-tecnico')?.value || null,
+  creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
 };
     // 4. Validar campos obligatorios
     const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
