@@ -1369,7 +1369,7 @@ async function descargarCSV_OT() {
 
   try {
     const url = `http://172.16.0.1:3000/export-ot?desde=${ini}&hasta=${fin}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { mode: 'cors' });
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
