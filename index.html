@@ -1078,10 +1078,8 @@ const payload = {
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
       
     setTimeout(() => {
-  const inputID = document.getElementById('med-id');
-  inputID.value = '';
-  inputID.defaultValue = ''; 
-  inputID.focus(); 
+  document.getElementById('med-id').value = '';
+  document.getElementById('med-id').removeAttribute('value');
 }, 100);
 
   } catch (err) {
