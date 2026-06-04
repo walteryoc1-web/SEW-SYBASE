@@ -1076,11 +1076,19 @@ const payload = {
     window.URL.revokeObjectURL(url);
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
-      
-    setTimeout(() => {
-  document.getElementById('med-id').value = '';
-  document.getElementById('med-id').removeAttribute('value');
-}, 100);
+
+setTimeout(() => {
+  const input = document.querySelector('#med-id'); // querySelector en vez de getElementById
+  if(input) {
+    input.value = '';
+    input.defaultValue = '';
+    input.setAttribute('value', ''); // fuerza el atributo
+    input.dispatchEvent(new Event('input', {bubbles:true})); // avisa a React/Vue que cambió
+    input.focus();
+  } else {
+    console.error('NO ENCONTRÉ #med-id CEO');
+  }
+}, 200);
 
   } catch (err) {
     alert("❌ Error: " + err.message);
