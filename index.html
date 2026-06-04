@@ -1368,30 +1368,25 @@ async function descargarCSV_OT() {
   btn.innerText = "📥 GENERANDO EXCEL... ⏳";
 
   try {
+    // Método directo: el navegador maneja la descarga
     const url = `http://172.16.0.1:3000/export-ot?desde=${ini}&hasta=${fin}`;
-    const res = await fetch(url, { mode: 'cors' });
-    if (!res.ok) throw new Error("Error " + res.status);
-
-    const csv = await res.text();
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM para ñ/tildes
-    const link = document.createElement("a");
-    const urlBlob = URL.createObjectURL(blob);
-    link.href = urlBlob;
-    link.download = `OT_${ini}_al_${fin}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(urlBlob);
+    window.location.href = url;
     
-    alert("✅ Excel de OTs descargado");
+    // Como es descarga directa, no podemos saber si falló.
+    // Ponemos timeout para reactivar botón
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerText = textoOriginal;
+      alert("✅ Si no descargó, revisa que las fechas tengan datos");
+    }, 2000);
+    
   } catch (err) {
     alert("❌ Error: " + err.message);
-  } finally {
     btn.disabled = false;
     btn.innerText = textoOriginal;
   }
 }
-// ===== ADMIN DATOS MAESTROS =====
+       // ===== ADMIN DATOS MAESTROS =====
     function descargarDataMaestra() {
             try {
                 let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,ESTADO\n";
