@@ -1031,7 +1031,8 @@ async function enviarPermisoSSO() {
       oxigeno: document.getElementById('med-oxigeno').value,
       ritmo: document.getElementById('med-ritmo').value,
       resultado: document.getElementById('med-resultado').value,
-      obs: document.getElementById('med-obs').value
+      obs: document.getElementById('med-obs').value,
+      creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
     if (!payload.fecha) throw new Error("Selecciona la fecha");
