@@ -99,6 +99,19 @@
             <div style="display:flex; gap:10px; justify-content:center;">
                 <input type="date" id="f-ini-sso" style="width:45%;"><input type="date" id="f-fin-sso" style="width:45%;">
             </div>
+            <div class="card-compacta" style="border-top:8px solid #e67e22;">
+  <h3 style="color:#d35400;">🖨️ REIMPRESIÓN</h3>
+  <input type="text" id="rep-folio" placeholder="FOLIO: SSO-20260529-1234" style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+  <select id="rep-tipo" style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+    <option disabled selected>Tipo de documento</option>
+    <option value="permiso">Permiso ATS</option>
+    <option value="ot">Orden de Trabajo</option>
+    <option value="incidente">Incidente</option>
+    <option value="medico">Ficha Médica</option>
+    <option value="extintor">Extintor</option>
+  </select>
+  <button class="btn" style="background:#27ae60; width:100%;" onclick="reimprimirDoc()">IMPRIMIR OTRA VEZ</button>
+</div>
             <div style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">
                 <button type="button" class="btn" onclick="descargarCSV_ATS()" style="background:#3498db; color:white; padding:12px; font-size:10px; flex:1;">📥 PERMISOS</button>
                 <button type="button" class="btn" onclick="descargarCSV_Incidentes()" style="background:#d63031; color:white; padding:12px; font-size:10px; flex:1;">📥 INCIDENTES</button>
@@ -2390,6 +2403,15 @@ function llenarDesplegablesOperaciones() {
   }
   
   console.log('✅ Deptos cargados:', selDepto.options.length - 1);
+}
+       async function reimprimirDoc() {
+  const folio = document.getElementById('rep-folio').value.trim();
+  const tipo = document.getElementById('rep-tipo').value;
+
+  if (!folio ||!tipo) return alert('Folio y tipo obligatorios');
+
+  const url = `http://172.16.0.1:3000/reprint-pdf?tipo=${tipo}&folio=${folio}`;
+  window.open(url, '_blank'); // Abre PDF y ya imprimes
 }
    </script>
 </body>
