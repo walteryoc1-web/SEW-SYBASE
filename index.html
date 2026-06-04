@@ -957,16 +957,18 @@ async function enviarPermisoSSO() {
 
         if(!fase || !tipo || !ubi) throw new Error("Completa Área, Lugar y Tipo de Trabajo");
 
-        const payload = {
-            personal: nombres,
-            fase: fase,
-            ubi: ubi,
-            tipo: tipo,
-            desc: desc,           
-            checklist: marcados || '',
-            creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
-            
-        };
+        const usuarioLogin = window.usuarioLogueado?.usuario || '';
+const usuarioLimpio = usuarioLogin.trim() || 'SISTEMA';
+
+const payload = {
+    personal: nombres,
+    fase: fase,
+    ubi: ubi,
+    tipo: tipo,
+    desc: desc,           
+    checklist: marcados || '',
+    creado_por: usuarioLimpio // ← ahora sí manda algo
+};
 
         // 1. Guardar en SQL y obtener folio
         const res = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
