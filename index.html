@@ -1255,18 +1255,26 @@ async function finalizarTareaOT(folioOT, btn) {
             })
         });
 
-        const data = await res.json();
+       const data = await res.json();
 
-        if (data.ok) {
-            alert("✅ " + data.mensaje);
+if (!data.ok) {
+    // CASO 1: ATS abierto o error → avisa y NO limpia
+    alert("❌ " + data.mensaje);
+    if (boton) {
+        boton.disabled = false;
+        boton.innerText = "FINALIZAR";
+    }
+    return; // <-- se sale aquí, no limpia nada
+}
 
-            // Limpia siempre que ok:true, aunque count=0
-            if (typeof cancelarCierre === 'function') cancelarCierre();
-            window.datosVinculadosCierre = null;
-            if (obsInput) obsInput.value = '';
-            if (typeof cargarOTs === 'function') cargarOTs();
-            else location.reload();
-            
+// CASO 2 y 3: ok:true → siempre limpia
+alert("✅ " + data.mensaje);
+
+if (typeof cancelarCierre === 'function') cancelarCierre();
+window.datosVinculadosCierre = null;
+if (obsInput) obsInput.value = '';
+if (typeof cargarOTs === 'function') cargarOTs();
+else location.reload();            
         } else {
             alert("❌ " + (data.mensaje || data.error || 'Error al cerrar OT'));
         }
