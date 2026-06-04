@@ -1039,7 +1039,6 @@ const payload = {
       creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
-    // Validaciones
     if (!payload.fecha) throw new Error("Selecciona la fecha");
     if (!payload.tipo || payload.tipo.includes('disabled selected')) throw new Error("Selecciona un tipo de atención");
 
@@ -1048,7 +1047,6 @@ const payload = {
       throw new Error("Temperatura fuera de rango. Usa valores entre 35 y 40°C");
     }
 
-    // 1. Guardar en SQL
     const res = await fetch("http://172.16.0.1:3000/api/registrarFichaMedica", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1061,9 +1059,7 @@ const payload = {
     const idFicha = data.idFicha;
     console.log('Generando PDF de ficha:', idFicha);
 
-    // 2. Descargar PDF de FICHA MÉDICA
     const pdfRes = await fetch(`http://172.16.0.1:3000/api/ficha/pdf/${idFicha}?t=${Date.now()}`);
-
     if (!pdfRes.ok) {
       const errText = await pdfRes.text();
       throw new Error('Error generando PDF: ' + errText);
@@ -1080,11 +1076,9 @@ const payload = {
     window.URL.revokeObjectURL(url);
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
-
-    // 3. LIMPIAR FORM PARA SIGUIENTE FICHA
-    document.getElementById('form-ficha-medica')?.reset();
-    document.getElementById('med-fecha').value = new Date().toISOString().split('T')[0]; // fecha de hoy
-    document.getElementById('med-id').value = ''; // vacío para siguiente colaborador
+    
+    
+    document.getElementById('med-id').value = '';
 
   } catch (err) {
     alert("❌ Error: " + err.message);
@@ -1093,7 +1087,7 @@ const payload = {
     btn.disabled = false;
     btn.innerText = "REGISTRAR FICHA ⚕️";
   }
-}       
+}      
      async function enviarInspeccionExtintor() {
   const btn = document.querySelector('button[onclick="enviarInspeccionExtintor()"]');
   btn.disabled = true;
