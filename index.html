@@ -1077,24 +1077,19 @@ const payload = {
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
 
-setTimeout(() => {
-  const input = document.getElementById('med-id');
-  input.readOnly = false; // quita readonly temporal
-  input.disabled = false; // quita disabled temporal
-  input.value = '';
-  input.removeAttribute('value');
-  input.dispatchEvent(new Event('input', {bubbles:true}));
-  console.log('Valor ahora:', input.value);
-}, 100);
+alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
 
-  } catch (err) {
-    alert("❌ Error: " + err.message);
-    console.error(err);
-  } finally {
-    btn.disabled = false;
-    btn.innerText = "REGISTRAR FICHA ⚕️";
+let intentos = 0;
+const intervalo = setInterval(() => {
+  const input = document.getElementById('med-id');
+  if(input) {
+    input.value = '';
+    input.removeAttribute('value');
+    input.defaultValue = '';
   }
-}      
+  intentos++;
+  if(intentos > 20) clearInterval(intervalo); // para a los 1 seg
+}, 50);
      async function enviarInspeccionExtintor() {
   const btn = document.querySelector('button[onclick="enviarInspeccionExtintor()"]');
   btn.disabled = true;
