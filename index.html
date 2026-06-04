@@ -1015,7 +1015,7 @@ const payload = {
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
-   async function enviarFichaMedica() {
+  async function enviarFichaMedica() {
   const btn = document.querySelector('button[onclick="enviarFichaMedica()"]');
   btn.disabled = true;
   btn.innerText = "REGISTRANDO... ⏳";
@@ -1036,17 +1036,17 @@ const payload = {
       ritmo: document.getElementById('med-ritmo').value,
       resultado: document.getElementById('med-resultado').value,
       obs: document.getElementById('med-obs').value,
-      creado_por: window.usuarioLogueado.usuario || 'SISTEMA'
+      creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
+    // Validaciones
     if (!payload.fecha) throw new Error("Selecciona la fecha");
     if (!payload.tipo || payload.tipo.includes('disabled selected')) throw new Error("Selecciona un tipo de atención");
 
-      const temp = Number(payload.temp);
+    const temp = Number(payload.temp);
     if(payload.temp && (temp < 35 || temp > 40)) {
       throw new Error("Temperatura fuera de rango. Usa valores entre 35 y 40°C");
     }
-
 
     // 1. Guardar en SQL
     const res = await fetch("http://172.16.0.1:3000/api/registrarFichaMedica", {
@@ -1080,8 +1080,11 @@ const payload = {
     window.URL.revokeObjectURL(url);
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
+
+    // 3. LIMPIAR FORM PARA SIGUIENTE FICHA
     document.getElementById('form-ficha-medica')?.reset();
-    document.getElementById('med-id').value = id;
+    document.getElementById('med-fecha').value = new Date().toISOString().split('T')[0]; // fecha de hoy
+    document.getElementById('med-id').value = ''; // vacío para siguiente colaborador
 
   } catch (err) {
     alert("❌ Error: " + err.message);
@@ -1090,8 +1093,7 @@ const payload = {
     btn.disabled = false;
     btn.innerText = "REGISTRAR FICHA ⚕️";
   }
-}     
-       
+}       
      async function enviarInspeccionExtintor() {
   const btn = document.querySelector('button[onclick="enviarInspeccionExtintor()"]');
   btn.disabled = true;
