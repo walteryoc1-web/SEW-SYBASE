@@ -1215,80 +1215,7 @@ async function enviarOT() {
   }
 }
 
-console.log('folioOT recibido en función:', folioOT, typeof folioOT);
 
-async function finalizarTareaOT(folioOT, btn) {
-    folioOT = String(folioOT || '').trim().toUpperCase();
-    
-    if (!folioOT) {
-        alert("❌ El folio está vacío.");
-        return;
-    }
-
-    const obsInput = document.getElementById('ot-comentarios-cierre');
-    const obs = obsInput ? obsInput.value.trim() : '';
-    
-    if (!obs) {
-        alert("❌ Escribe las observaciones de cierre.");
-        return;
-    }
-
-    if (!confirm("¿Finalizar OT " + folioOT + "?")) return;
-
-    const boton = btn || window.event?.target;
-    if (boton) {
-        boton.disabled = true;
-        boton.innerText = "CERRANDO...";
-    }
-
-    try {
-        const folioATS = window.datosVinculadosCierre?.folioATS || "";
-
-        const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                folio_ot: folioOT,
-                comentarios_cierre: obs,
-                folio_ats: folioATS,
-                usuario: typeof usuario !== 'undefined' ? usuario : ''
-            })
-        });
-
-       const data = await res.json();
-
-if (!data.ok) {
-    // CASO 1: ATS abierto o error → avisa y NO limpia
-    alert("❌ " + data.mensaje);
-    if (boton) {
-        boton.disabled = false;
-        boton.innerText = "FINALIZAR";
-    }
-    return; // <-- se sale aquí, no limpia nada
-}
-
-// CASO 2 y 3: ok:true → siempre limpia
-alert("✅ " + data.mensaje);
-
-if (typeof cancelarCierre === 'function') cancelarCierre();
-window.datosVinculadosCierre = null;
-if (obsInput) obsInput.value = '';
-if (typeof cargarOTs === 'function') cargarOTs();
-else location.reload();            
-        } else {
-            alert("❌ " + (data.mensaje || data.error || 'Error al cerrar OT'));
-        }
-
-    } catch (err) {
-        alert("❌ ERROR DE RED: " + err.message);
-        console.error(err);
-    } finally {
-        if (boton) {
-            boton.disabled = false;
-            boton.innerText = "FINALIZAR";
-        }
-    }
-}
        // ===== REPORTES CSV =====
 async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
@@ -1763,59 +1690,6 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
-// ✅ FIX Q28K #9: FINALIZAR OT - CON DEBUG DE FOLIO
-async function finalizarTareaOT(folioOT, btn) {
-  if (!folioOT || folioOT.toString().trim() === "") {
-    alert("❌ El folio está vacío.");
-    return;
-  }
-
-  const obs = document.getElementById('ot-comentarios-cierre').value.trim();
-  if (!obs) {
-    alert("❌ Escribe las observaciones de cierre.");
-    return;
-  }
-
-  if (!confirm("¿Finalizar OT " + folioOT + "?")) return;
-
-  const boton = btn || window.event?.target;
-  if (boton) {
-    boton.disabled = true;
-    boton.innerText = "CERRANDO...";
-  }
-
-  try {
-    const res = await fetch(URL_SCRIPT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: "finalizarOT",
-        folio: folioOT.trim(),
-        obs: obs,
-        usuario: "ADMIN",
-        folioATS: window.datosVinculadosATS_Cierre || ""
-      })
-    });
-
-    const txt = await res.text();
-
-    if (txt.includes("Q28K_OK")) {
-      alert("✅ " + txt);
-      cancelarCierre();
-      if (typeof cargarOTs === 'function') cargarOTs();
-      else location.reload();
-    } else {
-      alert("❌ " + txt);
-    }
-  } catch (err) {
-    alert("❌ ERROR DE RED: " + err);
-  } finally {
-    if (boton) {
-      boton.disabled = false;
-      boton.innerText = "FINALIZAR";
-    }
-  }
-}
         
 const API_URL = 'http://172.16.0.1:3000/api/sso';
 
@@ -2106,49 +1980,69 @@ async function vincularATSaOT_Cierre(folioATS) {
 
 // ===== FINALIZAR OT =====
 async function finalizarTareaOT(folioOT, btn) {
-  if (!folioOT || folioOT.trim() === "") {
-    alert("❌ El folio está vacío.");
-    return;
-  }
-  const obs = document.getElementById('ot-comentarios-cierre').value.trim();
-  if (!obs) {
-    alert("❌ Escribe las observaciones de cierre.");
-    return;
-  }
-  if (!confirm("¿Finalizar OT " + folioOT + "?")) return;
-
-  const boton = btn;
-  boton.disabled = true;
-  boton.innerText = "CERRANDO...";
-
-  try {
-    const res = await fetch(`${URL_SCRIPT}/ot/finalizar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        folio: folioOT.trim(),
-        obs: obs,
-        usuario: "ADMIN",
-        folioATS: datosVinculadosATS_Cierre || ""
-      })
-    });
-
-    const txt = await res.text();
-    if (txt.includes("Q28K_OK")) {
-      alert("✅ " + txt);
-      cancelarCierre();
-      location.reload();
-    } else {
-      alert("❌ " + txt);
+    folioOT = String(folioOT || '').trim().toUpperCase();
+    
+    if (!folioOT) {
+        alert("❌ El folio está vacío.");
+        return;
     }
-  } catch (err) {
-    alert("❌ ERROR DE RED: " + err);
-  } finally {
-    boton.disabled = false;
-    boton.innerText = "✅ FINALIZAR TAREA";
-  }
-}
 
+    const obsInput = document.getElementById('ot-comentarios-cierre');
+    const obs = obsInput ? obsInput.value.trim() : '';
+    
+    if (!obs) {
+        alert("❌ Escribe las observaciones de cierre.");
+        return;
+    }
+
+    if (!confirm("¿Finalizar OT " + folioOT + "?")) return;
+
+    const boton = btn || window.event?.target;
+    if (boton) {
+        boton.disabled = true;
+        boton.innerText = "CERRANDO...";
+    }
+
+    try {
+        const folioATS = window.datosVinculadosCierre?.folioATS || "";
+
+        const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                folio_ot: folioOT,
+                comentarios_cierre: obs,
+                folio_ats: folioATS,
+                usuario: typeof usuario !== 'undefined' ? usuario : ''
+            })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+            // ATS abierto → avisa y NO limpia
+            alert("❌ " + data.mensaje);
+            return;
+        }
+
+        // OK → avisa y limpia siempre
+        alert("✅ " + data.mensaje);
+        if (typeof cancelarCierre === 'function') cancelarCierre();
+        window.datosVinculadosCierre = null;
+        if (obsInput) obsInput.value = '';
+        if (typeof cargarOTs === 'function') cargarOTs();
+        else location.reload();
+
+    } catch (err) {
+        alert("❌ ERROR DE RED: " + err.message);
+        console.error(err);
+    } finally {
+        if (boton) {
+            boton.disabled = false;
+            boton.innerText = "FINALIZAR";
+        }
+    }
+}
 function salir() {
   // Oculta todos los paneles
   document.getElementById('ui-app').style.display = 'none';
