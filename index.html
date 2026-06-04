@@ -392,7 +392,7 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
                 <input type="text" id="med-id" placeholder="ID COLABORADOR" style="text-transform:uppercase;">
                 <input type="date" id="med-fecha">
-                <select id="med-tipo" onchange="actualizarChecklistMedico()"></select>
+                <select id="med-tipo"></select>
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background:#f9; padding:20px; border-radius:15px; margin-bottom:20px;">
                 <div><label style="font-size:11px;">💉 GLUCOSA</label><input type="number" id="med-glucosa"></div>
@@ -1036,7 +1036,7 @@ const payload = {
       ritmo: document.getElementById('med-ritmo').value,
       resultado: document.getElementById('med-resultado').value,
       obs: document.getElementById('med-obs').value,
-      creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
+      creado_por: window.usuarioLogueado.usuario || 'SISTEMA'
     };
 
     if (!payload.fecha) throw new Error("Selecciona la fecha");
