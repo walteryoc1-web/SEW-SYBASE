@@ -963,7 +963,9 @@ async function enviarPermisoSSO() {
             ubi: ubi,
             tipo: tipo,
             desc: desc,           
-            checklist: marcados || ''  
+            checklist: marcados || '',
+            creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
+            
         };
 
         // 1. Guardar en SQL y obtener folio
