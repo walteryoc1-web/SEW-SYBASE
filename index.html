@@ -1353,7 +1353,7 @@ async function descargarCSV_Extintores() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
 
-function descargarCSV_OT() {
+async function descargarCSV_OT() {
   const ini = document.getElementById('f-ini-ot')?.value;
   const fin = document.getElementById('f-fin-ot')?.value;
 
@@ -1365,22 +1365,31 @@ function descargarCSV_OT() {
   const btn = document.querySelector('button[onclick*="descargarCSV_OT"]');
   const textoOriginal = btn.innerText;
   btn.disabled = true;
-  btn.innerText = "📥 ABRIENDO DESCARGA...";
+  btn.innerText = "📥 GENERANDO EXCEL... ⏳";
 
-  
-  const url = `http://172.16.0.1:3000/export-ot?desde=${ini}&hasta=${fin}`;
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `OT_${ini}_al_${fin}.csv`; 
-  a.target = '_blank'; 
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  try {
+    const url = `http://172.16.0.1:3000/export-ot?desde=${ini}&hasta=${fin}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Error " + res.status);
 
-  setTimeout(() => {
+    const csv = await res.text();
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM para ñ/tildes
+    const link = document.createElement("a");
+    const urlBlob = URL.createObjectURL(blob);
+    link.href = urlBlob;
+    link.download = `OT_${ini}_al_${fin}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(urlBlob);
+    
+    alert("✅ Excel de OTs descargado");
+  } catch (err) {
+    alert("❌ Error: " + err.message);
+  } finally {
     btn.disabled = false;
     btn.innerText = textoOriginal;
-  }, 1500);
+  }
 }
        // ===== ADMIN DATOS MAESTROS =====
     function descargarDataMaestra() {
