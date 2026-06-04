@@ -86,32 +86,25 @@
         <div class="pildora" style="border-bottom-color: #16a085;"><h3>Cerrados</h3><p id="sso-cerrados">00</p></div>
     </div>
 
-    <!-- REIMPRESIÓN CON RESET TOTAL -->
-<div style="margin:15px 10px 0; max-width:800px;">
-  <table style="width:100% !important; border-collapse:separate !important; border-spacing:4px !important;">
-    <tr>
-      <td style="width:50% !important; padding:0 !important;">
-        <input type="text" id="rep-folio" placeholder="FOLIO" 
-          style="all:unset; width:100% !important; height:38px !important; padding:0 8px !important; font-size:12px !important; border:1px solid #ccc !important; border-radius:6px !important; text-transform:uppercase !important; text-align:center !important; box-sizing:border-box !important; background:#fff !important; display:block !important;">
-      </td>
-      <td style="width:25% !important; padding:0 0 0 4px !important;">
-        <select id="rep-tipo" style="all:unset; width:100% !important; height:38px !important; padding:0 6px !important; font-size:12px !important; border:1px solid #ccc !important; border-radius:6px !important; box-sizing:border-box !important; background:#fff !important; appearance:none !important; -webkit-appearance:none !important; display:block !important;">
-          <option disabled selected>Tipo</option>
-          <option value="permiso">ATS</option>
-          <option value="ot">OT</option>
-          <option value="incidente">INC</option>
-          <option value="medico">MED</option>
-          <option value="extintor">EXT</option>
-        </select>
-      </td>
-      <td style="width:25% !important; padding:0 0 0 4px !important;">
-        <button type="button" onclick="reimprimirDoc()" 
-          style="all:unset; width:100% !important; height:38px !important; padding:0 !important; font-size:11px !important; border-radius:6px !important; font-weight:600 !important; border:1px solid #27ae60 !important; box-sizing:border-box !important; background:#27ae60 !important; color:#fff !important; cursor:pointer !important; display:flex !important; align-items:center !important; justify-content:center !important;">
-          🖨️ DUPLICADO
-        </button>
-      </td>
-    </tr>
-  </table>
+  <!-- REIMPRESIÓN  -->
+<div style="margin:15px 10px 0; max-width:800px; display:flex; align-items:stretch; gap:0;">
+  <input type="text" id="rep-folio" placeholder="FOLIO" 
+    style="flex:2; height:auto; min-height:38px; padding:10px 8px; font-size:12px; border:1px solid #ccc; border-radius:6px 0 0 6px; text-transform:uppercase; text-align:center; box-sizing:border-box; background:#fff; margin:0;">
+  
+  <select id="rep-tipo" 
+    style="flex:1; height:auto; min-height:38px; padding:8px 4px; font-size:12px; border:1px solid #ccc; border-left:0; border-radius:0; box-sizing:border-box; background:#fff; margin:0;">
+    <option disabled selected>Tipo</option>
+    <option value="permiso">ATS</option>
+    <option value="ot">OT</option>
+    <option value="incidente">INC</option>
+    <option value="medico">MED</option>
+    <option value="extintor">EXT</option>
+  </select>
+
+  <button type="button" onclick="reimprimirDoc()" 
+    style="flex:1; height:auto; min-height:38px; padding:10px 0; font-size:11px; border:1px solid #27ae60; border-left:0; border-radius:0 6px 6px 0; box-sizing:border-box; background:#27ae60; color:#fff; font-weight:600; margin:0; cursor:pointer;">
+    🖨️ REIMPRIMIR
+  </button>
 </div>
     
     <div style="display:flex; gap:10px; justify-content:center; margin: 15px auto 25px; max-width:800px;">
