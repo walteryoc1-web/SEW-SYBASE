@@ -1256,13 +1256,11 @@ async function finalizarTareaOT(folioOT, btn) {
         });
 
         const data = await res.json();
-console.trace("¿Quién me está mostrando el alert?"); // <-- esto
-console.log('Respuesta backend:', data);
 
         if (data.ok) {
-            alert("✅ " + data.mensaje); // <-- CORREGIDO EL +
-            
-            // Limpia siempre que ok: true
+            alert("✅ " + data.mensaje);
+
+            // Limpia siempre que ok:true, aunque count=0
             if (typeof cancelarCierre === 'function') cancelarCierre();
             window.datosVinculadosCierre = null;
             if (obsInput) obsInput.value = '';
@@ -1272,6 +1270,7 @@ console.log('Respuesta backend:', data);
         } else {
             alert("❌ " + (data.mensaje || data.error || 'Error al cerrar OT'));
         }
+
     } catch (err) {
         alert("❌ ERROR DE RED: " + err.message);
         console.error(err);
