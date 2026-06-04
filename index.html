@@ -691,7 +691,9 @@ function checkPiloto(inp) {
   placa_unidad: p.extra1 || '',  // <- aquí
   ciclo_terpac: document.getElementById('CicloTer').value || null,
   ciclo_epq: document.getElementById('CicloEPQ').value || null
-};
+   creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
+};       
+
 
         const r = await fetch("http://172.16.0.1:3000/api/logistica", {
             method: 'POST',
