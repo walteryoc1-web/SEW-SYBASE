@@ -1024,14 +1024,14 @@ const payload = {
 
   try {
     const id = document.getElementById('med-id').value.trim();
-    const nombre = document.getElementById('med-nombre').value.trim(); // ← AGREGA ESTO
+    const nombre = document.getElementById('med-nombre').value.trim();
 
     if (!id) throw new Error("Falta el ID del colaborador");
-    if (!nombre) throw new Error("Falta el nombre del paciente"); // ← VALIDACIÓN CEO
+    if (!nombre) throw new Error("Falta el nombre del paciente");
 
     const payload = {
       id: id,
-      nombre_paciente: nombre, 
+      nombre_paciente: nombre,
       fecha: document.getElementById('med-fecha').value,
       tipo: document.getElementById('med-tipo').value,
       glucosa: document.getElementById('med-glucosa').value,
@@ -1045,13 +1045,24 @@ const payload = {
       creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
-    //...tu código de fetch y PDF igual...
+    // === AQUÍ VA EL FETCH CEO ===
+    const resp = await fetch('http://172.16.0.1:3000/api/registrarFichaMedica', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Error al registrar');
+
+    // === DESCARGA PDF AUTOMÁTICA ===
+    window.open(`http://172.16.0.1:3000/api/ficha/pdf/${data.idFicha}`, '_blank');
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
 
     // === LIMPIAR TODO EL FORMULARIO ===
     document.getElementById('med-id').value = '';
-    document.getElementById('med-nombre').value = ''; // ← LIMPIA NOMBRE TAMBIÉN
+    document.getElementById('med-nombre').value = '';
     document.getElementById('med-tipo').value = '';
     document.getElementById('med-glucosa').value = '';
     document.getElementById('med-presion').value = '';
@@ -1067,6 +1078,7 @@ const payload = {
 
   } catch (error) {
     alert("❌ ERROR: " + error.message);
+    console.error(error); // <- para ver error completo en F12
   } finally {
     btn.disabled = false;
     btn.innerText = "REGISTRAR FICHA ⚕️";
