@@ -1837,13 +1837,11 @@ async function cargarPermisosParaCerrar() {
     console.error('CEO ERROR:', err);
   }
 }
-   // 2. función para cerrar permiso
-window.cerrarPermiso = async function(f, btn) {
+   window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
 
   const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
-  
-  console.log("Folio enviado:", JSON.stringify(folioLimpio));
+  console.log("CEO FOLIO ENVIADO:", folioLimpio);
 
   if (btn) {
     btn.disabled = true;
@@ -1854,27 +1852,23 @@ window.cerrarPermiso = async function(f, btn) {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: "cerrarATS",
-        folio: folioLimpio,
-        usuario: "ADMIN"
-      })
+      body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
     });
 
+    console.log("CEO STATUS POST:", res.status, res.ok);
     const data = await res.json();
-    console.log("Respuesta backend:", data);
+    console.log("CEO RESPUESTA BACKEND:", data);
 
-    // Solo importa si ok es true. El mensaje ignóralo
     if (data.ok === true) {
       alert("✅ Permiso cerrado correctamente");
-      window.cargarPermisosParaCerrar();
+      cargarPermisosParaCerrar();
       return;
     }
 
-    // Solo aquí es error real
     alert("❌ " + (data.error || "Error desconocido"));
 
   } catch (err) {
+    console.error("CEO ERROR RED:", err);
     alert("❌ ERROR DE RED: " + err.message);
   } finally {
     if (btn) {
@@ -1882,9 +1876,7 @@ window.cerrarPermiso = async function(f, btn) {
       btn.innerText = "CERRAR";
     }
   }
-};
-       
-window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
+}; 
        
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
