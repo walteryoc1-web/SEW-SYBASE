@@ -1849,7 +1849,7 @@ async function cargarPermisosParaCerrar() {
       body: JSON.stringify({ 
         accion: "cerrarATS", 
         folio: folioLimpio, 
-        creado_por: usuarioLimpio  // ← AQUÍ CEO
+        cerrado_por: usuarioLimpio  // ← AQUÍ CEO
       })
     });
           const data = await res.json();
