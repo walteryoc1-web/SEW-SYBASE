@@ -1534,16 +1534,13 @@ async function guardarDatoMaestro() {
     }
 
     const payload = {
-        accion: "guardarConfig",
-        categoria: cat,
-        id: idNuevo,
-        nombre: document.getElementById('adm-nombre').value.toUpperCase().trim(),
-        extra1: document.getElementById('adm-extra1').value.toUpperCase(),
-        extra2: dpiNuevo,
-        extra3: document.getElementById('adm-estado').value,
-        extra4: document.getElementById('adm-extra4').value.toUpperCase(),
-        creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
-    };
+    accion: 'guardarDatoMaestro',
+    categoria: categoria,
+    id_codigo: document.getElementById('dm_id').value.trim(),
+    descripcion: document.getElementById('dm_desc').value.trim(),
+    estado: document.getElementById('dm_estado').value,
+    usuario: window.usuarioLogueado?.usuario || 'SISTEMA' // ← AQUÍ CEO
+};
 
     try {
         const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
