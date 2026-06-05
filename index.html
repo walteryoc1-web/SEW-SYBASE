@@ -1865,53 +1865,47 @@ async function cargarPermisosParaCerrar() {
     abiertos.forEach(p => {
       const folioLimpio = String(p.FOLIO).trim().replace(/[\r\n\t]/g, '');
       
-      // CEO: Crear elementos sin onclick
-      const div = document.createElement('div');
-      div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; align-items:center;";
-      
-      const span = document.createElement('span');
-      span.innerHTML = `<b>${folioLimpio}</b> - ${p.NOMBRES} - ${p.AREA}`;
-      
-      const btn = document.createElement('button');
-      btn.innerText = "CERRAR";
-      btn.style.cssText = "background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;";
-      
-      // CEO CLAVE: Amarrar evento con JS, no con HTML
      btn.addEventListener('click', async () => {
   if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
-  
+
   btn.disabled = true;
   btn.innerText = "CERRANDO...";
+
+  // CEO DEBUG: Ver qué usuario estás mandando
+  const usuarioCierre = window.usuarioLogueado?.usuario || window.usuario?.usuario || sessionStorage.getItem('usuario') || 'SISTEMA';
+  console.log('CEO Usuario que se enviará:', usuarioCierre);
+  console.log('CEO window.usuarioLogueado:', window.usuarioLogueado);
 
   try {
     const res = await fetch(API_SSO, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        accion: "cerrarATS", 
-        folio: folioLimpio, 
-        cerrado_por: window.usuarioLogueado?.usuario || window.usuario?.usuario || sessionStorage.getItem('usuario') || 'SISTEMA'
-})
+      body: JSON.stringify({
+        accion: "cerrarATS",
+        folio: folioLimpio,
+        cerrado_por: usuarioCierre
+      })
     });
+
     const data = await res.json();
     console.log('CEO RESP CERRAR:', data);
-    
+
     if (data.ok === true) {
-      alert("✅ Permiso cerrado correctamente");
+      alert("✅ " + data.mensaje);
       cargarPermisosParaCerrar();
     } else {
       alert("❌ " + (data.error || "Error desconocido"));
-      btn.disabled = false;
-      btn.innerText = "CERRAR";
     }
   } catch (err) {
     alert("❌ ERROR DE RED: " + err.message);
-    console.error(err);
+    console.error('CEO ERROR CATCH:', err);
+  } finally {
+    // CEO CLAVE: Siempre desbloquear el botón aunque falle
     btn.disabled = false;
     btn.innerText = "CERRAR";
   }
 });
-// Ejecutar cuando cargue DOM
+        // Ejecutar cuando cargue DOM
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
 } else {
