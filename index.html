@@ -1890,8 +1890,8 @@ async function cargarPermisosParaCerrar() {
       body: JSON.stringify({ 
         accion: "cerrarATS", 
         folio: folioLimpio, 
-        cerrado_por: window.usuarioLogueado?.usuario || 'SISTEMA' // ← SOLO AGREGA ESTO
-      })
+        cerrado_por: window.usuarioLogueado?.usuario || window.usuario?.usuario || sessionStorage.getItem('usuario') || 'SISTEMA'
+})
     });
     const data = await res.json();
     console.log('CEO RESP CERRAR:', data);
