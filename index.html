@@ -1877,49 +1877,40 @@ async function cargarPermisosParaCerrar() {
       btn.style.cssText = "background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;";
       
       // CEO CLAVE: Amarrar evento con JS, no con HTML
-      btn.addEventListener('click', async () => {
-        if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
-        
-        btn.disabled = true;
-        btn.innerText = "CERRANDO...";
+     btn.addEventListener('click', async () => {
+  if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
+  
+  btn.disabled = true;
+  btn.innerText = "CERRANDO...";
 
-        try {
-          const res = await fetch(API_SSO, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
-          });
-          const data = await res.json();
-          console.log('CEO RESP CERRAR:', data);
-          
-          if (data.ok === true) {
-            alert("✅ Permiso cerrado correctamente");
-            cargarPermisosParaCerrar();
-          } else {
-            alert("❌ " + (data.error || "Error desconocido"));
-            btn.disabled = false;
-            btn.innerText = "CERRAR";
-          }
-        } catch (err) {
-          alert("❌ ERROR DE RED: " + err.message);
-          console.error(err);
-          btn.disabled = false;
-          btn.innerText = "CERRAR";
-        }
-      });
-      
-      div.appendChild(span);
-      div.appendChild(btn);
-      cont.appendChild(div);
+  try {
+    const res = await fetch(API_SSO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        accion: "cerrarATS", 
+        folio: folioLimpio, 
+        cerrado_por: window.usuarioLogueado?.usuario || 'SISTEMA' // ← SOLO AGREGA ESTO
+      })
     });
-    console.log('CEO: Pintados', abiertos.length, 'permisos');
-
+    const data = await res.json();
+    console.log('CEO RESP CERRAR:', data);
+    
+    if (data.ok === true) {
+      alert("✅ Permiso cerrado correctamente");
+      cargarPermisosParaCerrar();
+    } else {
+      alert("❌ " + (data.error || "Error desconocido"));
+      btn.disabled = false;
+      btn.innerText = "CERRAR";
+    }
   } catch (err) {
-    console.error('CEO ERROR FETCH:', err);
-    cont.innerHTML = `<p style="color:red; padding:10px;">Q28K_ERROR: ${err.message}</p>`;
+    alert("❌ ERROR DE RED: " + err.message);
+    console.error(err);
+    btn.disabled = false;
+    btn.innerText = "CERRAR";
   }
-}
-
+});
 // Ejecutar cuando cargue DOM
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
