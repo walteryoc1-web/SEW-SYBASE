@@ -1805,29 +1805,40 @@ function cancelarCierre() {
         
 const API_URL = 'http://172.16.0.1:3000/api/sso';
 
-// 1. Tu función para cargar permisos
+function fechaCorteCEO() {
+  const ahora = new Date();
+  const corte = new Date(ahora);
+  corte.setHours(5, 59, 0, 0);
+  if (ahora < corte) corte.setDate(corte.getDate() - 1);
+  return corte.toISOString().split('T')[0];
+}
+
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
   if (!cont) return;
   cont.innerHTML = "Cargando...";
 
   try {
-    const hoy = new Date();
-    const ayer = new Date();
-    ayer.setDate(hoy.getDate() - 1);
+    const fechaCorte = fechaCorteCEO();
+    const desde = fechaCorte;
+    const hasta = fechaCorte;
 
-    const desde = ayer.toISOString().split('T')[0]; // 2026-05-26
-    const hasta = hoy.toISOString().split('T')[0]; // 2026-05-27
-
-    const res = await fetch(`${API_URL}/detalle?desde=${desde}&hasta=${hasta}`);
+    const res = await fetch(`${API_URL}/detalle?desde=${desde}&hasta=${hasta}&t=${Date.now()}`, {mode: 'cors'});
     if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
 
-    const abiertos = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "ABIERTO");
+    const data = await res.json();
+    console.log('DATA CEO:', data); // aquí debes ver el array de 6
+
+    // CEO: tu backend manda array directo, no {ok:true, datos:[]}
+    const array = Array.isArray(data)? data : (data.datos || []);
+
+    const abiertos = array.filter(r =>
+      (r.ESTATUS || "").trim().toUpperCase() === "ABIERTO"
+    );
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
-      cont.innerHTML = "<p>No hay ATS abiertos</p>";
+      cont.innerHTML = `<p>No hay ATS abiertos para corte ${fechaCorte}</p>`;
       return;
     }
 
@@ -1835,7 +1846,7 @@ async function cargarPermisosParaCerrar() {
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
 
-      const folioLimpio = (p.FOLIO || '').toString().trim().replace(/[\r\n\t]/g, '');
+      const folioLimpio = (p.FOLIO || '').toString().trim();
 
       div.innerHTML = `
         <span><b>${folioLimpio}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}</span>
@@ -1847,57 +1858,41 @@ async function cargarPermisosParaCerrar() {
       cont.appendChild(div);
     });
 
+    console.log('✅ CEO: Pintados', abiertos.length, 'ABIERTO');
+
   } catch (err) {
     cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message || err}</p>`;
+    console.error('ERROR CEO:', err);
   }
 }
-// 2. función para cerrar permiso
+
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
+  const folioLimpio = f.toString().trim().toUpperCase();
 
-  const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
-  
-  console.log("Folio enviado:", JSON.stringify(folioLimpio));
-
-  if (btn) {
-    btn.disabled = true;
-    btn.innerText = "CERRANDO...";
-  }
+  if (btn) { btn.disabled = true; btn.innerText = "CERRANDO..."; }
 
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: "cerrarATS",
-        folio: folioLimpio,
-        usuario: "ADMIN"
-      })
+      body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
     });
 
     const data = await res.json();
-    console.log("Respuesta backend:", data);
-
-    // Solo importa si ok es true. El mensaje ignóralo
     if (data.ok === true) {
       alert("✅ Permiso cerrado correctamente");
       window.cargarPermisosParaCerrar();
       return;
     }
-
-    // Solo aquí es error real
     alert("❌ " + (data.error || "Error desconocido"));
 
   } catch (err) {
     alert("❌ ERROR DE RED: " + err.message);
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerText = "CERRAR";
-    }
+    if (btn) { btn.disabled = false; btn.innerText = "CERRAR"; }
   }
-};
-       
+};       
 window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
        
 function llenarDesplegablesOperaciones() {
