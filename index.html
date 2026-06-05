@@ -1802,24 +1802,30 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
-// === 1. CARGAR PERMISOS - CON SU API PROPIA ===
-const API_SSO = 'http://172.16.0.1:3000/api/sso'; // CEO: global para que btn la vea
+// === 1. CARGAR PERMISOS - API PROPIA ===
+const API_SSO = 'http://172.16.0.1:3000/api/sso';
 
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
-  console.log('CEO CONT:', cont);
-  if (!cont) return;
+  console.log('CEO CONT encontrado:', cont);
+  if (!cont) {
+    console.error('CEO ERROR: No existe #contenedor-tabla-sso en el HTML');
+    return;
+  }
   
   cont.innerHTML = "Cargando permisos...";
 
   try {
+    console.log('CEO FETCH a:', `${API_SSO}/detalle?desde=2000-01-01&hasta=2100-12-31`);
     const res = await fetch(`${API_SSO}/detalle?desde=2000-01-01&hasta=2100-12-31`);
+    
     if (!res.ok) throw new Error("HTTP " + res.status);
     
     const data = await res.json();
     console.log('CEO DATA RECIBIDA:', data.length, 'registros');
     
-    const abiertos = data.filter(r => String(r.ESTATUS).trim().toUpperCase() === "ABIERTO");
+    const abiertos = data.filter(r => String(r.ESTATUS || '').trim().toUpperCase() === "ABIERTO");
+    console.log('CEO ABIERTOS:', abiertos.length);
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
@@ -1828,20 +1834,22 @@ async function cargarPermisosParaCerrar() {
     }
 
     abiertos.forEach(p => {
-      const folioLimpio = String(p.FOLIO).trim().replace(/[\r\n\t]/g, '');
+      const folioLimpio = String(p.FOLIO || '').trim().replace(/[\r\n\t]/g, '');
       
-      // CEO: Crear elementos sin onclick
+      // CEO: Crear div contenedor
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; align-items:center;";
       
+      // CEO: Crear span con info
       const span = document.createElement('span');
-      span.innerHTML = `<b>${folioLimpio}</b> - ${p.NOMBRES} - ${p.AREA}`;
+      span.innerHTML = `<b>${folioLimpio}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}`;
       
+      // CEO: Crear botón
       const btn = document.createElement('button');
       btn.innerText = "CERRAR";
       btn.style.cssText = "background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;";
       
-      // CEO: Amarrar evento con JS
+      // CEO: Evento click
       btn.addEventListener('click', async () => {
         if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
 
@@ -1849,7 +1857,7 @@ async function cargarPermisosParaCerrar() {
         btn.innerText = "CERRANDO...";
 
         const usuarioCierre = window.usuarioLogueado?.usuario || window.usuario?.usuario || sessionStorage.getItem('usuario') || 'SISTEMA';
-        console.log('CEO Usuario que se enviará:', usuarioCierre);
+        console.log('CEO Usuario enviado:', usuarioCierre);
 
         try {
           const res = await fetch(API_SSO, {
@@ -1863,29 +1871,28 @@ async function cargarPermisosParaCerrar() {
           });
 
           const data = await res.json();
-          console.log('CEO RESP CERRAR:', data);
+          console.log('CEO RESP:', data);
 
           if (data.ok === true) {
             alert("✅ " + data.mensaje);
-            cargarPermisosParaCerrar();
+            cargarPermisosParaCerrar(); // recargar lista
           } else {
             alert("❌ " + (data.error || "Error desconocido"));
           }
         } catch (err) {
           alert("❌ ERROR DE RED: " + err.message);
-          console.error('CEO ERROR CATCH:', err);
+          console.error('CEO ERROR:', err);
         } finally {
           btn.disabled = false;
           btn.innerText = "CERRAR";
         }
       });
 
+      // CEO: Armar el div y meterlo al contenedor
       div.appendChild(span);
       div.appendChild(btn);
       cont.appendChild(div);
     });
-    
-    console.log('CEO: Pintados', abiertos.length, 'permisos');
 
   } catch (err) {
     console.error('CEO ERROR FETCH:', err);
@@ -1893,12 +1900,9 @@ async function cargarPermisosParaCerrar() {
   }
 }
 
-// CEO: Ejecutar cuando cargue DOM - SOLO UNA VEZ AFUERA
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
-} else {
-  cargarPermisosParaCerrar();
-}       
+document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
+
+       
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
