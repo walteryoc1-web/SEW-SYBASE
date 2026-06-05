@@ -1153,7 +1153,8 @@ const payload = {
       observaciones: document.getElementById('ext-obs').value.toUpperCase(),
       nombre_inspector: inspector,
       fecha: new Date().toISOString().split('T')[0],
-      hora: new Date().toTimeString().split(' ')[0].substring(0,5)
+      hora: new Date().toTimeString().split(' ')[0].substring(0,5),
+      creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
     // 1. Guardar en SQL
