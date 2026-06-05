@@ -1123,33 +1123,41 @@ const payload = {
   }
 }
        
-       async function enviarInspeccionExtintor() {
+      async function enviarInspeccionExtintor() {
   const btn = document.querySelector('button[onclick="enviarInspeccionExtintor()"]');
   btn.disabled = true;
   btn.innerText = "REGISTRANDO... ⏳";
 
   try {
-    const id = document.getElementById('ext-id').value.trim();
+    const id = document.getElementById('ext-id').value.trim().toUpperCase();
+    const ubi = document.getElementById('ext-ubi').value.trim().toUpperCase();
+    const agente = document.getElementById('ext-agente').value;
+    const inspector = document.getElementById('ext-inspector').value.trim().toUpperCase();
+    const vence = document.getElementById('ext-vence').value;
+
+    // VALIDACIONES OBLIGATORIAS CEO
     if (!id) throw new Error("Falta el ID del extintor");
+    if (!ubi) throw new Error("Falta la ubicación");
+    if (!agente) throw new Error("Selecciona el tipo de agente");
+    if (!vence) throw new Error("Selecciona fecha de vencimiento");
+    if (!inspector) throw new Error("El NOMBRE DEL INSPECTOR es obligatorio para auditoría");
 
     const payload = {
       id_extintor: id,
-      ubicacion: document.getElementById('ext-ubi').value.trim(),
-      agente_nombre: document.getElementById('ext-agente').value.trim(),
+      ubicacion: ubi,
+      agente_nombre: agente,
       presion: document.getElementById('ext-presion').value,
       manguera: document.getElementById('ext-manguera').value,
       seguro: document.getElementById('ext-seguro').value,
-      vencimiento: document.getElementById('ext-vence').value,
-      observaciones: document.getElementById('ext-obs').value,
-      nombre_inspector: window.usuarioLogueado?.usuario || 'SISTEMA' 
-};
-    
-
-    if (!payload.ubicacion) throw new Error("Falta la ubicación");
-    if (!payload.agente_nombre) throw new Error("Falta el nombre del agente");
+      vencimiento: vence + '-01', // YYYY-MM-01 para Sybase
+      observaciones: document.getElementById('ext-obs').value.toUpperCase(),
+      nombre_inspector: inspector,
+      fecha: new Date().toISOString().split('T')[0],
+      hora: new Date().toTimeString().split(' ')[0].substring(0,5)
+    };
 
     // 1. Guardar en SQL
-    const res = await fetch("http://172.16.0.1:3000/api/extintor/registrar", {
+    const res = await fetch('http://172.16.0.1:3000/api/registrarExtintor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1159,10 +1167,11 @@ const payload = {
     if (!data.ok) throw new Error(data.error);
 
     const folio = data.folio;
-    console.log('Generando PDF de extintor:', folio);
 
-    // 2. Descargar PDF de EXTINTOR
-    const pdfRes = await fetch(`http://172.16.0.1:3000/api/extintor/pdf/${folio}?t=${Date.now()}`);
+    // 2. Descargar PDF
+    btn.innerText = "DESCARGANDO PDF... ⏳";
+
+    const pdfRes = await fetch(`http://172.16.0.1:3000/api/extintor/pdf/${folio}`);
 
     if (!pdfRes.ok) {
       const errText = await pdfRes.text();
@@ -1173,22 +1182,34 @@ const payload = {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `EXT_${folio}.pdf`;
+    a.download = `EXTINTOR_${folio}.pdf`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
 
-    alert("✅ EXTINTOR REGISTRADO Y PDF GENERADO");
-    document.getElementById('form-extintor')?.reset();
-    document.getElementById('ext-id').value = id;
+    alert(`✅ INSPECCIÓN REGISTRADA\nFolio: ${folio}\nInspector: ${inspector}`);
 
-  } catch (err) {
-    alert("❌ Error: " + err.message);
-    console.error(err);
+    // Limpiar form completo
+    document.getElementById('ext-id').value = '';
+    document.getElementById('ext-ubi').value = '';
+    document.getElementById('ext-agente').value = '';
+    document.getElementById('ext-presion').value = 'Si';
+    document.getElementById('ext-manguera').value = 'Si';
+    document.getElementById('ext-seguro').value = 'Si';
+    document.getElementById('ext-vence').value = '';
+    document.getElementById('ext-inspector').value = '';
+    document.getElementById('ext-obs').value = '';
+    document.getElementById('ext-id').focus();
+
+    setTimeout(() => location.reload(), 1000);
+
+  } catch (e) {
+    alert("❌ Error: " + e.message);
+    console.error(e);
   } finally {
     btn.disabled = false;
-    btn.innerText = "REGISTRAR EXTINTOR 🧯";
+    btn.innerText = "REGISTRAR INSPECCIÓN 🧯";
   }
 }
        
