@@ -1803,10 +1803,10 @@ function cancelarCierre() {
 }
 
 // === 1. CARGAR PERMISOS - CON SU API PROPIA ===
+const API_SSO = 'http://172.16.0.1:3000/api/sso'; // CEO: global para que btn la vea
+
 async function cargarPermisosParaCerrar() {
-  const API_SSO = 'http://172.16.0.1:3000/api/sso'; // API local de esta función
   const cont = document.getElementById('contenedor-tabla-sso');
-  
   console.log('CEO CONT:', cont);
   if (!cont) return;
   
@@ -1829,13 +1829,62 @@ async function cargarPermisosParaCerrar() {
 
     abiertos.forEach(p => {
       const folioLimpio = String(p.FOLIO).trim().replace(/[\r\n\t]/g, '');
+      
+      // CEO: Crear elementos sin onclick
       const div = document.createElement('div');
-      div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
-      div.innerHTML = `
-        <span><b>${folioLimpio}</b> - ${p.NOMBRES} - ${p.AREA}</span>
-        <button onclick="cerrarPermiso('${folioLimpio}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
+      div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; align-items:center;";
+      
+      const span = document.createElement('span');
+      span.innerHTML = `<b>${folioLimpio}</b> - ${p.NOMBRES} - ${p.AREA}`;
+      
+      const btn = document.createElement('button');
+      btn.innerText = "CERRAR";
+      btn.style.cssText = "background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;";
+      
+      // CEO: Amarrar evento con JS
+      btn.addEventListener('click', async () => {
+        if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
+
+        btn.disabled = true;
+        btn.innerText = "CERRANDO...";
+
+        const usuarioCierre = window.usuarioLogueado?.usuario || window.usuario?.usuario || sessionStorage.getItem('usuario') || 'SISTEMA';
+        console.log('CEO Usuario que se enviará:', usuarioCierre);
+
+        try {
+          const res = await fetch(API_SSO, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              accion: "cerrarATS",
+              folio: folioLimpio,
+              cerrado_por: usuarioCierre
+            })
+          });
+
+          const data = await res.json();
+          console.log('CEO RESP CERRAR:', data);
+
+          if (data.ok === true) {
+            alert("✅ " + data.mensaje);
+            cargarPermisosParaCerrar();
+          } else {
+            alert("❌ " + (data.error || "Error desconocido"));
+          }
+        } catch (err) {
+          alert("❌ ERROR DE RED: " + err.message);
+          console.error('CEO ERROR CATCH:', err);
+        } finally {
+          btn.disabled = false;
+          btn.innerText = "CERRAR";
+        }
+      });
+
+      div.appendChild(span);
+      div.appendChild(btn);
       cont.appendChild(div);
     });
+    
     console.log('CEO: Pintados', abiertos.length, 'permisos');
 
   } catch (err) {
@@ -1844,74 +1893,12 @@ async function cargarPermisosParaCerrar() {
   }
 }
 
-async function cargarPermisosParaCerrar() {
-  const API_SSO = 'http://172.16.0.1:3000/api/sso';
-  const cont = document.getElementById('contenedor-tabla-sso');
-  
-  if (!cont) return;
-  cont.innerHTML = "Cargando permisos...";
-
-  try {
-    const res = await fetch(`${API_SSO}/detalle?desde=2000-01-01&hasta=2100-12-31`);
-    const data = await res.json();
-    const abiertos = data.filter(r => String(r.ESTATUS).trim().toUpperCase() === "ABIERTO");
-
-    cont.innerHTML = "";
-    if (abiertos.length === 0) {
-      cont.innerHTML = "<p style='padding:10px;'>No hay ATS abiertos</p>";
-      return;
-    }
-
-    abiertos.forEach(p => {
-      const folioLimpio = String(p.FOLIO).trim().replace(/[\r\n\t]/g, '');
-      
-     btn.addEventListener('click', async () => {
-  if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
-
-  btn.disabled = true;
-  btn.innerText = "CERRANDO...";
-
-  // CEO DEBUG: Ver qué usuario estás mandando
-  const usuarioCierre = window.usuarioLogueado?.usuario || window.usuario?.usuario || sessionStorage.getItem('usuario') || 'SISTEMA';
-  console.log('CEO Usuario que se enviará:', usuarioCierre);
-  console.log('CEO window.usuarioLogueado:', window.usuarioLogueado);
-
-  try {
-    const res = await fetch(API_SSO, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: "cerrarATS",
-        folio: folioLimpio,
-        cerrado_por: usuarioCierre
-      })
-    });
-
-    const data = await res.json();
-    console.log('CEO RESP CERRAR:', data);
-
-    if (data.ok === true) {
-      alert("✅ " + data.mensaje);
-      cargarPermisosParaCerrar();
-    } else {
-      alert("❌ " + (data.error || "Error desconocido"));
-    }
-  } catch (err) {
-    alert("❌ ERROR DE RED: " + err.message);
-    console.error('CEO ERROR CATCH:', err);
-  } finally {
-    // CEO CLAVE: Siempre desbloquear el botón aunque falle
-    btn.disabled = false;
-    btn.innerText = "CERRAR";
-  }
-});
-        // Ejecutar cuando cargue DOM
+// CEO: Ejecutar cuando cargue DOM - SOLO UNA VEZ AFUERA
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
 } else {
   cargarPermisosParaCerrar();
-}
-       
+}       
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
