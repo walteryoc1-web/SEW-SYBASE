@@ -1802,20 +1802,17 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
-const API_URL = 'http://172.16.0.1:3000/api/sso'; // ← ESTA LÍNEA ES SAGRADA
+const API_URL = 'https://172.16.0.1:3000/api/sso'; // ← Cambia http por https
 
-// 1. Cargar permisos - con rango largo
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
   if (!cont) return;
   cont.innerHTML = "Cargando...";
 
   try {
-    // Cambié esto: rango de 2000 a 2100 para que traiga todos
     const res = await fetch(`${API_URL}/detalle?desde=2000-01-01&hasta=2100-12-31`);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
-
     const abiertos = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "ABIERTO");
 
     cont.innerHTML = "";
@@ -1825,72 +1822,48 @@ async function cargarPermisosParaCerrar() {
     }
 
     abiertos.forEach(p => {
+      const folioLimpio = (p.FOLIO || '').toString().trim().replace(/[\r\n\t]/g, '');
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
-
-      const folioLimpio = (p.FOLIO || '').toString().trim().replace(/[\r\n\t]/g, '');
-
       div.innerHTML = `
         <span><b>${folioLimpio}</b> - ${p.NOMBRES || ''} - ${p.AREA || ''}</span>
-        <button onclick="cerrarPermiso('${folioLimpio}', this)"
-                style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">
-          CERRAR
-        </button>`;
-
+        <button onclick="cerrarPermiso('${folioLimpio}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
       cont.appendChild(div);
     });
-
   } catch (err) {
     cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message || err}</p>`;
+    console.error(err);
   }
 }
 
-// 2. Cerrar permiso - IGUAL que la versión 1 que sí jala
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
-
   const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
-  console.log("Folio enviado:", JSON.stringify(folioLimpio));
-
-  if (btn) {
-    btn.disabled = true;
-    btn.innerText = "CERRANDO...";
-  }
+  
+  if (btn) { btn.disabled = true; btn.innerText = "CERRANDO..."; }
 
   try {
-    const res = await fetch(API_URL, { // usa API_URL de arriba
+    const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: "cerrarATS",
-        folio: folioLimpio,
-        usuario: "ADMIN"
-      })
+      body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
     });
-
     const data = await res.json();
-    console.log("Respuesta backend:", data);
-
+    
     if (data.ok === true) {
       alert("✅ Permiso cerrado correctamente");
-      window.cargarPermisosParaCerrar();
-      return;
+      cargarPermisosParaCerrar();
+    } else {
+      alert("❌ " + (data.error || "Error desconocido"));
     }
-
-    alert("❌ " + (data.error || "Error desconocido"));
-
   } catch (err) {
     alert("❌ ERROR DE RED: " + err.message);
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerText = "CERRAR";
-    }
+    if (btn) { btn.disabled = false; btn.innerText = "CERRAR"; }
   }
 };
 
 window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
-window.cargarPermisosParaCerrar();
        
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
