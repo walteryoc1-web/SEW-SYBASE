@@ -385,31 +385,103 @@
         <button class="btn-salir" onclick="document.getElementById('ui-incidentes-sso').style.display='none'; document.getElementById('ui-monitor-sso').style.display='block';">CANCELAR</button>
     </div>
 </div>
-    <!-- UI MÉDICO -->
-    <div id="ui-medico-sso" class="rescatada">
-        <div style="background:#16a085; color:white; padding:20px; text-align:center;"><h2 style="margin:0; font-size:20px;">FICHA DE CONTROL MÉDICO</h2></div>
-        <div style="padding:25px; max-width:800px; margin:auto;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
-                <input type="text" id="med-id" placeholder="ID COLABORADOR" style="text-transform:uppercase;">
-                <input type="text" id="med-nombre" placeholder="NOMBRE COMPLETO" style="text-transform:uppercase;">
-                <input type="date" id="med-fecha">
-               <select id="med-tipo"></select>
-            </div>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background:#f9; padding:20px; border-radius:15px; margin-bottom:20px;">
-                <div><label style="font-size:11px;">💉 GLUCOSA</label><input type="number" id="med-glucosa"></div>
-                <div><label style="font-size:11px;">💓 PRESIÓN</label><input type="text" id="med-presion" placeholder="120/80"></div>
-                <div><label style="font-size:11px;">🌡️ TEMP.</label><input type="number" id="med-temp" step="0.1"></div>
-                <div><label style="font-size:11px;">PESO (Lbs)</label><input type="number" id="med-peso"></div>
-                <div><label style="font-size:11px;">OXIGENO (%)</label><input type="number" id="med-oxigeno"></div>
-                <div><label style="font-size:11px;">RITMO CARD.</label><input type="number" id="med-ritmo"></div>
-            </div>
-            <select id="med-resultado"><option value="APTO">✅ APTO</option><option value="RESTRICCION">⚠️ RESTRICCIÓN</option><option value="NO_APTO">❌ NO APTO</option></select>
-            <textarea id="med-obs" placeholder="Observaciones médicas..." rows="3"></textarea>
-            <button class="btn" style="background:#16a085; color:white; margin-top:15px;" onclick="enviarFichaMedica()">REGISTRAR FICHA ⚕️</button>
-            <button class="btn-salir" onclick="document.getElementById('ui-medico-sso').style.display='none'; document.getElementById('ui-monitor-sso').style.display='block';">CANCELAR</button>
-        </div>
+   <!-- UI MÉDICO -->
+<div id="ui-medico-sso" class="rescatada">
+  <style>
+    #ui-medico-sso input, 
+    #ui-medico-sso select, 
+    #ui-medico-sso textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      box-sizing: border-box;
+      text-transform: uppercase;
+      height: 46px; /* CEO: todos mismo alto */
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    #ui-medico-sso textarea {
+      height: 80px;
+      text-transform: none;
+      resize: vertical;
+    }
+    #ui-medico-sso label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    #ui-medico-sso .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+    @media(max-width: 768px) {
+      #ui-medico-sso .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <div style="background:#16a085; color:white; padding:20px; text-align:center; border-radius:15px 15px 0 0;">
+    <h2 style="margin:0; font-size:20px;">FICHA DE CONTROL MÉDICO</h2>
+  </div>
+
+  <div style="padding:25px; max-width:900px; margin:auto;">
+    
+    <!-- Fila 1: Datos generales -->
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div>
+        <label>ID COLABORADOR</label>
+        <input type="text" id="med-id" placeholder="ID COLABORADOR">
+      </div>
+      <div>
+        <label>NOMBRE COMPLETO</label>
+        <input type="text" id="med-nombre" placeholder="NOMBRE COMPLETO">
+      </div>
+      <div>
+        <label>FECHA</label>
+        <input type="date" id="med-fecha">
+      </div>
     </div>
+
+    <div style="margin-bottom:20px;">
+      <label>TIPO DE FICHA</label>
+      <select id="med-tipo"></select>
+    </div>
+
+    <!-- Fila 2: Signos vitales -->
+    <div class="grid-3" style="background:#f0f9f7; padding:20px; border-radius:15px; margin-bottom:20px; border:2px solid #16a085;">
+      <div><label>💉 GLUCOSA</label><input type="number" id="med-glucosa" placeholder="mg/dl"></div>
+      <div><label>💓 PRESIÓN</label><input type="text" id="med-presion" placeholder="120/80"></div>
+      <div><label>🌡️ TEMP.</label><input type="number" id="med-temp" step="0.1" placeholder="36.5"></div>
+      <div><label>PESO (Lbs)</label><input type="number" id="med-peso" placeholder="180"></div>
+      <div><label>OXÍGENO (%)</label><input type="number" id="med-oxigeno" placeholder="98"></div>
+      <div><label>RITMO CARD.</label><input type="number" id="med-ritmo" placeholder="72"></div>
+    </div>
+
+    <!-- Fila 3: Resultado + Obs -->
+    <div style="margin-bottom:15px;">
+      <label>RESULTADO</label>
+      <select id="med-resultado">
+        <option value="APTO">✅ APTO</option>
+        <option value="RESTRICCION">⚠️ RESTRICCIÓN</option>
+        <option value="NO_APTO">❌ NO APTO</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label>OBSERVACIONES MÉDICAS</label>
+      <textarea id="med-obs" placeholder="Observaciones médicas..."></textarea>
+    </div>
+
+    <!-- Botones -->
+    <div style="display:flex; gap:10px;">
+      <button class="btn" style="background:#16a085; color:white; flex:1; padding:14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="enviarFichaMedica()">REGISTRAR FICHA ⚕️</button>
+      <button class="btn-salir" style="background:#c0392b; color:white; padding:14px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('ui-medico-sso').style.display='none'; document.getElementById('ui-monitor-sso').style.display='block';">CANCELAR</button>
+    </div>
+  </div>
+</div>
     
    <!-- UI EXTINTORES -->
 <div id="ui-extintores-sso" class="rescatada">
