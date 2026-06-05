@@ -1802,6 +1802,7 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
+       const API_URL = 'http://172.16.0.1:3000/api/sso';
         
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
