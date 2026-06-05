@@ -1806,23 +1806,23 @@ const API_URL = 'http://172.16.0.1:3000/api/sso';
 
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
-  console.log('CEO CONT:', cont); // ← Para debugear
+  console.log('CEO CONT:', cont);
   
-  if (!cont) {
-    console.error('CEO: NO existe #contenedor-tabla-sso');
-    return;
-  }
-  
-  cont.innerHTML = "Cargando...";
+  if (!cont) return;
+  cont.innerHTML = "Cargando permisos...";
 
   try {
     const res = await fetch(`${API_URL}/detalle?desde=2000-01-01&hasta=2100-12-31`);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    
     const data = await res.json();
+    console.log('CEO DATA RECIBIDA:', data.length, 'registros');
+    
     const abiertos = data.filter(r => String(r.ESTATUS).trim().toUpperCase() === "ABIERTO");
 
     cont.innerHTML = "";
     if (abiertos.length === 0) {
-      cont.innerHTML = "<p>No hay ATS abiertos</p>";
+      cont.innerHTML = "<p style='padding:10px;'>No hay ATS abiertos</p>";
       return;
     }
 
@@ -1835,12 +1835,13 @@ async function cargarPermisosParaCerrar() {
         <button onclick="cerrarPermiso('${folioLimpio}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
       cont.appendChild(div);
     });
+    console.log('CEO: Pintados', abiertos.length, 'permisos');
 
   } catch (err) {
-    cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message}</p>`;
+    console.error('CEO ERROR FETCH:', err);
+    cont.innerHTML = `<p style="color:red; padding:10px;">Q28K_ERROR: ${err.message}</p><p style="font-size:12px;">Tip CEO: Mixed Content. Usa Firefox o desactiva flag en Chrome</p>`;
   }
 }
-
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
   const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
