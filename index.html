@@ -736,14 +736,26 @@ function checkPiloto(inp) {
     }
 }
 /// ===== PÍLDORAS =====
+function obtenerFechaCorte() {
+  const ahora = new Date();
+  const corte = new Date();
+  corte.setHours(6, 0, 0, 0); // 06:00:00
+
+  if (ahora < corte) {
+    corte.setDate(corte.getDate() - 1); // si son antes de 6am, el corte es de ayer
+  }
+  return corte.toISOString().split('T')[0]; // 2026-04-05
+}
+
 async function actualizarPildoras() {
+  const fechaCorte = obtenerFechaCorte(); // <-- CLAVE CEO
+
   // SSO
   try {
-    const hoySSO = new Date().toISOString().split('T')[0];
     const elIni = document.getElementById('f-ini-sso');
     const elFin = document.getElementById('f-fin-sso');
-    const iniSSO = elIni?.value || hoySSO;
-    const finSSO = elFin?.value || hoySSO;
+    const iniSSO = elIni?.value || fechaCorte; // usa corte, no hoy
+    const finSSO = elFin?.value || fechaCorte;
 
     const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`, {mode: 'cors'});
     if(rSSO.ok) {
@@ -758,9 +770,8 @@ async function actualizarPildoras() {
 
   // LOGISTICA
   try {
-    const hoy = new Date();
-    const ini = document.getElementById('f-inicio')?.value || hoy.toISOString().split('T')[0];
-    const fin = document.getElementById('f-fin')?.value || hoy.toISOString().split('T')[0];
+    const ini = document.getElementById('f-inicio')?.value || fechaCorte; // usa corte
+    const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
     const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
     if(rLog.ok) {
