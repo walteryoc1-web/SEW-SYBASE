@@ -1706,7 +1706,8 @@ function mostrarListaAdmin(categoria) {
             accion: "actualizarExtra3",
             categoria: categoria,
             id: id,
-            extra3: nuevoEstado
+            extra3: nuevoEstado,
+             usuario: window.usuarioLogueado?.usuario || 'SISTEMA'
         };
 
         const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
