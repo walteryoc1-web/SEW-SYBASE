@@ -1849,7 +1849,7 @@ async function cargarPermisosParaCerrar() {
       body: JSON.stringify({ 
         accion: "cerrarATS", 
         folio: folioLimpio, 
-        cerrado_por: usuarioLimpio  // ← AQUÍ CEO
+        cerrado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
       })
     });
           const data = await res.json();
