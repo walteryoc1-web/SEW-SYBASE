@@ -1843,11 +1843,15 @@ async function cargarPermisosParaCerrar() {
         btn.innerText = "CERRANDO...";
 
         try {
-          const res = await fetch(API_SSO, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, creado_por: usuarioLimpio " })
-          });
+    const res = await fetch(API_SSO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        accion: "cerrarATS", 
+        folio: folioLimpio, 
+        creado_por: usuarioLimpio  // ← AQUÍ CEO
+      })
+    });
           const data = await res.json();
           console.log('CEO RESP CERRAR:', data);
           
