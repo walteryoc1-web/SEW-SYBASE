@@ -1543,21 +1543,27 @@ async function descargarCSV_OT() {
   }
 }
        // ===== ADMIN DATOS MAESTROS =====
-    function descargarDataMaestra() {
-            try {
-                let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,ESTADO\n";
-                for (let cat in DB_MASTER) {
-                    const lista = Array.isArray(DB_MASTER[cat])? DB_MASTER[cat] : [];
-                    lista.forEach(i => {
-                        csv += `${cat},${i.id},"${(i.nombre||"").replace(/"/g,'') || ""}","${(i.extra1||"").replace(/"/g,'') || ""}","${(i.extra2||"").replace(/"/g,'') || ""}",${i.extra3 || 'ACTIVO'}\n`;
-                    });
-                }
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-                a.download = `DB_MAESTRA_TERPAC_${new Date().toISOString().slice(0,10)}.csv`;
-                a.click();
-            } catch (e) { alert("❌ Error exportando base de datos."); }
-        }
+   function descargarDataMaestra() {
+  try {
+  
+    let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,ESTADO,CREADO_POR,MODIFICADO_POR,FECHA_MOD\n";
+
+    for (let cat in DB_MASTER) {
+      const lista = Array.isArray(DB_MASTER[cat])? DB_MASTER[cat] : [];
+      lista.forEach(i => {
+        csv += `${cat},${i.id},"${(i.nombre||"").replace(/"/g,'') || ""}","${(i.extra1||"").replace(/"/g,'') || ""}","${(i.extra2||"").replace(/"/g,'') || ""}",${i.extra3 || 'ACTIVO'},"${(i.creado_por||"").replace(/"/g,'') || ""}","${(i.modificado_por||"").replace(/"/g,'') || ""}","${i.fecha_mod || ""}"\n`;
+      });
+    }
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.download = `DB_MAESTRA_TERPAC_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  } catch (e) {
+    console.error(e);
+    alert("❌ Error exportando base de datos.");
+  }
+}
 
         function descargarBase64PDF(b, n) {
   if(!b || b.length < 500) return;
