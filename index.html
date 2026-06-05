@@ -391,8 +391,10 @@
         <div style="padding:25px; max-width:800px; margin:auto;">
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
                 <input type="text" id="med-id" placeholder="ID COLABORADOR" style="text-transform:uppercase;">
+                <input type="text" id="med-nombre" placeholder="NOMBRE COMPLETO" style="text-transform:uppercase;">
                 <input type="date" id="med-fecha">
-                <select id="med-tipo"></select>
+               <select id="med-tipo"></select>
+            </div>
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background:#f9; padding:20px; border-radius:15px; margin-bottom:20px;">
                 <div><label style="font-size:11px;">💉 GLUCOSA</label><input type="number" id="med-glucosa"></div>
@@ -1022,10 +1024,14 @@ const payload = {
 
   try {
     const id = document.getElementById('med-id').value.trim();
+    const nombre = document.getElementById('med-nombre').value.trim(); // ← AGREGA ESTO
+
     if (!id) throw new Error("Falta el ID del colaborador");
+    if (!nombre) throw new Error("Falta el nombre del paciente"); // ← VALIDACIÓN CEO
 
     const payload = {
       id: id,
+      nombre: nombre, // ← MANDA EL NOMBRE AL BACKEND
       fecha: document.getElementById('med-fecha').value,
       tipo: document.getElementById('med-tipo').value,
       glucosa: document.getElementById('med-glucosa').value,
@@ -1039,46 +1045,13 @@ const payload = {
       creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
-    if (!payload.fecha) throw new Error("Selecciona la fecha");
-    if (!payload.tipo || payload.tipo.includes('disabled selected')) throw new Error("Selecciona un tipo de atención");
-
-    const temp = Number(payload.temp);
-    if(payload.temp && (temp < 35 || temp > 40)) {
-      throw new Error("Temperatura fuera de rango. Usa valores entre 35 y 40°C");
-    }
-
-    const res = await fetch("http://172.16.0.1:3000/api/registrarFichaMedica", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
-
-    const idFicha = data.idFicha;
-    console.log('Generando PDF de ficha:', idFicha);
-
-    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ficha/pdf/${idFicha}?t=${Date.now()}`);
-    if (!pdfRes.ok) {
-      const errText = await pdfRes.text();
-      throw new Error('Error generando PDF: ' + errText);
-    }
-
-    const blob = await pdfRes.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `MED_${idFicha}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+    //...tu código de fetch y PDF igual...
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
 
-    // === LIMPIAR TODO EL FORMULARIO CEO ===
+    // === LIMPIAR TODO EL FORMULARIO ===
     document.getElementById('med-id').value = '';
+    document.getElementById('med-nombre').value = ''; // ← LIMPIA NOMBRE TAMBIÉN
     document.getElementById('med-tipo').value = '';
     document.getElementById('med-glucosa').value = '';
     document.getElementById('med-presion').value = '';
@@ -1088,11 +1061,8 @@ const payload = {
     document.getElementById('med-ritmo').value = '';
     document.getElementById('med-obs').value = '';
     document.getElementById('med-resultado').value = 'APTO';
-
-    // Fecha de hoy para la siguiente ficha
     document.getElementById('med-fecha').value = new Date().toISOString().split('T')[0];
 
-    // Poner foco en ID para la siguiente ficha
     document.getElementById('med-id').focus();
 
   } catch (error) {
