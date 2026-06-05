@@ -1802,7 +1802,7 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
-const API_URL = 'http://172.16.0.1:3000/api/sso'; // o '/api/sso' si usas proxy
+const API_URL = '/api/sso';
 
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
@@ -1810,14 +1810,21 @@ async function cargarPermisosParaCerrar() {
   cont.innerHTML = "Cargando...";
 
   try {
-    const res = await fetch(`${API_URL}/detalle?desde=2000-01-01&hasta=2100-12-31`);
+    console.log('CEO: Pidiendo todos los ABIERTO');
+    const res = await fetch(`${API_URL}/detalle?t=${Date.now()}`);
     if (!res.ok) throw new Error("HTTP " + res.status);
+    
     const data = await res.json();
-    console.log('CEO DATA:', data.length, 'registros');
-
+    console.log('CEO DATA:', data.length);
+    
     const abiertos = data.filter(r => String(r.ESTATUS).trim().toUpperCase() === "ABIERTO");
+    
+    cont.innerHTML = "";
+    if (abiertos.length === 0) {
+      cont.innerHTML = "<p>No hay ATS abiertos</p>";
+      return;
+    }
 
-    cont.innerHTML = abiertos.length ? "" : "<p>No hay ATS abiertos</p>";
     abiertos.forEach(p => {
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
@@ -1825,13 +1832,14 @@ async function cargarPermisosParaCerrar() {
         <button onclick="cerrarPermiso('${p.FOLIO.trim()}', this)" style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">CERRAR</button>`;
       cont.appendChild(div);
     });
+    
+    console.log('✅ CEO: Pintados', abiertos.length);
 
   } catch (err) {
     cont.innerHTML = `<p style="color:red;">Q28K_ERROR: ${err.message}</p>`;
     console.error('CEO ERROR:', err);
   }
-}
-       
+}       
        // 2. función para cerrar permiso
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
