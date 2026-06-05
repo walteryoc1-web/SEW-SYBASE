@@ -1545,13 +1545,13 @@ async function descargarCSV_OT() {
        // ===== ADMIN DATOS MAESTROS =====
    function descargarDataMaestra() {
   try {
-    let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,ESTADO,CREADO_POR,MODIFICADO_POR,FECHA_MOD\n";
+    let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,EXTRA3,EXTRA4,CREADO_POR,MODIFICADO_POR,FECHA_MOD\n";
 
     for (let cat in DB_MASTER) {
       const lista = Array.isArray(DB_MASTER[cat])? DB_MASTER[cat] : [];
       lista.forEach(i => {
         const limpiar = (val) => String(val?? '').replace(/"/g, '""');
-        csv += `${cat},${i.id || ''},"${limpiar(i.nombre)}","${limpiar(i.extra1)}","${limpiar(i.extra2)}",${i.extra3 || 'ACTIVO'},"${limpiar(i.creado_por)}","${limpiar(i.modificado_por)}","${limpiar(i.fecha_mod)}"\n`;
+        csv += `${cat},${i.id || ''},"${limpiar(i.nombre)}","${limpiar(i.extra1)}","${limpiar(i.extra2)}","${limpiar(i.extra3)}","${limpiar(i.extra4)}","${limpiar(i.creado_por)}","${limpiar(i.modificado_por)}","${limpiar(i.fecha_mod)}"\n`;
       });
     }
 
@@ -1566,10 +1566,9 @@ async function descargarCSV_OT() {
 
   } catch (e) {
     console.error(e);
-    alert("❌ Error exportando base de datos: " + e.message);
+    alert("❌ Error exportando: " + e.message);
   }
 }
-
         function descargarBase64PDF(b, n) {
   if(!b || b.length < 500) return;
 
