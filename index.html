@@ -411,27 +411,45 @@
         </div>
     </div>
     
-    <!-- UI EXTINTORES -->
-    <div id="ui-extintores-sso" class="rescatada">
-        <div style="background:#2c3e50; color:white; padding:20px; text-align:center;"><h2 style="margin:0; font-size:20px;">INSPECCIÓN DE EXTINTORES</h2></div>
-        <div style="padding:25px; max-width:800px; margin:auto;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
-                <input type="text" id="ext-id" placeholder="ID EXT-XXX">
-                <input type="text" id="ext-ubi" placeholder="UBICACIÓN">
-                <select id="ext-agente" onchange="actualizarChecklistExtintor()"></select>
-            </div>
-            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background:#f4f7f6; padding:20px; border-radius:15px;">
-                <div><label style="font-size:11px;">Presión OK?</label><select id="ext-presion"><option>Si</option><option>No</option></select></div>
-                <div><label style="font-size:11px;">Manguera OK?</label><select id="ext-manguera"><option>Si</option><option>No</option></select></div>
-                <div><label style="font-size:11px;">Seguro OK?</label><select id="ext-seguro"><option>Si</option><option>No</option></select></div>
-                <div><label style="font-size:11px;">Vence</label><input type="month" id="ext-vence"></div>
-            </div>
-            <textarea id="ext-obs" placeholder="Observaciones técnicas..." rows="3" style="margin-top:15px;"></textarea>
-            <button class="btn" style="background:#2c3e50; color:white; margin-top:20px;" onclick="enviarInspeccionExtintor()">REGISTRAR INSPECCIÓN 🧯</button>
-            <button class="btn-salir" onclick="document.getElementById('ui-extintores-sso').style.display='none'; document.getElementById('ui-monitor-sso').style.display='block';">CANCELAR</button>
-        </div>
+   <!-- UI EXTINTORES -->
+<div id="ui-extintores-sso" class="rescatada">
+  <div style="background:#2c3e50; color:white; padding:20px; text-align:center;">
+    <h2 style="margin:0; font-size:20px;">INSPECCIÓN DE EXTINTORES</h2>
+  </div>
+  <div style="padding:25px; max-width:800px; margin:auto;">
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
+      <input type="text" id="ext-id" placeholder="ID EXT-XXX *" required>
+      <input type="text" id="ext-ubi" placeholder="UBICACIÓN *" required>
+      <select id="ext-agente" onchange="actualizarChecklistExtintor()" required>
+        <option value="">AGENTE EXTINTOR *</option>
+        <option>PQS</option>
+        <option>CO2</option>
+        <option>AGUA</option>
+        <option>ESPUMA</option>
+      </select>
     </div>
-   <!-- SECCIÓN DE SCRIPTS -->
+
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background:#f4f7f6; padding:20px; border-radius:15px; margin-bottom:15px;">
+      <div><label style="font-size:11px;">Presión OK? *</label><select id="ext-presion"><option>Si</option><option>No</option></select></div>
+      <div><label style="font-size:11px;">Manguera OK? *</label><select id="ext-manguera"><option>Si</option><option>No</option></select></div>
+      <div><label style="font-size:11px;">Seguro OK? *</label><select id="ext-seguro"><option>Si</option><option>No</option></select></div>
+      <div><label style="font-size:11px;">Vence *</label><input type="month" id="ext-vence" required></div>
+    </div>
+
+    <!-- INSPECTOR OBLIGATORIO CEO -->
+    <div style="margin-bottom:15px;">
+      <label style="font-size:12px; font-weight:bold; color:#c0392b;">Nombre Inspector: *</label>
+      <input type="text" id="ext-inspector" placeholder="NOMBRE COMPLETO Y FIRMA" style="text-transform:uppercase;" required>
+    </div>
+
+    <textarea id="ext-obs" placeholder="Observaciones técnicas..." rows="3" style="margin-top:10px; width:100%;"></textarea>
+
+    <button class="btn" style="background:#2c3e50; color:white; margin-top:20px;" onclick="enviarInspeccionExtintor()">REGISTRAR INSPECCIÓN 🧯</button>
+    <button class="btn-salir" onclick="document.getElementById('ui-extintores-sso').style.display='none'; document.getElementById('ui-monitor-sso').style.display='block';">CANCELAR</button>
+  </div>
+</div>
+    
+    <!-- SECCIÓN DE SCRIPTS -->
    <script>
 const URL_SCRIPT = 'http://172.16.0.1:3000/api';
 let DB_MASTER = {};
@@ -1122,8 +1140,10 @@ const payload = {
       manguera: document.getElementById('ext-manguera').value,
       seguro: document.getElementById('ext-seguro').value,
       vencimiento: document.getElementById('ext-vence').value,
-      observaciones: document.getElementById('ext-obs').value
-    };
+      observaciones: document.getElementById('ext-obs').value,
+      nombre_inspector: window.usuarioLogueado?.usuario || 'SISTEMA' 
+};
+    
 
     if (!payload.ubicacion) throw new Error("Falta la ubicación");
     if (!payload.agente_nombre) throw new Error("Falta el nombre del agente");
