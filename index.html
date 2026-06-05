@@ -749,7 +749,7 @@ function obtenerFechaCorte() {
 
 async function actualizarPildoras() {
   const fechaCorte = obtenerFechaCorte();
-  console.log('Fecha corte CEO:', fechaCorte); // para debug
+  console.log('Fecha corte CEO:', fechaCorte);
 
   // SSO
   try {
@@ -770,66 +770,31 @@ async function actualizarPildoras() {
   } catch(e) { console.error("SSO:", e); }
 
   // LOGISTICA
- try {
-  const ini = document.getElementById('f-inicio')?.value || fechaCorte;
-  const fin = document.getElementById('f-fin')?.value || fechaCorte;
-
-  const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
-  if(rLog.ok) {
-    const dLog = await rLog.json();
-    console.log("LOG DATA CEO:", dLog);
-    
-    if (dLog.ok) {
-      // Mapeo CEO: backend -> pildoras HTML
-      document.getElementById('count-pendientes') && 
-        (document.getElementById('count-pendientes').innerText = String(dLog.total || 0).padStart(2,'0'));
-      
-      document.getElementById('count-proceso') && 
-        (document.getElementById('count-proceso').innerText = String(dLog.proceso || 0).padStart(2,'0'));
-      
-      document.getElementById('count-despachadas') && 
-        (document.getElementById('count-despachadas').innerText = String(dLog.despachadas || 0).padStart(2,'0'));
-      
-      console.log('✅ Pintado CEO:', dLog.total, 'pend,', dLog.proceso, 'proc,', dLog.despachadas, 'desp');
-    }
-  }
-} catch(e) { console.error("LOG:", e); }
-       
-async function cargarCerradosSSO() {
-  const cont = document.getElementById('contenedor-cerrados-sso');
-  if (!cont) return;
-
-  cont.innerHTML = "Cargando...";
-
   try {
-    const hoy = new Date();
-    const desde = hoy.toISOString().split('T')[0];
-    const hasta = desde;
+    const ini = document.getElementById('f-inicio')?.value || fechaCorte;
+    const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
-    const res = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=cerrados&desde=${desde}&hasta=${hasta}&t=${Date.now()}`);
-    const data = await res.json();
+    const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
+    if(rLog.ok) {
+      const dLog = await rLog.json();
+      console.log("LOG DATA CEO:", dLog);
 
-    if (!Array.isArray(data)) throw new Error("Respuesta inválida");
+      if (dLog.ok) {
+        // Mapeo CEO: backend -> pildoras HTML
+        document.getElementById('count-pendientes') &&
+          (document.getElementById('count-pendientes').innerText = String(dLog.total || 0).padStart(2,'0'));
 
-    const cerrados = data.filter(r => (r.ESTATUS || "").trim().toUpperCase() === "CERRADO");
+        document.getElementById('count-proceso') &&
+          (document.getElementById('count-proceso').innerText = String(dLog.proceso || 0).padStart(2,'0'));
 
-    cont.innerHTML = "";
-    if (cerrados.length === 0) {
-      cont.innerHTML = "<p>No hay ATS cerrados</p>";
-      return;
+        document.getElementById('count-despachadas') &&
+          (document.getElementById('count-despachadas').innerText = String(dLog.despachadas || 0).padStart(2,'0'));
+
+        console.log('✅ Pintado CEO:', dLog.total, 'pend,', dLog.proceso, 'proc,', dLog.despachadas, 'desp');
+      }
     }
-
-    cerrados.forEach(p => {
-      const div = document.createElement('div');
-      div.innerHTML = `<b>${p.FOLIO}</b> - ${p.NOMBRES} - ${p.FECHA_CIERRE}`;
-      cont.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error("Error cerrados:", err);
-    cont.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-  }
-}
+  } catch(e) { console.error("LOG:", e); }
+} 
       
 cargarCerradosSSO();
 actualizarPildoras();
