@@ -1802,19 +1802,19 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
+const API_URL = 'http://172.16.0.1:3000/api/sso'; // ← ESTA LÍNEA FALTABA
+
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
   if (!cont) return console.error('CEO: NO existe #contenedor-tabla-sso');
   cont.innerHTML = "Cargando...";
 
   try {
-    const res = await fetch('http://172.16.0.1:3000/api/sso/detalle?desde=2000-01-01&hasta=2100-12-31');
+    const res = await fetch(`${API_URL}/detalle?desde=2000-01-01&hasta=2100-12-31`); // usa API_URL
     console.log('CEO STATUS:', res.status, res.ok);
     
     const data = await res.json();
     console.log('CEO DATA CRUDO:', data);
-    console.log('CEO ES ARRAY:', Array.isArray(data), 'LARGO:', data.length);
-
     const abiertos = data.filter(r => String(r.ESTATUS).trim().toUpperCase() === "ABIERTO");
     console.log('CEO ABIERTOS FILTRADOS:', abiertos.length);
 
@@ -1837,7 +1837,8 @@ async function cargarPermisosParaCerrar() {
     console.error('CEO ERROR:', err);
   }
 }
-   window.cerrarPermiso = async function(f, btn) {
+
+window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
 
   const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
@@ -1849,7 +1850,7 @@ async function cargarPermisosParaCerrar() {
   }
 
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(API_URL, { // ahora sí existe API_URL
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
@@ -1876,8 +1877,9 @@ async function cargarPermisosParaCerrar() {
       btn.innerText = "CERRAR";
     }
   }
-}; 
-       
+};
+
+window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;       
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
