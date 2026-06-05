@@ -1545,23 +1545,28 @@ async function descargarCSV_OT() {
        // ===== ADMIN DATOS MAESTROS =====
    function descargarDataMaestra() {
   try {
-  
     let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,ESTADO,CREADO_POR,MODIFICADO_POR,FECHA_MOD\n";
 
     for (let cat in DB_MASTER) {
       const lista = Array.isArray(DB_MASTER[cat])? DB_MASTER[cat] : [];
       lista.forEach(i => {
-        csv += `${cat},${i.id},"${(i.nombre||"").replace(/"/g,'') || ""}","${(i.extra1||"").replace(/"/g,'') || ""}","${(i.extra2||"").replace(/"/g,'') || ""}",${i.extra3 || 'ACTIVO'},"${(i.creado_por||"").replace(/"/g,'') || ""}","${(i.modificado_por||"").replace(/"/g,'') || ""}","${i.fecha_mod || ""}"\n`;
+        const limpiar = (val) => String(val?? '').replace(/"/g, '""');
+        csv += `${cat},${i.id || ''},"${limpiar(i.nombre)}","${limpiar(i.extra1)}","${limpiar(i.extra2)}",${i.extra3 || 'ACTIVO'},"${limpiar(i.creado_por)}","${limpiar(i.modificado_por)}","${limpiar(i.fecha_mod)}"\n`;
       });
     }
 
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.href = URL.createObjectURL(blob);
     a.download = `DB_MAESTRA_TERPAC_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+
   } catch (e) {
     console.error(e);
-    alert("❌ Error exportando base de datos.");
+    alert("❌ Error exportando base de datos: " + e.message);
   }
 }
 
