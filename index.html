@@ -1846,7 +1846,7 @@ async function cargarPermisosParaCerrar() {
 
 // === 2. CERRAR PERMISO - CON SU API PROPIA ===
 window.cerrarPermiso = async function(f, btn) {
-  const API_SSO = 'http://172.16.0.1:3000/api/sso'; // API local de esta función
+  const API_SSO = 'http://172.16.0.1:3000/api/sso';
   
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
   const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
@@ -1873,17 +1873,12 @@ window.cerrarPermiso = async function(f, btn) {
     }
   } catch (err) {
     alert("❌ ERROR DE RED: " + err.message);
+    console.error(err);
     btn.disabled = false;
     btn.innerText = "CERRAR";
   }
 };
 
-// Ejecutar cuando cargue DOM
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
-} else {
-  cargarPermisosParaCerrar();
-}
        
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
