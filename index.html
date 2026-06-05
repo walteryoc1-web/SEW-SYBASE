@@ -1698,7 +1698,7 @@ function mostrarListaAdmin(categoria) {
     html += "</table>";
     div.innerHTML = html;
 }
-   async function cambiarEstado(categoria, id, nuevoEstado) {
+  async function cambiarEstado(categoria, id, nuevoEstado) {
     if (!confirm(`¿Seguro que quieres poner ${id} en ${nuevoEstado}?`)) return;
 
     try {
@@ -1707,7 +1707,7 @@ function mostrarListaAdmin(categoria) {
             categoria: categoria,
             id: id,
             extra3: nuevoEstado,
-             usuario: window.usuarioLogueado?.usuario || 'SISTEMA'
+            usuario: window.usuarioLogueado?.usuario || 'SISTEMA'
         };
 
         const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
@@ -1716,21 +1716,38 @@ function mostrarListaAdmin(categoria) {
             headers: {'Content-Type': 'application/json'}
         });
 
-        const txt = await r.text();
-
-        if (txt.includes('"ok":true')) {
+        const data = await r.json();
+        
+        if (data.ok) {
             alert(`✅ ${id} ahora está ${nuevoEstado}`);
-            await recargarDatosMaestros();
-            mostrarListaAdmin(categoria);
+            mostrarListaAdmin(categoria); // ← quita el await recargarDatosMaestros()
         } else {
-            alert("❌ Error: " + txt);
+            alert("❌ Error: " + data.error);
         }
 
     } catch (e) {
         alert("❌ Error: " + e.message);
     }
-}       
-
+}
+       async function recargarDatosMaestros() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const r = await fetch(URL_SCRIPT + '?accion=getAdminConfig');
+            const txt = await r.text(); // ← lee texto primero
+            
+            if (!r.ok) {
+                console.error('Status:', r.status, 'Respuesta:', txt);
+                return resolve(); // ← no rechaces, solo ignora
+            }
+            
+            DB_MASTER = JSON.parse(txt);
+            resolve();
+        } catch (e) {
+            console.error('Error recarga:', e);
+            resolve(); // ← no rechaces para que no truene cambiarEstado
+        }
+    });
+}
        
         function irAIncidentes() {
     document.getElementById('ui-monitor-sso').style.display='none';
