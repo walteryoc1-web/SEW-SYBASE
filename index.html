@@ -1802,7 +1802,7 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
-       const API_URL = 'http://172.16.0.1:3000/api/sso';
+const API_URL = 'http://172.16.0.1:3000/api/sso';
         
 async function cargarPermisosParaCerrar() {
   const cont = document.getElementById('contenedor-tabla-sso');
@@ -1812,18 +1812,15 @@ async function cargarPermisosParaCerrar() {
   try {
     console.log('CEO: Pidiendo todos los ABIERTO sin corte');
 
-    // SIN desde/hasta - backend regresa todo
-    const res = await fetch(`${API_URL}/detalle?t=${Date.now()}`, {mode: 'cors'});
+    // SIN desde/hasta - solo el endpoint
+    const res = await fetch(`${API_URL}/detalle`, {mode: 'cors'});
     if (!res.ok) throw new Error("HTTP " + res.status);
 
     const data = await res.json();
-    console.log('DATA CEO:', data);
+    console.log('DATA CEO:', data, 'Tipo:', typeof data, 'Largo:', data.length);
 
-    const array = Array.isArray(data)? data : (data.datos || []);
-
-    // Filtro solo por ESTATUS = ABIERTO, sin fecha
-    const abiertos = array.filter(r =>
-      (r.ESTATUS || r.estatus || "").trim().toUpperCase() === "ABIERTO"
+    const abiertos = data.filter(r =>
+      String(r.ESTATUS).trim().toUpperCase() === "ABIERTO"
     );
 
     cont.innerHTML = "";
@@ -1835,16 +1832,13 @@ async function cargarPermisosParaCerrar() {
     abiertos.forEach(p => {
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
-
-      const folioLimpio = (p.FOLIO || p.folio || '').toString().trim();
-
+      const folioLimpio = String(p.FOLIO).trim();
       div.innerHTML = `
-        <span><b>${folioLimpio}</b> - ${p.NOMBRES || p.nombres || ''} - ${p.AREA || p.area || ''}</span>
+        <span><b>${folioLimpio}</b> - ${p.NOMBRES} - ${p.AREA}</span>
         <button onclick="cerrarPermiso('${folioLimpio}', this)"
                 style="background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">
           CERRAR
         </button>`;
-
       cont.appendChild(div);
     });
 
@@ -1855,6 +1849,7 @@ async function cargarPermisosParaCerrar() {
     console.error('ERROR CEO:', err);
   }
 }
+       
        // 2. función para cerrar permiso
 window.cerrarPermiso = async function(f, btn) {
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
