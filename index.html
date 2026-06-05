@@ -793,8 +793,10 @@ async function actualizarPildoras() {
         console.log('✅ Pintado CEO:', dLog.total, 'pend,', dLog.proceso, 'proc,', dLog.despachadas, 'desp');
       }
     }
-  } catch(e) { console.error("LOG:", e); }
-} 
+  } } catch(e) { 
+  console.error("LOG ERROR CEO:", e.message); 
+  
+}
       
 cargarCerradosSSO();
 actualizarPildoras();
