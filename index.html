@@ -1802,17 +1802,18 @@ function cancelarCierre() {
   if (contenedorBotones) contenedorBotones.style.display = 'block';
 }
 
-const API_URL = 'http://172.16.0.1:3000/api/sso';
-
+// === 1. CARGAR PERMISOS - CON SU API PROPIA ===
 async function cargarPermisosParaCerrar() {
+  const API_SSO = 'http://172.16.0.1:3000/api/sso'; // API local de esta función
   const cont = document.getElementById('contenedor-tabla-sso');
-  console.log('CEO CONT:', cont);
   
+  console.log('CEO CONT:', cont);
   if (!cont) return;
+  
   cont.innerHTML = "Cargando permisos...";
 
   try {
-    const res = await fetch(`${API_URL}/detalle?desde=2000-01-01&hasta=2100-12-31`);
+    const res = await fetch(`${API_SSO}/detalle?desde=2000-01-01&hasta=2100-12-31`);
     if (!res.ok) throw new Error("HTTP " + res.status);
     
     const data = await res.json();
@@ -1839,10 +1840,14 @@ async function cargarPermisosParaCerrar() {
 
   } catch (err) {
     console.error('CEO ERROR FETCH:', err);
-    cont.innerHTML = `<p style="color:red; padding:10px;">Q28K_ERROR: ${err.message}</p><p style="font-size:12px;">Tip CEO: Mixed Content. Usa Firefox o desactiva flag en Chrome</p>`;
+    cont.innerHTML = `<p style="color:red; padding:10px;">Q28K_ERROR: ${err.message}</p>`;
   }
 }
+
+// === 2. CERRAR PERMISO - CON SU API PROPIA ===
 window.cerrarPermiso = async function(f, btn) {
+  const API_SSO = 'http://172.16.0.1:3000/api/sso'; // API local de esta función
+  
   if (!confirm("¿Cerrar permiso " + f + "?")) return;
   const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
   
@@ -1850,12 +1855,13 @@ window.cerrarPermiso = async function(f, btn) {
   btn.innerText = "CERRANDO...";
 
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(API_SSO, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
     });
     const data = await res.json();
+    console.log('CEO RESP CERRAR:', data);
     
     if (data.ok === true) {
       alert("✅ Permiso cerrado correctamente");
@@ -1872,14 +1878,12 @@ window.cerrarPermiso = async function(f, btn) {
   }
 };
 
-// CEO CLAVE: Esperar a que cargue el DOM completo
+// Ejecutar cuando cargue DOM
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
 } else {
   cargarPermisosParaCerrar();
 }
-
-window.cargarPermisosParaCerrar = cargarPermisosParaCerrar;
        
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
