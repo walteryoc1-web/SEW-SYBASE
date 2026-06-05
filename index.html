@@ -775,27 +775,22 @@ async function actualizarPildoras() {
     const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
     const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
-    if(rLog.ok) {
-      const dLog = await rLog.json();
-      console.log("LOG DATA CEO:", dLog);
-
-      if (dLog.ok) {
-        // Mapeo CEO: backend -> pildoras HTML
-        document.getElementById('count-pendientes') &&
-          (document.getElementById('count-pendientes').innerText = String(dLog.total || 0).padStart(2,'0'));
-
-        document.getElementById('count-proceso') &&
-          (document.getElementById('count-proceso').innerText = String(dLog.proceso || 0).padStart(2,'0'));
-
-        document.getElementById('count-despachadas') &&
-          (document.getElementById('count-despachadas').innerText = String(dLog.despachadas || 0).padStart(2,'0'));
-
-        console.log('✅ Pintado CEO:', dLog.total, 'pend,', dLog.proceso, 'proc,', dLog.despachadas, 'desp');
-      }
-    }
-  } } catch(e) { 
-  console.error("LOG ERROR CEO:", e.message); 
+    if (dLog.ok) {
+  // Mapeo CEO: backend usa "arribos/entradas/salidas" -> pildoras usan "total/proceso/despachadas"
+  const total = dLog.arribos || 0;
+  const proceso = 0; // tú no tienes "en proceso" en LOGISTICA
+  const despachadas = dLog.salidas || 0;
   
+  document.getElementById('count-pendientes') && 
+    (document.getElementById('count-pendientes').innerText = String(total).padStart(2,'0'));
+  
+  document.getElementById('count-proceso') && 
+    (document.getElementById('count-proceso').innerText = String(proceso).padStart(2,'0'));
+  
+  document.getElementById('count-despachadas') && 
+    (document.getElementById('count-despachadas').innerText = String(despachadas).padStart(2,'0'));
+  
+  console.log('✅ Pintado CEO:', total, 'pend,', proceso, 'proc,', despachadas, 'desp');
 }
       
 cargarCerradosSSO();
