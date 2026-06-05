@@ -1730,17 +1730,7 @@ function mostrarListaAdmin(categoria) {
         alert("❌ Error: " + e.message);
     }
 }       
-async function recargarDatosMaestros() {
-    return new Promise((resolve, reject) => {
-        fetch(URL_SCRIPT + '?accion=getAdminConfig') // <-- usa getAdminConfig
-      .then(r => r.json())
-      .then(d => {
-            DB_MASTER = d;
-            resolve();
-        })
-      .catch(reject);
-    });
-}
+
        
         function irAIncidentes() {
     document.getElementById('ui-monitor-sso').style.display='none';
