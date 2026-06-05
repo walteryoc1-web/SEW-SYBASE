@@ -1017,7 +1017,7 @@ const payload = {
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
-  async function enviarFichaMedica() {
+ async function enviarFichaMedica() {
   const btn = document.querySelector('button[onclick="enviarFichaMedica()"]');
   btn.disabled = true;
   btn.innerText = "REGISTRANDO... ⏳";
@@ -1045,20 +1045,39 @@ const payload = {
       creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
-    // === AQUÍ VA EL FETCH CEO ===
-    const resp = await fetch('http://172.16.0.1:3000/api/registrarFichaMedica', {
+    // 1. Guardar en SQL y obtener idFicha
+    const res = await fetch('http://172.16.0.1:3000/api/registrarFichaMedica', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error || 'Error al registrar');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
 
-    // === DESCARGA PDF AUTOMÁTICA ===
-    window.open(`http://172.16.0.1:3000/api/ficha/pdf/${data.idFicha}`, '_blank');
+    const idFicha = data.idFicha;
 
-    alert("✅ FICHA MÉDICA REGISTRADA Y PDF GENERADO");
+    // 2. Descargar el PDF - IGUAL QUE TU SSO CEO
+    btn.innerText = "DESCARGANDO PDF... ⏳";
+
+    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ficha/pdf/${idFicha}`);
+
+    if (!pdfRes.ok) {
+      const errText = await pdfRes.text();
+      throw new Error('Error generando PDF: ' + errText);
+    }
+
+    const blob = await pdfRes.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FICHA_MEDICA_${idFicha}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    alert("✅ FICHA MÉDICA REGISTRADA Y PDF DESCARGADO");
 
     // === LIMPIAR TODO EL FORMULARIO ===
     document.getElementById('med-id').value = '';
@@ -1075,10 +1094,11 @@ const payload = {
     document.getElementById('med-fecha').value = new Date().toISOString().split('T')[0];
 
     document.getElementById('med-id').focus();
+    setTimeout(() => location.reload(), 1000);
 
   } catch (error) {
     alert("❌ ERROR: " + error.message);
-    console.error(error); // <- para ver error completo en F12
+    console.error(error);
   } finally {
     btn.disabled = false;
     btn.innerText = "REGISTRAR FICHA ⚕️";
