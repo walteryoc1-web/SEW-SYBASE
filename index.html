@@ -770,20 +770,31 @@ async function actualizarPildoras() {
   } catch(e) { console.error("SSO:", e); }
 
   // LOGISTICA
-  try {
-    const ini = document.getElementById('f-inicio')?.value || fechaCorte;
-    const fin = document.getElementById('f-fin')?.value || fechaCorte;
+ try {
+  const ini = document.getElementById('f-inicio')?.value || fechaCorte;
+  const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
-    const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
-    if(rLog.ok) {
-      const dLog = await rLog.json();
-      console.log("LOG:", dLog);
-      if (dLog.ok) {
-        document.getElementById('count-pendientes') && (document.getElementById('count-pendientes').innerText = (dLog.total || 0).toString().padStart(2,'0'));
-      }
+  const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
+  if(rLog.ok) {
+    const dLog = await rLog.json();
+    console.log("LOG DATA CEO:", dLog);
+    
+    if (dLog.ok) {
+      // Mapeo CEO: backend -> pildoras HTML
+      document.getElementById('count-pendientes') && 
+        (document.getElementById('count-pendientes').innerText = String(dLog.total || 0).padStart(2,'0'));
+      
+      document.getElementById('count-proceso') && 
+        (document.getElementById('count-proceso').innerText = String(dLog.proceso || 0).padStart(2,'0'));
+      
+      document.getElementById('count-despachadas') && 
+        (document.getElementById('count-despachadas').innerText = String(dLog.despachadas || 0).padStart(2,'0'));
+      
+      console.log('✅ Pintado CEO:', dLog.total, 'pend,', dLog.proceso, 'proc,', dLog.despachadas, 'desp');
     }
-  } catch(e) { console.error("LOG:", e); }
-}
+  }
+} catch(e) { console.error("LOG:", e); }
+       
 async function cargarCerradosSSO() {
   const cont = document.getElementById('contenedor-cerrados-sso');
   if (!cont) return;
