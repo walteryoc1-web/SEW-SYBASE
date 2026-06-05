@@ -1541,7 +1541,8 @@ async function guardarDatoMaestro() {
         extra1: document.getElementById('adm-extra1').value.toUpperCase(),
         extra2: dpiNuevo,
         extra3: document.getElementById('adm-estado').value,
-        extra4: document.getElementById('adm-extra4').value.toUpperCase()
+        extra4: document.getElementById('adm-extra4').value.toUpperCase(),
+        creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
     try {
