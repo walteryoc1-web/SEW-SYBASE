@@ -738,23 +738,24 @@ function checkPiloto(inp) {
 /// ===== PÍLDORAS =====
 function obtenerFechaCorte() {
   const ahora = new Date();
-  const corte = new Date();
-  corte.setHours(6, 0, 0, 0); // 06:00:00
+  const corte = new Date(ahora);
+  corte.setHours(5, 59, 0, 0); // 05:59:00 CEO - así lo tenías en App Script
 
   if (ahora < corte) {
-    corte.setDate(corte.getDate() - 1); // si son antes de 6am, el corte es de ayer
+    corte.setDate(corte.getDate() - 1); // si son antes de 5:59am, el corte es de ayer
   }
-  return corte.toISOString().split('T')[0]; // 2026-04-05
+  return corte.toISOString().split('T')[0]; // 2026-06-04
 }
 
 async function actualizarPildoras() {
-  const fechaCorte = obtenerFechaCorte(); // <-- CLAVE CEO
+  const fechaCorte = obtenerFechaCorte();
+  console.log('Fecha corte CEO:', fechaCorte); // para debug
 
   // SSO
   try {
     const elIni = document.getElementById('f-ini-sso');
     const elFin = document.getElementById('f-fin-sso');
-    const iniSSO = elIni?.value || fechaCorte; // usa corte, no hoy
+    const iniSSO = elIni?.value || fechaCorte;
     const finSSO = elFin?.value || fechaCorte;
 
     const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`, {mode: 'cors'});
@@ -770,7 +771,7 @@ async function actualizarPildoras() {
 
   // LOGISTICA
   try {
-    const ini = document.getElementById('f-inicio')?.value || fechaCorte; // usa corte
+    const ini = document.getElementById('f-inicio')?.value || fechaCorte;
     const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
     const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
@@ -783,7 +784,6 @@ async function actualizarPildoras() {
     }
   } catch(e) { console.error("LOG:", e); }
 }
-
 async function cargarCerradosSSO() {
   const cont = document.getElementById('contenedor-cerrados-sso');
   if (!cont) return;
