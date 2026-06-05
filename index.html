@@ -1844,41 +1844,88 @@ async function cargarPermisosParaCerrar() {
   }
 }
 
-// === 2. CERRAR PERMISO - CON SU API PROPIA ===
-window.cerrarPermiso = async function(f, btn) {
+async function cargarPermisosParaCerrar() {
   const API_SSO = 'http://172.16.0.1:3000/api/sso';
+  const cont = document.getElementById('contenedor-tabla-sso');
   
-  if (!confirm("¿Cerrar permiso " + f + "?")) return;
-  const folioLimpio = f.toString().trim().replace(/[\r\n\t]/g, '').toUpperCase();
-  
-  btn.disabled = true;
-  btn.innerText = "CERRANDO...";
+  if (!cont) return;
+  cont.innerHTML = "Cargando permisos...";
 
   try {
-    const res = await fetch(API_SSO, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
-    });
+    const res = await fetch(`${API_SSO}/detalle?desde=2000-01-01&hasta=2100-12-31`);
     const data = await res.json();
-    console.log('CEO RESP CERRAR:', data);
-    
-    if (data.ok === true) {
-      alert("✅ Permiso cerrado correctamente");
-      cargarPermisosParaCerrar();
-    } else {
-      alert("❌ " + (data.error || "Error desconocido"));
-      btn.disabled = false;
-      btn.innerText = "CERRAR";
-    }
-  } catch (err) {
-    alert("❌ ERROR DE RED: " + err.message);
-    console.error(err);
-    btn.disabled = false;
-    btn.innerText = "CERRAR";
-  }
-};
+    const abiertos = data.filter(r => String(r.ESTATUS).trim().toUpperCase() === "ABIERTO");
 
+    cont.innerHTML = "";
+    if (abiertos.length === 0) {
+      cont.innerHTML = "<p style='padding:10px;'>No hay ATS abiertos</p>";
+      return;
+    }
+
+    abiertos.forEach(p => {
+      const folioLimpio = String(p.FOLIO).trim().replace(/[\r\n\t]/g, '');
+      
+      // CEO: Crear elementos sin onclick
+      const div = document.createElement('div');
+      div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; align-items:center;";
+      
+      const span = document.createElement('span');
+      span.innerHTML = `<b>${folioLimpio}</b> - ${p.NOMBRES} - ${p.AREA}`;
+      
+      const btn = document.createElement('button');
+      btn.innerText = "CERRAR";
+      btn.style.cssText = "background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;";
+      
+      // CEO CLAVE: Amarrar evento con JS, no con HTML
+      btn.addEventListener('click', async () => {
+        if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
+        
+        btn.disabled = true;
+        btn.innerText = "CERRANDO...";
+
+        try {
+          const res = await fetch(API_SSO, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accion: "cerrarATS", folio: folioLimpio, usuario: "ADMIN" })
+          });
+          const data = await res.json();
+          console.log('CEO RESP CERRAR:', data);
+          
+          if (data.ok === true) {
+            alert("✅ Permiso cerrado correctamente");
+            cargarPermisosParaCerrar();
+          } else {
+            alert("❌ " + (data.error || "Error desconocido"));
+            btn.disabled = false;
+            btn.innerText = "CERRAR";
+          }
+        } catch (err) {
+          alert("❌ ERROR DE RED: " + err.message);
+          console.error(err);
+          btn.disabled = false;
+          btn.innerText = "CERRAR";
+        }
+      });
+      
+      div.appendChild(span);
+      div.appendChild(btn);
+      cont.appendChild(div);
+    });
+    console.log('CEO: Pintados', abiertos.length, 'permisos');
+
+  } catch (err) {
+    console.error('CEO ERROR FETCH:', err);
+    cont.innerHTML = `<p style="color:red; padding:10px;">Q28K_ERROR: ${err.message}</p>`;
+  }
+}
+
+// Ejecutar cuando cargue DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
+} else {
+  cargarPermisosParaCerrar();
+}
        
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
