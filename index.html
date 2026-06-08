@@ -2551,7 +2551,7 @@ function llenarDesplegablesOperaciones() {
 }
       async function descargarCSV_Admin() {
   try {
-    const url = location.protocol + '//172.16.0.1:3000/export-admin'; // agarra http o https
+    const url = location.protocol + `http://172.16.0.1:3000/export-admin'; // agarra http o https
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error " + res.status);
 
