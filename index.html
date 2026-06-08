@@ -1017,10 +1017,15 @@ function llenarDesplegablesOperaciones() {
     });
   }
 
-// ===== CHECKLIST ATS =====
+// ===== CHECKLIST ATS  =====
 function actualizarChecklist() {
+    console.log('CEO: actualizarChecklist ejecutada');
     const selector = document.getElementById('p-tipo');
-    if (!selector ||!selector.value) return;
+    if (!selector || !selector.value || selector.value === 'Tipo de Trabajo') {
+        document.getElementById('contenedor-checklist').style.display = 'none';
+        return;
+    }
+    
     const tipoElegido = selector.options[selector.selectedIndex].text.toUpperCase().trim();
     const contCheck = document.getElementById('contenedor-checklist');
     const lEpp = document.getElementById('lista-epp');
@@ -1029,21 +1034,36 @@ function actualizarChecklist() {
     const hC = document.getElementById('check-herramientas')?.checked;
     const cC = document.getElementById('check-colectiva')?.checked;
 
-    if(contCheck) contCheck.style.display = 'block';
-    if(lEpp) lEpp.innerHTML = "<b>✅ EPP REQUERIDO:</b>";
-    if(lHerr) lHerr.innerHTML = "<b>🛠️ HERRAMIENTAS:</b>";
-    if(lCol) lCol.innerHTML = "<b>🚧 COLECTIVA:</b>";
+    contCheck.style.display = 'block';
+    lEpp.innerHTML = "<b>✅ EPP REQUERIDO:</b><br>";
+    lHerr.innerHTML = "<b>🛠️ HERRAMIENTAS:</b><br>";
+    lCol.innerHTML = "<b>🚧 COLECTIVA:</b><br>";
 
-    if (DB_MASTER.EPP) DB_MASTER.EPP.filter(e => e.extra1.toUpperCase() === tipoElegido).forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
-    if (hC && DB_MASTER.HERRAMIENTA) {
+    console.log('CEO Tipo:', tipoElegido, 'DB_MASTER.EPP:', DB_MASTER?.EPP?.length);
+
+    
+    if (DB_MASTER?.EPP) {
+        DB_MASTER.EPP.filter(e => e.extra1?.toUpperCase() === tipoElegido)
+          .forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
+    }
+
+    
+    if (hC && DB_MASTER?.HERRAMIENTA) {
         lHerr.style.display = 'block';
-        DB_MASTER.HERRAMIENTA.filter(h => h.extra1.toUpperCase() === tipoElegido).forEach(h => lHerr.appendChild(crearCheck(h.nombre)));
-    } else if(lHerr) lHerr.style.display = 'none';
+        DB_MASTER.HERRAMIENTA.filter(h => h.extra1?.toUpperCase() === tipoElegido)
+          .forEach(h => lHerr.appendChild(crearCheck(h.nombre)));
+    } else {
+        lHerr.style.display = 'none';
+    }
 
-    if (cC && DB_MASTER.COLECTIVA) {
+    
+    if (cC && DB_MASTER?.COLECTIVA) {
         lCol.style.display = 'block';
-        DB_MASTER.COLECTIVA.filter(c => c.extra1.toUpperCase() === tipoElegido).forEach(c => lCol.appendChild(crearCheck(c.nombre)));
-    } else if(lCol) lCol.style.display = 'none';
+        DB_MASTER.COLECTIVA.filter(c => c.extra1?.toUpperCase() === tipoElegido)
+          .forEach(c => lCol.appendChild(crearCheck(c.nombre)));
+    } else {
+        lCol.style.display = 'none';
+    }
 }
 
 function crearCheck(texto) {
@@ -1051,7 +1071,10 @@ function crearCheck(texto) {
     div.innerHTML = `<label class="chk-label"><input type="checkbox" class="chk-input" checked> ${texto}</label>`;
     return div;
 }
-function checkTecnicoOperaciones(id) {
+
+
+window.actualizarChecklist = actualizarChecklist;
+window.actualizarUbicaciones = actualizarUbicaciones;function checkTecnicoOperaciones(id) {
     const box = document.getElementById('ot-tec-box');
     const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
 
