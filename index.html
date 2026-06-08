@@ -665,9 +665,22 @@ async function abrirModulo(rol) {
             actualizarPildoras(); cargarPermisosParaCerrar(); setInterval(actualizarPildoras, 30000);
             break;
         case "SSO":
-            document.getElementById('ui-seguridad').style.display='block';
-            llenarDesplegablesSSO(); // <- Ahora DB_MASTER ya tiene datos
-            break;
+    document.getElementById('ui-seguridad').style.display='block';
+    llenarDesplegablesSSO();
+    
+    
+    setTimeout(() => {
+        const selTipo = document.getElementById('p-tipo');
+        const chkHerr = document.getElementById('check-herramientas');
+        const chkCol = document.getElementById('check-colectiva');
+        
+        if(selTipo) selTipo.addEventListener('change', actualizarChecklist);
+        if(chkHerr) chkHerr.addEventListener('change', actualizarChecklist);
+        if(chkCol) chkCol.addEventListener('change', actualizarChecklist);
+        
+        console.log('CEO: Eventos SSO amarrados');
+    }, 100);
+    break;
         case "OPERACIONES":
             document.getElementById('ui-operaciones').style.display='block';
             llenarDesplegablesOperaciones();
@@ -750,8 +763,7 @@ function agregarFilaEjecutor() {
     cont.appendChild(div);
 }
 
-       
-       // ===== PILOTO LOGISTICA =====
+// ===== PILOTO LOGISTICA =====
 function checkPiloto(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = document.getElementById('piloto-box');
@@ -771,7 +783,6 @@ function checkPiloto(inp) {
     }
 
     const p = getRegistro('PILOTO', id);
-    
 
     if (!p) {
         box.innerText = "❌ Código no encontrado";
@@ -780,9 +791,8 @@ function checkPiloto(inp) {
         return;
     }
 
-    // Checa bloqueo. Si extra3 no existe, asume ACTIVO
     const estado = String(p.extra3 || p.STATUS || p.ESTADO || "ACTIVO").trim().toUpperCase();
-    
+
     if (estado === 'BLOQUEADO' || estado === 'INACTIVO' || estado === 'BAJA') {
         alert(`🚫 PILOTO ${estado} en sistema.`);
         inp.value = "";
@@ -791,7 +801,6 @@ function checkPiloto(inp) {
         return;
     }
 
-    // Muestra nombre, extra1 y licencia extra2. Si no existen, pone N/A
     const nombre = p.nombre || p.NOMBRE || 'N/A';
     const placa = p.extra1 || p.PLACA || 'N/A';
     const cliente = p.extra4 || p.CLIENTE || 'N/A';
@@ -800,26 +809,24 @@ function checkPiloto(inp) {
     box.innerText = `👨‍✈️ ${nombre} (${placa}) cliente:(${cliente})- Lic: ${licencia}`;
     box.style.display = 'block';
     if(btn) btn.disabled = false;
-}    
-      
+}
 
-/// ===== PÍLDORAS =====
+// ===== PÍLDORAS =====
 function obtenerFechaCorte() {
   const ahora = new Date();
   const corte = new Date(ahora);
-  corte.setHours(5, 59, 0, 0); 
+  corte.setHours(5, 59, 0, 0);
 
   if (ahora < corte) {
-    corte.setDate(corte.getDate() - 1); 
+    corte.setDate(corte.getDate() - 1);
   }
-  return corte.toISOString().split('T')[0]; 
+  return corte.toISOString().split('T')[0];
 }
 
 async function actualizarPildoras() {
   const fechaCorte = obtenerFechaCorte();
   console.log('Fecha corte CEO:', fechaCorte);
 
-  // SSO
   try {
     const elIni = document.getElementById('f-ini-sso');
     const elFin = document.getElementById('f-fin-sso');
@@ -837,42 +844,35 @@ async function actualizarPildoras() {
     }
   } catch(e) { console.error("SSO:", e); }
 
-  // LOGISTICA
   try {
     const ini = document.getElementById('f-inicio')?.value || fechaCorte;
     const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
     const rLog = await fetch(`${URL_SCRIPT}/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
-    
-    if(rLog.ok) { 
-      const dLog = await rLog.json(); // <-- y esto CEO
+
+    if(rLog.ok) {
+      const dLog = await rLog.json();
       console.log("LOG DATA CEO:", dLog);
 
       if (dLog.ok) {
-        
         const total = dLog.arribos || 0;
-        const proceso = 0; 
+        const proceso = 0;
         const despachadas = dLog.salidas || 0;
-        
-        document.getElementById('count-pendientes') && 
+
+        document.getElementById('count-pendientes') &&
           (document.getElementById('count-pendientes').innerText = String(total).padStart(2,'0'));
-        
-        document.getElementById('count-proceso') && 
+
+        document.getElementById('count-proceso') &&
           (document.getElementById('count-proceso').innerText = String(proceso).padStart(2,'0'));
-        
-        document.getElementById('count-despachadas') && 
+
+        document.getElementById('count-despachadas') &&
           (document.getElementById('count-despachadas').innerText = String(despachadas).padStart(2,'0'));
-        
-        
       }
     }
-  } catch(e) { console.error("LOG:", e); } 
-} 
-       
-actualizarPildoras();
-setInterval(actualizarPildoras, 30000);
+  } catch(e) { console.error("LOG:", e); }
+}
 
- // ===== DESPLEGABLES =====
+// ===== DESPLEGABLES =====
 function llenarDesplegablesLogistica() {
     const selProd = document.getElementById('prod'), selMov = document.getElementById('mov');
     if(selProd) selProd.innerHTML = '<option disabled selected>Producto</option>';
@@ -893,20 +893,17 @@ function llenarDesplegablesSSO() {
 
     if (DB_MASTER.TRABAJO) {
         DB_MASTER.TRABAJO.filter(x => (x.extra3||"ACTIVO").toUpperCase()!== "INACTIVO")
-          .forEach(t => selTipo.add(new Option(t.nombre, t.nombre.toUpperCase())));
+         .forEach(t => selTipo.add(new Option(t.nombre, t.nombre.toUpperCase())));
     }
     llenarSelectTecnico();
 }
 
-window.onload = () => {
-    cargarCerebroSistema();
-};
 function llenarSelectTecnico() {
     const selTec = document.getElementById('tu-select-tecnico');
     if (!selTec) return;
     selTec.innerHTML = '<option disabled selected>Técnico</option>';
     DB_MASTER.TECNICO?.filter(t => (t.extra3 || "ACTIVO").toUpperCase() === "ACTIVO")
-      .forEach(t => {
+     .forEach(t => {
             const texto = t.extra4? `${t.nombre} - ${t.extra4}` : t.nombre;
             selTec.add(new Option(texto, t.id));
         });
@@ -930,25 +927,26 @@ function llenarSelect(selectId, categoria, primerOpcionTexto = null) {
     const placeholder = primerOpcionTexto || sel.options[0]?.text || 'Selecciona';
     sel.innerHTML = `<option disabled selected>${placeholder}</option>`;
     DB_MASTER[categoria]?.filter(x => (x.extra3 || "ACTIVO").toUpperCase() === "ACTIVO")
-     .forEach(x => sel.add(new Option(x.nombre, x.nombre))); 
+    .forEach(x => sel.add(new Option(x.nombre, x.nombre)));
 }
 
+// SOLO 1 COPIA
 function llenarDesplegablesOperaciones() {
   const selPrio = document.getElementById('ot-prioridad');
   const selDepto = document.getElementById('ot-depto');
-  
+
   if (DB_MASTER.PRIORIDAD) {
     selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
     DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
   }
-  
+
   if (DB_MASTER.DEPARTAMENTO) {
     selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
     DB_MASTER.DEPARTAMENTO.forEach(d => {
       selDepto.add(new Option(d.nombre, d.id));
     });
   }
-} 
+}
 
 function llenarSelectTipoMedico() {
   const sel = document.getElementById('med-tipo');
@@ -962,10 +960,10 @@ function llenarSelectTipoMedico() {
   }
 
   DB_MASTER.TIPO_MEDICO
-    .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
-    .forEach(t => {
+   .filter(x => (x.extra3 || "ACTIVO").toUpperCase()!== "INACTIVO")
+   .forEach(t => {
       const opt = new Option(
-        decodeURIComponent(escape(t.nombre)), 
+        decodeURIComponent(escape(t.nombre)),
         decodeURIComponent(escape(t.nombre))
       );
       sel.add(opt);
@@ -973,61 +971,44 @@ function llenarSelectTipoMedico() {
 }
 
 llenarSelectTipoMedico();
-       
-  function llenarSelectAgenteExtintor() {
+
+function llenarSelectAgenteExtintor() {
   const sel = document.getElementById('ext-agente');
   if (!sel) return;
-  
+
   const agentes = DB_MASTER.AGENTE_EXTINTOR || [];
-  
+
   sel.innerHTML = '<option value="">Seleccione agente...</option>' +
-    agentes.map(a => 
+    agentes.map(a =>
       `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
     ).join('');
 }
+
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
-  
+
   const res = await fetch(`${URL_SCRIPT}/db_master`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({})
   });
-  
+
   DB_MASTER = await res.json();
-  
-  llenarDesplegablesOperaciones(); // 
+
+  llenarDesplegablesOperaciones();
 }
 
-function llenarDesplegablesOperaciones() {
-  const selPrio = document.getElementById('ot-prioridad');
-  const selDepto = document.getElementById('ot-depto');
-  
-  
-  if (DB_MASTER.PRIORIDAD) {
-    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
-    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
-  }
-  
-  
-  if (DB_MASTER.DEPARTAMENTO) {
-    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-    DB_MASTER.DEPARTAMENTO.forEach(d => {
-      selDepto.add(new Option(d.nombre, d.id));
-    });
-  }
-
-// ===== CHECKLIST ATS  =====
+// ===== CHECKLIST ATS =====
 function actualizarChecklist() {
     console.log('CEO: actualizarChecklist ejecutada');
     const selector = document.getElementById('p-tipo');
     const contCheck = document.getElementById('contenedor-checklist');
-    
-    if (!selector || !selector.value || selector.value === 'Tipo de Trabajo') {
+
+    if (!selector ||!selector.value || selector.value === 'Tipo de Trabajo') {
         if(contCheck) contCheck.style.display = 'none';
         return;
     }
-    
+
     const tipoElegido = selector.options[selector.selectedIndex].text.toUpperCase().trim();
     const lEpp = document.getElementById('lista-epp');
     const lHerr = document.getElementById('lista-herramientas');
@@ -1040,14 +1021,13 @@ function actualizarChecklist() {
     if(lHerr) lHerr.innerHTML = "<b>🛠️ HERRAMIENTAS:</b><br>";
     if(lCol) lCol.innerHTML = "<b>🚧 COLECTIVA:</b><br>";
 
-    // Si DB_MASTER no existe, simula datos para probar
     const eppDemo = ['Casco', 'Lentes', 'Guantes'];
     const herrDemo = ['Multímetro', 'Escalera'];
     const colDemo = ['Barandal', 'Señalización'];
 
     if (DB_MASTER?.EPP?.length) {
         DB_MASTER.EPP.filter(e => e.extra1?.toUpperCase() === tipoElegido)
-          .forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
+         .forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
     } else {
         eppDemo.forEach(e => lEpp.appendChild(crearCheck(e)));
     }
@@ -1056,7 +1036,7 @@ function actualizarChecklist() {
         lHerr.style.display = 'block';
         if (DB_MASTER?.HERRAMIENTA?.length) {
             DB_MASTER.HERRAMIENTA.filter(h => h.extra1?.toUpperCase() === tipoElegido)
-              .forEach(h => lHerr.appendChild(crearCheck(h.nombre)));
+             .forEach(h => lHerr.appendChild(crearCheck(h.nombre)));
         } else {
             herrDemo.forEach(h => lHerr.appendChild(crearCheck(h)));
         }
@@ -1066,7 +1046,7 @@ function actualizarChecklist() {
         lCol.style.display = 'block';
         if (DB_MASTER?.COLECTIVA?.length) {
             DB_MASTER.COLECTIVA.filter(c => c.extra1?.toUpperCase() === tipoElegido)
-              .forEach(c => lCol.appendChild(crearCheck(c.nombre)));
+             .forEach(c => lCol.appendChild(crearCheck(c.nombre)));
         } else {
             colDemo.forEach(c => lCol.appendChild(crearCheck(c)));
         }
@@ -1079,11 +1059,11 @@ function crearCheck(texto) {
     return div;
 }
 
-
+// GLOBAL CEO
 window.actualizarChecklist = actualizarChecklist;
 window.actualizarUbicaciones = actualizarUbicaciones;
-    
-    function checkTecnicoOperaciones(id) {
+
+function checkTecnicoOperaciones(id) {
     const box = document.getElementById('ot-tec-box');
     const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
 
@@ -1107,10 +1087,10 @@ window.actualizarUbicaciones = actualizarUbicaciones;
     if(btn) btn.disabled = false;
 }
 
- async function checkInvolucradoIncidente(inp) {
+async function checkInvolucradoIncidente(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
-    
+
     if (!id) {
         if(box) box.style.display = 'none';
         return;
@@ -1141,91 +1121,19 @@ window.actualizarUbicaciones = actualizarUbicaciones;
     }
 }
 
-window.checkInvolucradoIncidente = async function(inp) {
-    const id = inp.value.trim().toUpperCase();
-    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
-    
-    if (!id) {
-        if(box) box.style.display = 'none';
-        return;
+window.checkInvolucradoIncidente = checkInvolucradoIncidente;
+
+function llenarListasIncidentes() {
+    const selSalud = document.getElementById('inc-salud');
+    const selGrav = document.getElementById('inc-gravedad');
+    if (selSalud && DB_MASTER.ESTADO_SALUD) {
+        selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
+        DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
     }
-
-    if(box) {
-        box.innerText = "⏳ Buscando...";
-        box.style.display = 'block';
+    if (selGrav && DB_MASTER.GRAVEDAD) {
+        selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
+        DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
     }
-
-    try {
-        const r = await fetch(`${URL_SCRIPT}/buscar?categoria=TECNICO&id=${id}`);
-        const data = await r.json();
-
-        if (!data.ok) {
-            if(box) box.innerText = "❌ Código no encontrado";
-            return;
-        }
-
-        const t = data.data;
-        if(box) {
-            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
-            box.style.display = 'block';
-        }
-
-    } catch (err) {
-        if(box) box.innerText = "❌ Error de conexión";
-    }
-}
-
- function llenarListasIncidentes() {
-            const selSalud = document.getElementById('inc-salud');
-            const selGrav = document.getElementById('inc-gravedad');
-            if (selSalud && DB_MASTER.ESTADO_SALUD) {
-                selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
-                DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
-            }
-            if (selGrav && DB_MASTER.GRAVEDAD) {
-                selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
-                DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
-            }
-        }
-
-function llenarDesplegablesOperaciones() {
-  const selPrio = document.getElementById('ot-prioridad');
-  const selDepto = document.getElementById('ot-depto');
-  
-  if (DB_MASTER.PRIORIDAD) {
-    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
-    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
-  }
-  
-  if (DB_MASTER.DEPARTAMENTO) {
-    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-    DB_MASTER.DEPARTAMENTO.forEach(d => {
-      selDepto.add(new Option(d.nombre, d.id));
-    });
-  }
-} 
-
-} 
-
-function checkTecnicoOperaciones(id) {
-    const box = document.getElementById('ot-tec-box');
-    const btn = document.querySelector('#ot-seccion-apertura button[onclick="enviarOT()"]');
-
-    if (!id ||!box) { if(box) box.style.display = 'none'; return; }
-
-    id = id.toString().trim().toUpperCase();
-
-    if (!esActivo('TECNICO', id)) {
-        box.innerHTML = `<span style="color:red;">❌ Técnico ${id} INACTIVO</span>`;
-        box.style.display = 'block';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    const t = getRegistro('TECNICO', id);
-    box.innerHTML = `👨‍🔧 Técnico: ${t.nombre}`;
-    box.style.display = 'block';
-    if(btn) btn.disabled = false;
 }
 
 async function checkTecAgregado(inp) {
@@ -1297,8 +1205,11 @@ function agregarTecAgregado() {
     cont.appendChild(d);
 }
 
+// SOLO 1 WINDOW.ONLOAD
 window.onload = () => {
     cargarCerebroSistema();
+    actualizarPildoras();
+    setInterval(actualizarPildoras, 30000);
 };
  // ===== ADMIN DATOS MAESTROS =====
   function descargarDataMaestra() {
