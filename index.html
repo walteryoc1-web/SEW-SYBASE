@@ -1366,8 +1366,7 @@ async function enviarOT() {
   }
 }
 
-
-       // ===== REPORTES CSV =====
+// ===== REPORTES CSV =====
 async function procesarDescargaUniversal(accion, ini, fin, nombre) {
     if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
 
@@ -1382,17 +1381,19 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
 
     try {
         const url = `http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
-
         const res = await fetch(url);
         if (!res.ok) throw new Error("Error " + res.status);
 
         const csv = await res.text();
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        // CAMBIO 1: text/csv → application/vnd.ms-excel
+        // CAMBIO 2:.csv →.xls
+        const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `${nombre}_${ini}_al_${fin}.csv`;
+        link.download = `${nombre}_${ini}_al_${fin}.xls`;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
 
     } catch(e) {
         alert("❌ Error de descarga: " + e.message);
@@ -1402,96 +1403,91 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
 async function descargarCSV_ATS() {
   const ini = document.getElementById('f-ini-sso').value;
   const fin = document.getElementById('f-fin-sso').value;
-
   if (!ini ||!fin) {
     alert('Selecciona fecha inicio y fin');
     return;
   }
-
   try {
     const url = `http://172.16.0.1:3000/export-sso?desde=${ini}&hasta=${fin}`;
-
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `SSO_${ini}_al_${fin}.csv`;
+    link.download = `SSO_${ini}_al_${fin}.xls`;
+    document.body.appendChild(link);
     link.click();
-
+    document.body.removeChild(link);
   } catch(e) {
     alert("❌ Error de descarga: " + e.message);
   }
 }
+
 async function descargarCSV_Incidentes() {
   const ini = document.getElementById('f-ini-sso').value;
   const fin = document.getElementById('f-fin-sso').value;
-
   if (!ini ||!fin) {
     alert('Selecciona fecha inicio y fin');
     return;
   }
-
   const url = `http://172.16.0.1:3000/export-incidentes?desde=${ini}&hasta=${fin}`;
-
   const res = await fetch(url);
   if (!res.ok) throw new Error("Error " + res.status);
 
   const csv = await res.text();
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `INCIDENTES_${ini}_al_${fin}.csv`;
+  link.download = `INCIDENTES_${ini}_al_${fin}.xls`;
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 }
+
 async function descargarCSV_Medico() {
   const ini = document.getElementById('f-ini-sso').value;
   const fin = document.getElementById('f-fin-sso').value;
-
   if (!ini ||!fin) {
     alert('Selecciona fecha inicio y fin');
     return;
   }
-
   const url = `http://172.16.0.1:3000/export-medico?desde=${ini}&hasta=${fin}`;
-
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `MEDICO_${ini}_al_${fin}.csv`;
+    link.download = `MEDICO_${ini}_al_${fin}.xls`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   } catch (err) {
     alert("Error al descargar CSV: " + err.message);
   }
 }
+
 async function descargarCSV_Extintores() {
   const ini = document.getElementById('f-ini-sso')?.value;
   const fin = document.getElementById('f-fin-sso')?.value;
-
   if (!ini ||!fin) {
     alert('Selecciona fecha inicio y fin');
     return;
   }
-
   try {
     const url = `http://172.16.0.1:3000/export-extintores?desde=${ini}&hasta=${fin}`;
     const res = await fetch(url, { mode: 'cors' });
-
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `EXTINTORES_${ini}_al_${fin}.csv`;
+    link.download = `EXTINTORES_${ini}_al_${fin}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1500,15 +1496,15 @@ async function descargarCSV_Extintores() {
     console.error(err);
   }
 }
-       function descargarCSV() {
+
+function descargarCSV() {
     procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
 
 async function descargarCSV_OT() {
   const ini = document.getElementById('f-ini-ot')?.value;
   const fin = document.getElementById('f-fin-ot')?.value;
-
-  if (!ini || !fin) {
+  if (!ini ||!fin) {
     alert('Selecciona fecha inicio y fin de OT');
     return;
   }
@@ -1524,16 +1520,17 @@ async function descargarCSV_OT() {
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); 
+    // OJO CEO: ya no agrego '\uFEFF' aquí porque el backend ya lo manda
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const link = document.createElement("a");
     const urlBlob = URL.createObjectURL(blob);
     link.href = urlBlob;
-    link.download = `OT_${ini}_al_${fin}.csv`;
+    link.download = `OT_${ini}_al_${fin}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(urlBlob);
-    
+
     alert("✅ Excel de OTs descargado");
   } catch (err) {
     alert("❌ Error: " + err.message);
@@ -1542,6 +1539,7 @@ async function descargarCSV_OT() {
     btn.innerText = textoOriginal;
   }
 }
+    
        // ===== ADMIN DATOS MAESTROS =====
   function descargarDataMaestra() {
   try {
