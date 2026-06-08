@@ -520,9 +520,11 @@
     <button class="btn-salir" onclick="document.getElementById('ui-extintores-sso').style.display='none'; document.getElementById('ui-monitor-sso').style.display='block';">CANCELAR</button>
   </div>
 </div>
-    
-    <!-- SECCIÓN DE SCRIPTS -->
+
+
+ <!-- SECCIÓN DE SCRIPTS -->
    <script>
+
 const URL_SCRIPT = 'http://172.16.0.1:3000/api';
 let DB_MASTER = {};
 let datosVinculados = null;
@@ -560,8 +562,7 @@ async function cargarCerebroSistema() {
     try {
         const res = await fetch(URL_SCRIPT + "/admin"); 
         DB_MASTER = await res.json();
-        console.log("✅ Cerebro Sincronizado", DB_MASTER);
-        
+                
         llenarSelectTipoMedico();
         llenarSelectAgenteExtintor();
         
@@ -597,7 +598,7 @@ async function entrar() {
     btn.disabled = true;
 
     try {
-        // 1. Llama a /login, no a /logistica
+        
         const res = await fetch(URL_SCRIPT + "/login", {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -611,12 +612,12 @@ async function entrar() {
             return;
         }
 
-        // 2. Solo después de entrar cargas el cerebro y abres el módulo
+        
         await cargarCerebroSistema();
         document.getElementById('login').style.display='none';
         abrirModulo(data.rol);
 
-        console.log("✅ Login OK:", data.usuario, "Rol:", data.rol);
+        
         window.usuarioLogueado = data;
 
     } catch (err) {
@@ -627,6 +628,7 @@ async function entrar() {
         btn.disabled = false;
     }
 }
+// ===== ACCESO A ROLES ASIGNADOS =====
 
 window.entrar = entrar;
 
@@ -662,7 +664,27 @@ function abrirModulo(rol) {
             document.getElementById('login').style.display='block';
     }
 }
- // ===== TÉCNICO SSO =====
+
+ async function recargarDatosMaestros() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const r = await fetch(URL_SCRIPT + '?accion=getAdminConfig');
+            const txt = await r.text(); // ← lee texto primero
+            
+            if (!r.ok) {
+                console.error('Status:', r.status, 'Respuesta:', txt);
+                return resolve(); // ← no rechaces, solo ignora
+            }
+            
+            DB_MASTER = JSON.parse(txt);
+            resolve();
+        } catch (e) {
+            console.error('Error recarga:', e);
+            resolve(); // ← no rechaces para que no truene cambiarEstado
+        }
+    });
+}
+ // ===== TÉCNICOS  =====
 function checkSSO_Dinamico(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = inp.parentElement.nextElementSibling;
@@ -733,8 +755,6 @@ function checkPiloto(inp) {
 
     const p = getRegistro('PILOTO', id);
     
-    // DEBUG: quítalo cuando ya jale
-    console.log("ID buscado:", id, "Registro:", p);
 
     if (!p) {
         box.innerText = "❌ Código no encontrado";
@@ -764,59 +784,18 @@ function checkPiloto(inp) {
     box.style.display = 'block';
     if(btn) btn.disabled = false;
 }    
-      async function enviar() {
-    try {
-        const id = document.getElementById('id-in').value.trim().toUpperCase();
-        if(!id) throw new Error("Ingresa ID de piloto");
+      
 
-        if(!esActivo('PILOTO', id)) throw new Error("Piloto INACTIVO. No se puede registrar");
-
-        const p = getRegistro('PILOTO', id);
-        if(!p) throw new Error("Piloto no encontrado en BD_CONFIG");
-
-     const payload = {
-  departamento: 'LOGISTICA',
-  id_piloto: id,
-  nombre_piloto: p.nombre,
-  movimiento: document.getElementById('mov').value || '', 
-  producto: document.getElementById('prod').value || '',  
-  cliente: p.extra4 || '',                                
-  placa_unidad: p.extra1 || '',  // <- aquí
-  ciclo_terpac: document.getElementById('CicloTer').value || null,
-  ciclo_epq: document.getElementById('CicloEPQ').value || null,
-   creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
-};
-
-        const r = await fetch("http://172.16.0.1:3000/api/logistica", {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify(payload)
-        });
-
-        const data = await r.json();
-        
-        if (data.ok) {
-            alert("✅ REGISTRO EXITOSO");
-            location.reload();
-        } else {
-            alert("❌ Error: " + data.error);
-        }
-
-    } catch(e) {
-        alert("❌ Error: " + e.message);
-        console.error(e);
-    }
-}
 /// ===== PÍLDORAS =====
 function obtenerFechaCorte() {
   const ahora = new Date();
   const corte = new Date(ahora);
-  corte.setHours(5, 59, 0, 0); // 05:59:00 CEO - así lo tenías en App Script
+  corte.setHours(5, 59, 0, 0); 
 
   if (ahora < corte) {
-    corte.setDate(corte.getDate() - 1); // si son antes de 5:59am, el corte es de ayer
+    corte.setDate(corte.getDate() - 1); 
   }
-  return corte.toISOString().split('T')[0]; // 2026-06-04
+  return corte.toISOString().split('T')[0]; 
 }
 
 async function actualizarPildoras() {
@@ -830,7 +809,7 @@ async function actualizarPildoras() {
     const iniSSO = elIni?.value || fechaCorte;
     const finSSO = elFin?.value || fechaCorte;
 
-    const rSSO = await fetch(`http://172.16.0.1:3000/api/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`, {mode: 'cors'});
+    const rSSO = await fetch(`${URL_SCRIPT}/sso?modulo=SSO&accion=reporte&desde=${iniSSO}&hasta=${finSSO}&t=${Date.now()}`, {mode: 'cors'});
     if(rSSO.ok) {
       const dSSO = await rSSO.json();
       if (dSSO.ok) {
@@ -846,16 +825,16 @@ async function actualizarPildoras() {
     const ini = document.getElementById('f-inicio')?.value || fechaCorte;
     const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
-    const rLog = await fetch(`http://172.16.0.1:3000/api/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
+    const rLog = await fetch(`${URL_SCRIPT}/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
     
-    if(rLog.ok) { // <-- te faltaba esto
+    if(rLog.ok) { 
       const dLog = await rLog.json(); // <-- y esto CEO
       console.log("LOG DATA CEO:", dLog);
 
       if (dLog.ok) {
-        // Mapeo CEO: backend usa "arribos/entradas/salidas" -> pildoras usan "total/proceso/despachadas"
+        
         const total = dLog.arribos || 0;
-        const proceso = 0; // tú no tienes "en proceso" en LOGISTICA
+        const proceso = 0; 
         const despachadas = dLog.salidas || 0;
         
         document.getElementById('count-pendientes') && 
@@ -867,17 +846,16 @@ async function actualizarPildoras() {
         document.getElementById('count-despachadas') && 
           (document.getElementById('count-despachadas').innerText = String(despachadas).padStart(2,'0'));
         
-        console.log('✅ Pintado CEO:', total, 'pend,', proceso, 'proc,', despachadas, 'desp');
+        
       }
     }
-  } catch(e) { console.error("LOG:", e); } // <-- cerré try-catch
+  } catch(e) { console.error("LOG:", e); } 
 } 
        
-cargarCerradosSSO();
 actualizarPildoras();
 setInterval(actualizarPildoras, 30000);
-        
-        // ===== DESPLEGABLES =====
+
+ // ===== DESPLEGABLES =====
 function llenarDesplegablesLogistica() {
     const selProd = document.getElementById('prod'), selMov = document.getElementById('mov');
     if(selProd) selProd.innerHTML = '<option disabled selected>Producto</option>';
@@ -949,6 +927,73 @@ function actualizarUbicaciones() {
     }
 }
 
+function llenarSelectTipoMedico() {
+  const sel = document.getElementById('med-tipo');
+  if (!sel) return;
+
+  sel.innerHTML = '<option disabled selected>Selecciona Tipo Médico</option>';
+
+  if (!DB_MASTER.TIPO_MEDICO) {
+    sel.innerHTML = '<option disabled>Cargando...</option>';
+    return;
+  }
+
+  DB_MASTER.TIPO_MEDICO
+    .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
+    .forEach(t => {
+      const opt = new Option(
+        decodeURIComponent(escape(t.nombre)), 
+        decodeURIComponent(escape(t.nombre))
+      );
+      sel.add(opt);
+    });
+}
+
+llenarSelectTipoMedico();
+       
+  function llenarSelectAgenteExtintor() {
+  const sel = document.getElementById('ext-agente');
+  if (!sel) return;
+  
+  const agentes = DB_MASTER.AGENTE_EXTINTOR || [];
+  
+  sel.innerHTML = '<option value="">Seleccione agente...</option>' +
+    agentes.map(a => 
+      `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
+    ).join('');
+}
+async function mostrarUIOperaciones() {
+  document.getElementById('ui-operaciones').style.display = 'block';
+  
+  const res = await fetch(`${URL_SCRIPT}/db_master`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({})
+  });
+  
+  DB_MASTER = await res.json();
+  
+  llenarDesplegablesOperaciones(); // 
+}
+
+function llenarDesplegablesOperaciones() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
+  
+  
+  if (DB_MASTER.PRIORIDAD) {
+    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
+    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
+  }
+  
+  
+  if (DB_MASTER.DEPARTAMENTO) {
+    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+    DB_MASTER.DEPARTAMENTO.forEach(d => {
+      selDepto.add(new Option(d.nombre, d.id));
+    });
+  }
+
 // ===== CHECKLIST ATS =====
 function actualizarChecklist() {
     const selector = document.getElementById('p-tipo');
@@ -1008,6 +1053,307 @@ function checkTecnicoOperaciones(id) {
     if(btn) btn.disabled = false;
 }
 
+ async function checkInvolucradoIncidente(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
+    
+    if (!id) {
+        if(box) box.style.display = 'none';
+        return;
+    }
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+
+    try {
+        const r = await fetch(`${URL_SCRIPT}/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            return;
+        }
+
+        const t = data.data;
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
+    }
+}
+
+window.checkInvolucradoIncidente = async function(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
+    
+    if (!id) {
+        if(box) box.style.display = 'none';
+        return;
+    }
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+
+    try {
+        const r = await fetch(`${URL_SCRIPT}/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            return;
+        }
+
+        const t = data.data;
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
+    }
+}
+
+ function llenarListasIncidentes() {
+            const selSalud = document.getElementById('inc-salud');
+            const selGrav = document.getElementById('inc-gravedad');
+            if (selSalud && DB_MASTER.ESTADO_SALUD) {
+                selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
+                DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
+            }
+            if (selGrav && DB_MASTER.GRAVEDAD) {
+                selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
+                DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
+            }
+        }
+
+function llenarDesplegablesOperaciones() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
+  
+  if (DB_MASTER.PRIORIDAD) {
+    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
+    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
+  }
+  
+  if (DB_MASTER.DEPARTAMENTO) {
+    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+    DB_MASTER.DEPARTAMENTO.forEach(d => {
+      selDepto.add(new Option(d.nombre, d.id));
+    });
+  }
+} 
+
+} 
+
+function checkTecnicoOperaciones(id) {
+    const box = document.getElementById('ot-tec-box');
+    const btn = document.querySelector('#ot-seccion-apertura button[onclick="enviarOT()"]');
+
+    if (!id ||!box) { if(box) box.style.display = 'none'; return; }
+
+    id = id.toString().trim().toUpperCase();
+
+    if (!esActivo('TECNICO', id)) {
+        box.innerHTML = `<span style="color:red;">❌ Técnico ${id} INACTIVO</span>`;
+        box.style.display = 'block';
+        if(btn) btn.disabled = true;
+        return;
+    }
+
+    const t = getRegistro('TECNICO', id);
+    box.innerHTML = `👨‍🔧 Técnico: ${t.nombre}`;
+    box.style.display = 'block';
+    if(btn) btn.disabled = false;
+}
+
+async function checkTecAgregado(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
+    const btn = document.getElementById('btn-env');
+
+    if (!id) {
+        box.style.display = 'none';
+        if(btn) btn.disabled = false;
+        return;
+    }
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+    if(btn) btn.disabled = true;
+
+    try {
+        const r = await fetch(`${URL_SCRIPT}/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            if(btn) btn.disabled = true;
+            return;
+        }
+
+        const t = data.data;
+
+        if ((t.ATRIBUTO_3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
+            alert("🚫 TÉCNICO BLOQUEADO en sistema.");
+            inp.value = "";
+            if(box) box.style.display = 'none';
+            if(btn) btn.disabled = true;
+            return;
+        }
+
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+        if(btn) btn.disabled = false;
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
+        console.error(err);
+        if(btn) btn.disabled = true;
+    }
+}
+
+function agregarTecAgregado() {
+    const cont = document.getElementById('contenedor-tec-agregado');
+    if (!cont) return;
+
+    const d = document.createElement('div');
+    d.className = "tec-bloque";
+    d.style.cssText = "margin-top:5px;";
+    d.innerHTML = `
+        <div style="display:flex; gap:10px;">
+            <input type="text" class="tec-id-clase" placeholder="ID técnico"
+                   onblur="checkTecAgregado(this)" style="flex:1;">
+            <button type="button" onclick="this.parentElement.parentElement.remove()"
+                    style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
+        </div>
+        <div class="tec-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
+    `;
+    cont.appendChild(d);
+}
+
+window.onload = () => {
+    cargarCerebroSistema();
+};
+ // ===== ADMIN DATOS MAESTROS =====
+  function descargarDataMaestra() {
+  try {
+    let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,EXTRA3,EXTRA4,CREADO_POR,MODIFICADO_POR,FECHA_MOD\n";
+    for (let cat in DB_MASTER) {
+      const lista = Array.isArray(DB_MASTER[cat])? DB_MASTER[cat] : [];
+      lista.forEach(i => {
+        const limpiar = (val) => String(val?? '').replace(/"/g, '""');
+        csv += `${cat},${i.id},"${limpiar(i.nombre)}","${limpiar(i.extra1)}","${limpiar(i.extra2)}","${limpiar(i.extra3)}","${limpiar(i.extra4)}","${limpiar(i.creado_por)}","${limpiar(i.modificado_por)}","${limpiar(i.fecha_mod)}"\n`;
+      });
+    }
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `DB_MAESTRA_TERPAC_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  } catch (e) { alert("❌ Error: " + e.message); }
+}
+        function descargarBase64PDF(b, n) {
+  if(!b || b.length < 500) return;
+
+  const a = document.createElement("a");
+  a.href = "data:application/pdf;base64," + b.trim();
+  a.download = n;
+  a.style.display = "none";
+
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+ async function recargarYMostrar() {
+    const r = await fetch(`${URL_SCRIPT}/adminConfig`, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({accion: 'getAdminConfig'})
+    });
+    DB_MASTER = await r.json();
+    mostrarListaAdmin(document.getElementById('adm-categoria').value || 'USUARIOS');
+}
+
+
+// ===== FUNCIONES NAVEGAION DE SUPERVISOR SSO =====
+
+ function irAIncidentes() {
+    document.getElementById('ui-monitor-sso').style.display='none';
+    document.getElementById('ui-incidentes-sso').style.display='block';
+    llenarDesplegablesIncidentes(); // <- esto es lo nuevo
+}
+       
+        function irAMedico() {
+            document.getElementById('ui-monitor-sso').style.display='none';
+            document.getElementById('ui-medico-sso').style.display='block';
+        }
+
+        function irAExtintores() {
+            document.getElementById('ui-monitor-sso').style.display='none';
+            document.getElementById('ui-extintores-sso').style.display='block';
+        }
+
+
+// ===== FUNCIONES DE ENVIAR=====
+
+// ===== FUNCIONES DE REGISTRO DE LOGISTICA=====
+async function enviar() {
+    try {
+        const id = document.getElementById('id-in').value.trim().toUpperCase();
+        if(!id) throw new Error("Ingresa ID de piloto");
+
+        if(!esActivo('PILOTO', id)) throw new Error("Piloto INACTIVO. No se puede registrar");
+
+        const p = getRegistro('PILOTO', id);
+        if(!p) throw new Error("Piloto no encontrado en BD_CONFIG");
+
+     const payload = {
+  departamento: 'LOGISTICA',
+  id_piloto: id,
+  nombre_piloto: p.nombre,
+  movimiento: document.getElementById('mov').value || '', 
+  producto: document.getElementById('prod').value || '',  
+  cliente: p.extra4 || '',                                
+  placa_unidad: p.extra1 || '',  // <- aquí
+  ciclo_terpac: document.getElementById('CicloTer').value || null,
+  ciclo_epq: document.getElementById('CicloEPQ').value || null,
+   creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
+};
+
+        const r = await fetch(`${URL_SCRIPT}/logistica`, {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify(payload)
+});
+
+        const data = await r.json();
+        
+        if (data.ok) {
+            alert("✅ REGISTRO EXITOSO");
+            location.reload();
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+
+    } catch(e) {
+        alert("❌ Error: " + e.message);
+        console.error(e);
+    }
+}
+// ===== FUNCION DE ENVIAR PERMISO ATS=====
+
 async function enviarPermisoSSO() {
     const btn = document.getElementById('btn-sso');
     btn.disabled = true;
@@ -1051,11 +1397,11 @@ const payload = {
     tipo: tipo,
     desc: desc,           
     checklist: marcados || '',
-    creado_por: usuarioLimpio // ← ahora sí manda algo
+    creado_por: usuarioLimpio 
 };
 
-        // 1. Guardar en SQL y obtener folio
-        const res = await fetch("http://172.16.0.1:3000/api/registrarPermiso", {
+        
+        const res = await fetch(`${URL_SCRIPT}/registrarPermiso`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1069,7 +1415,7 @@ const payload = {
         // 2. Descargar el PDF
         btn.innerText = "DESCARGANDO PDF... ⏳";
 
-        const pdfRes = await fetch(`http://172.16.0.1:3000/api/ats-sso/pdf/${folio}`);
+        const pdfRes = await fetch(`${URL_SCRIPT}/ats-sso/pdf/${folio}`);
 
         if (!pdfRes.ok) {
           const errText = await pdfRes.text();
@@ -1088,17 +1434,20 @@ const payload = {
 
         alert("✅ PERMISO REGISTRADO");
         
-        // Quita el reload inmediato. Si lo necesitas, dale 1 segundo para que baje el PDF
+        
         setTimeout(() => location.reload(), 1000);
 
     } catch (e) {
         alert("❌ Error: " + e.message);
     } finally {
-        // Esto evita que se quede bloqueado el botón si hay error
+        
         btn.disabled = false;
         btn.innerText = "REGISTRAR PERMISO";
     }
 }
+
+// ===== FUNCION DE ENVIAR FICHA MEDICA=====
+
  async function enviarFichaMedica() {
   const btn = document.querySelector('button[onclick="enviarFichaMedica()"]');
   btn.disabled = true;
@@ -1127,8 +1476,8 @@ const payload = {
       creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
-    // 1. Guardar en SQL y obtener idFicha
-    const res = await fetch('http://172.16.0.1:3000/api/registrarFichaMedica', {
+    
+    const res = await fetch(`${URL_SCRIPT}/registrarFichaMedica`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1142,7 +1491,7 @@ const payload = {
     // 2. Descargar el PDF - IGUAL QUE TU SSO CEO
     btn.innerText = "DESCARGANDO PDF... ⏳";
 
-    const pdfRes = await fetch(`http://172.16.0.1:3000/api/ficha/pdf/${idFicha}`);
+    const pdfRes = await fetch(`${URL_SCRIPT}/ficha/pdf/${idFicha}`);
 
     if (!pdfRes.ok) {
       const errText = await pdfRes.text();
@@ -1186,8 +1535,11 @@ const payload = {
     btn.innerText = "REGISTRAR FICHA ⚕️";
   }
 }
-       
-      async function enviarInspeccionExtintor() {
+
+// ===== FUNCION DE ENVIAR INSPECCION MEDICA=====
+
+  
+     async function enviarInspeccionExtintor() {
   const btn = document.querySelector('button[onclick="enviarInspeccionExtintor()"]');
   btn.disabled = true;
   btn.innerText = "REGISTRANDO... ⏳";
@@ -1199,7 +1551,6 @@ const payload = {
     const inspector = document.getElementById('ext-inspector').value.trim().toUpperCase();
     const vence = document.getElementById('ext-vence').value;
 
-    // VALIDACIONES OBLIGATORIAS CEO
     if (!id) throw new Error("Falta el ID del extintor");
     if (!ubi) throw new Error("Falta la ubicación");
     if (!agente) throw new Error("Selecciona el tipo de agente");
@@ -1213,7 +1564,7 @@ const payload = {
       presion: document.getElementById('ext-presion').value,
       manguera: document.getElementById('ext-manguera').value,
       seguro: document.getElementById('ext-seguro').value,
-      vencimiento: vence + '-01', // YYYY-MM-01 para Sybase
+      vencimiento: vence + '-01',
       observaciones: document.getElementById('ext-obs').value.toUpperCase(),
       nombre_inspector: inspector,
       fecha: new Date().toISOString().split('T')[0],
@@ -1221,8 +1572,7 @@ const payload = {
       creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
     };
 
-    // 1. Guardar en SQL
-    const res = await fetch('http://172.16.0.1:3000/api/registrarExtintor', {
+    const res = await fetch(`${URL_SCRIPT}/registrarExtintor`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1233,11 +1583,9 @@ const payload = {
 
     const folio = data.folio;
 
-    // 2. Descargar PDF
     btn.innerText = "DESCARGANDO PDF... ⏳";
 
-    const pdfRes = await fetch(`http://172.16.0.1:3000/api/extintor/pdf/${folio}`);
-
+    const pdfRes = await fetch(`${URL_SCRIPT}/extintor/pdf/${folio}`);
     if (!pdfRes.ok) {
       const errText = await pdfRes.text();
       throw new Error('Error generando PDF: ' + errText);
@@ -1255,7 +1603,6 @@ const payload = {
 
     alert(`✅ INSPECCIÓN REGISTRADA\nFolio: ${folio}\nInspector: ${inspector}`);
 
-    // Limpiar form completo
     document.getElementById('ext-id').value = '';
     document.getElementById('ext-ubi').value = '';
     document.getElementById('ext-agente').value = '';
@@ -1271,13 +1618,13 @@ const payload = {
 
   } catch (e) {
     alert("❌ Error: " + e.message);
-    console.error(e);
   } finally {
     btn.disabled = false;
-    btn.innerText = "REGISTRAR INSPECCIÓN 🧯";
+    btn.innerText = "REGISTRAR";
   }
 }
-       
+
+// ===== FUNCION DE ENVIAR ORDEN DE TRABAJO=====
 async function enviarOT() {
   const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
   btn.disabled = true;
@@ -1366,220 +1713,254 @@ async function enviarOT() {
   }
 }
 
-// ===== REPORTES CSV =====
-async function procesarDescargaUniversal(accion, ini, fin, nombre) {
-    if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
+function mostrarSeccionCierre() {
+    
+    const seccionApertura = document.getElementById('ot-seccion-apertura');
+    if(seccionApertura) seccionApertura.style.display = 'none';
+    
+    
+    const contenedorBotones = document.querySelector('#ui-operaciones > div');
+    if(contenedorBotones) contenedorBotones.style.display = 'none';
+    
+    
+    const seccionCierre = document.getElementById('ot-seccion-cierre');
+    if(seccionCierre) {
+        seccionCierre.style.display = 'block';
+    } else {
+        alert("❌ ERROR: No existe el div con id='ot-seccion-cierre' en tu HTML");
+    }
+}
 
-    const moduloMap = {
-        "reporte": "LOGISTICA",
-        "reporteIncidentes": "SSO",
-        "reporteOT": "OPERACIONES",
-        "reporteMedico": "SSO",
-        "reporteExtintor": "SSO"
-    };
-    const modulo = moduloMap[accion] || "LOGISTICA";
+
+function cancelarCierre() {
+  const seccionCierre = document.getElementById('ot-seccion-cierre');
+  if (seccionCierre) seccionCierre.style.display = 'none';
+
+  const seccionApertura = document.getElementById('ot-seccion-apertura');
+  if (seccionApertura) seccionApertura.style.display = 'block';
+
+  const contenedorBotones = document.querySelector('#ui-operaciones > div');
+  if (contenedorBotones) contenedorBotones.style.display = 'block';
+}
+// ===== ENVIAR FINALIZACION DE ORDEN  DE TRABAJO =====
+async function finalizarTareaOT(folioOT, btn) {
+    folioOT = String(folioOT || '').trim().toUpperCase();
+    
+    if (!folioOT) {
+        alert("❌ El folio está vacío.");
+        return;
+    }
+
+    const obsInput = document.getElementById('ot-comentarios-cierre');
+    const obs = obsInput ? obsInput.value.trim() : '';
+    
+    if (!obs) {
+        alert("❌ Escribe las observaciones de cierre.");
+        return;
+    }
+
+    if (!confirm("¿Finalizar OT " + folioOT + "?")) return;
+
+    const boton = btn || window.event?.target;
+    if (boton) {
+        boton.disabled = true;
+        boton.innerText = "CERRANDO...";
+    }
 
     try {
-        const url = `http://172.16.0.1:3000/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Error " + res.status);
+        const folioATS = window.datosVinculadosCierre?.folioATS || "";
 
-        const csv = await res.text();
-        // CAMBIO 1: text/csv → application/vnd.ms-excel
-        // CAMBIO 2:.csv →.xls
-        const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${nombre}_${ini}_al_${fin}.xls`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const res = await fetch('${URL_SCRIPT}/ot/finalizar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                folio_ot: folioOT,
+                comentarios_cierre: obs,
+                folio_ats: folioATS,
+                cerrado_por: window.usuarioLogueado?.usuario || 'SISTEMA' 
+        })
+                   });
 
-    } catch(e) {
-        alert("❌ Error de descarga: " + e.message);
+        const data = await res.json();
+
+        if (!data.ok) {
+            // ATS abierto → avisa y NO limpia
+            alert("❌ " + data.mensaje);
+            return;
+        }
+
+        // OK → avisa y limpia siempre
+        alert("✅ " + data.mensaje);
+        if (typeof cancelarCierre === 'function') cancelarCierre();
+        window.datosVinculadosCierre = null;
+        if (obsInput) obsInput.value = '';
+        if (typeof cargarOTs === 'function') cargarOTs();
+        else location.reload();
+
+    } catch (err) {
+        alert("❌ ERROR DE RED: " + err.message);
+        console.error(err);
+    } finally {
+        if (boton) {
+            boton.disabled = false;
+            boton.innerText = "FINALIZAR";
+        }
     }
 }
 
-async function descargarCSV_ATS() {
-  const ini = document.getElementById('f-ini-sso').value;
-  const fin = document.getElementById('f-fin-sso').value;
-  if (!ini ||!fin) {
-    alert('Selecciona fecha inicio y fin');
-    return;
-  }
-  try {
-    const url = `http://172.16.0.1:3000/export-sso?desde=${ini}&hasta=${fin}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Error " + res.status);
-
-    const csv = await res.text();
-    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `SSO_${ini}_al_${fin}.xls`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch(e) {
-    alert("❌ Error de descarga: " + e.message);
-  }
-}
-
-async function descargarCSV_Incidentes() {
-  const ini = document.getElementById('f-ini-sso').value;
-  const fin = document.getElementById('f-fin-sso').value;
-  if (!ini ||!fin) {
-    alert('Selecciona fecha inicio y fin');
-    return;
-  }
-  const url = `http://172.16.0.1:3000/export-incidentes?desde=${ini}&hasta=${fin}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Error " + res.status);
-
-  const csv = await res.text();
-  const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `INCIDENTES_${ini}_al_${fin}.xls`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-async function descargarCSV_Medico() {
-  const ini = document.getElementById('f-ini-sso').value;
-  const fin = document.getElementById('f-fin-sso').value;
-  if (!ini ||!fin) {
-    alert('Selecciona fecha inicio y fin');
-    return;
-  }
-  const url = `http://172.16.0.1:3000/export-medico?desde=${ini}&hasta=${fin}`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Error " + res.status);
-
-    const csv = await res.text();
-    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `MEDICO_${ini}_al_${fin}.xls`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (err) {
-    alert("Error al descargar CSV: " + err.message);
-  }
-}
-
-async function descargarCSV_Extintores() {
-  const ini = document.getElementById('f-ini-sso')?.value;
-  const fin = document.getElementById('f-fin-sso')?.value;
-  if (!ini ||!fin) {
-    alert('Selecciona fecha inicio y fin');
-    return;
-  }
-  try {
-    const url = `http://172.16.0.1:3000/export-extintores?desde=${ini}&hasta=${fin}`;
-    const res = await fetch(url, { mode: 'cors' });
-    if (!res.ok) throw new Error("Error " + res.status);
-
-    const csv = await res.text();
-    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `EXTINTORES_${ini}_al_${fin}.xls`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch(err) {
-    alert('Error: Bloqueado por HTTPS. Usa http en vez de https o ponle SSL al Node.\n\nDetalle: ' + err.message);
-    console.error(err);
-  }
-}
-
-function descargarCSV() {
-    procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
-}
-
-async function descargarCSV_OT() {
-  const ini = document.getElementById('f-ini-ot')?.value;
-  const fin = document.getElementById('f-fin-ot')?.value;
-  if (!ini ||!fin) {
-    alert('Selecciona fecha inicio y fin de OT');
-    return;
-  }
-
-  const btn = document.querySelector('button[onclick*="descargarCSV_OT"]');
-  const textoOriginal = btn.innerText;
+// ===== FUNCION REPORTE DE INCIDENTE=====
+async function enviarIncidenteCompleto() {
+  const btn = document.querySelector('button[onclick="enviarIncidenteCompleto()"]');
   btn.disabled = true;
-  btn.innerText = "📥 GENERANDO EXCEL... ⏳";
+  btn.innerText = "REGISTRANDO... ⏳";
 
   try {
-    const url = `http://172.16.0.1:3000/export-ot?desde=${ini}&hasta=${fin}`;
-    const res = await fetch(url, { mode: 'cors' });
-    if (!res.ok) throw new Error("Error " + res.status);
+    if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
 
-    const csv = await res.text();
-    // OJO CEO: ya no agrego '\uFEFF' aquí porque el backend ya lo manda
-    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const link = document.createElement("a");
-    const urlBlob = URL.createObjectURL(blob);
-    link.href = urlBlob;
-    link.download = `OT_${ini}_al_${fin}.xls`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(urlBlob);
+    // SOLO ESTE BLOQUE DE IDS
+    const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
+      .map(i => i.value.toUpperCase().trim())
+      .filter(v => v);
 
-    alert("✅ Excel de OTs descargado");
-  } catch (err) {
-    alert("❌ Error: " + err.message);
+    console.log('IDs encontrados:', ids); 
+
+    if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
+
+    const involucrados = ids.map(id => {
+      const t = DB_MASTER.TECNICO?.find(x => x.id.toString() === id);
+      return t ? `${t.nombre} (${id})` : id;
+    }).join(" | ");
+
+    const payload = {
+  folio: window.datosVinculados.folioATS,
+  area: window.datosVinculados.fase,
+  ubicacion: window.datosVinculados.ubi,
+  tipoEvento: document.getElementById('inc-tipo').value,
+  gravedad: document.getElementById('inc-gravedad').value,
+  riesgo: document.getElementById('inc-riesgo').value,
+  contaminacion: document.getElementById('inc-contaminacion').value,
+  estructura: document.getElementById('inc-estructura').value,
+  reparacion: document.getElementById('inc-reparacion').value,
+  reincidencia: document.getElementById('inc-reincidencia').value,
+  estadoFinal: document.getElementById('inc-estado-final').value,
+  salud: document.getElementById('inc-salud').value,
+  creado_por: window.usuarioLogueado?.usuario || 'SISTEMA', 
+  involucrados: involucrados,
+  desc: document.getElementById('inc-recomendacion').value, 
+  tecnico_principal: document.getElementById('inc-tecnico')?.value || null
+};
+    
+    const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
+    for (let campo of camposObligatorios) {
+      if (!payload[campo] || payload[campo].includes('disabled selected')) {
+        throw new Error(`Selecciona una opción válida en ${campo}`);
+      }
+    }
+
+    
+    const res = await fetch("${URL_SCRIPT}/registrarIncidente", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const folio = data.folio;
+
+    
+    btn.innerText = "DESCARGANDO PDF... ⏳";
+    const pdfRes = await fetch(`${URL_SCRIPT}/incidente/pdf/${folio}`);
+
+    if (!pdfRes.ok) {
+      const errText = await pdfRes.text();
+      throw new Error('Error generando PDF: ' + errText);
+    }
+
+    const blob = await pdfRes.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${folio}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    alert("✅ INFORME SSO REGISTRADO CORRECTAMENTE");
+    document.getElementById('ui-incidentes-sso').style.display = 'none';
+    document.getElementById('ui-monitor-sso').style.display = 'block';
+    setTimeout(() => location.reload(), 1000);
+
+  } catch (e) {
+    alert("❌ Error: " + e.message);
+    console.error(e);
   } finally {
     btn.disabled = false;
-    btn.innerText = textoOriginal;
+    btn.innerText = "REGISTRAR INFORME 🚩";
   }
 }
-    
-       // ===== ADMIN DATOS MAESTROS =====
-  function descargarDataMaestra() {
-  try {
-    let csv = "\uFEFFCATEGORIA,ID,NOMBRE,EXTRA1,EXTRA2,EXTRA3,EXTRA4,CREADO_POR,MODIFICADO_POR,FECHA_MOD\n";
-    for (let cat in DB_MASTER) {
-      const lista = Array.isArray(DB_MASTER[cat])? DB_MASTER[cat] : [];
-      lista.forEach(i => {
-        const limpiar = (val) => String(val?? '').replace(/"/g, '""');
-        csv += `${cat},${i.id},"${limpiar(i.nombre)}","${limpiar(i.extra1)}","${limpiar(i.extra2)}","${limpiar(i.extra3)}","${limpiar(i.extra4)}","${limpiar(i.creado_por)}","${limpiar(i.modificado_por)}","${limpiar(i.fecha_mod)}"\n`;
-      });
+
+async function vincularDatosPermiso(folioATS) {
+    try {
+        folioATS = folioATS.trim().toUpperCase();
+        if (!folioATS) throw new Error("Ingresa el folio ATS");
+
+        const div = document.getElementById('datos-vinculados-sso');
+        div.innerHTML = '';
+
+        const r = await fetch(`${URL_SCRIPT}/sso/vincularPermiso?folio=${encodeURIComponent(folioATS)}`, {
+            method: 'GET'
+        });
+
+        const data = await r.json();
+
+        if (!data.ok) throw new Error(data.error);
+
+        const p = data.datos;
+
+        // GUARDA ESTO PARA QUE FUNCIONE enviarIncidenteCompleto
+        window.datosVinculados = {
+            folioATS: folioATS,
+            fase: p.area,
+            ubi: p.lugar,
+            tipo: p.tipo
+        };
+
+        div.innerHTML = `
+          <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
+            <b>✅ SSO VINCULADO</b><br>
+            <small>🏢 Área: ${p.area}</small><br>
+            <small>📍 Lugar: ${p.lugar}</small><br>
+            <small>🔧 Tipo: ${p.tipo || 'N/A'}</small>
+          </div>
+        `;
+        alert("✅ SSO VINCULADO");
+
+    } catch(e) {
+        alert("❌ Error: " + e.message);
+        console.error(e);
+        document.getElementById('datos-vinculados-sso').innerHTML = '';
+        window.datosVinculados = null; // limpia si falla
     }
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `DB_MAESTRA_TERPAC_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-  } catch (e) { alert("❌ Error: " + e.message); }
 }
-        function descargarBase64PDF(b, n) {
-  if(!b || b.length < 500) return;
-
-  const a = document.createElement("a");
-  a.href = "data:application/pdf;base64," + b.trim();
-  a.download = n;
-  a.style.display = "none";
-
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
- async function recargarYMostrar() {
-    const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
-        method: 'POST',
-        headers: {'Content-Type': 'text/plain'},
-        body: JSON.stringify({accion: 'getAdminConfig'})
-    });
-    DB_MASTER = await r.json();
-    mostrarListaAdmin(document.getElementById('adm-categoria').value || 'USUARIOS');
+      
+function agregarInvolucradoInc() {
+    const cont = document.getElementById('contenedor-involucrados-inc');
+    if (!cont) return;
+    
+    const d = document.createElement('div');
+    d.className = 'inc-bloque'; // <- esto faltaba
+    d.style.cssText = "display:flex; gap:10px; margin-top:5px; flex-wrap:wrap;";
+    d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;">
+                   <button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
+                   <div class="inc-resultado" style="display:none; width:100%;"></div>`;
+    cont.appendChild(d);
 }
 
+
+// ===== FUNCION QUE GUARDA DATOS MAESTROS=====
 async function guardarDatoMaestro() {
     const idNuevo = document.getElementById('adm-id').value.toUpperCase().trim();
     const cat = document.getElementById('adm-categoria').value;
@@ -1589,7 +1970,7 @@ async function guardarDatoMaestro() {
     if (!idNuevo) return alert("❌ ID vacío");
     if (!document.getElementById('adm-nombre').value.trim()) return alert("❌ Escribe un nombre");
 
-    // Validación de duplicados por DPI
+    
     const categoriasConDPI = ["TECNICO", "PILOTO", "EMPLEADO"];
     let duplicado = null;
 
@@ -1606,15 +1987,15 @@ async function guardarDatoMaestro() {
 
     const payload = {
     accion: 'guardarDatoMaestro',
-    categoria: categoria,
-    id_codigo: document.getElementById('dm_id').value.trim(),
-    descripcion: document.getElementById('dm_desc').value.trim(),
-    estado: document.getElementById('dm_estado').value,
-    usuario: window.usuarioLogueado?.usuario || 'SISTEMA' // ← AQUÍ CEO
+    categoria: cat,  // <- era 'categoria' y no existe
+    id_codigo: idNuevo,  // <- era 'dm_id' y no existe ese input
+    descripcion: document.getElementById('adm-nombre').value.trim(),
+    estado: document.getElementById('adm-estado').value,
+    usuario: window.usuarioLogueado?.usuario || 'SISTEMA'
 };
 
     try {
-        const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
+        const r = await fetch(`${URL_SCRIPT}/adminConfig`, {
             method: 'POST',
             headers: {'Content-Type': 'text/plain'},
             body: JSON.stringify(payload)
@@ -1633,7 +2014,7 @@ async function guardarDatoMaestro() {
         console.error(e);
     }
 }       
-// Genera ID automático tipo TIP-001, GRA-002, etc
+
 function generarID(categoria) {
     const lista = DB_MASTER[categoria] || [];
     let maxNum = 0;
@@ -1663,7 +2044,7 @@ function generarID(categoria) {
     return `${prefijo}-${String(siguiente).padStart(3, '0')}`;
 }
 
-// Cambia labels y genera ID al elegir categoría
+
 function ajustarLabelsAdmin() {
     const c = document.getElementById('adm-categoria').value;
     const nombre = document.getElementById('adm-nombre');
@@ -1781,7 +2162,7 @@ function mostrarListaAdmin(categoria) {
             usuario: window.usuarioLogueado?.usuario || 'SISTEMA'
         };
 
-        const r = await fetch("http://172.16.0.1:3000/api/adminConfig", {
+        const r = await fetch(`${URL_SCRIPT}/adminConfig`, {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: {'Content-Type': 'application/json'}
@@ -1791,7 +2172,7 @@ function mostrarListaAdmin(categoria) {
         
         if (data.ok) {
             alert(`✅ ${id} ahora está ${nuevoEstado}`);
-            mostrarListaAdmin(categoria); // ← quita el await recargarDatosMaestros()
+            mostrarListaAdmin(categoria); 
         } else {
             alert("❌ Error: " + data.error);
         }
@@ -1800,92 +2181,59 @@ function mostrarListaAdmin(categoria) {
         alert("❌ Error: " + e.message);
     }
 }
-       async function recargarDatosMaestros() {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const r = await fetch(URL_SCRIPT + '?accion=getAdminConfig');
-            const txt = await r.text(); // ← lee texto primero
-            
-            if (!r.ok) {
-                console.error('Status:', r.status, 'Respuesta:', txt);
-                return resolve(); // ← no rechaces, solo ignora
-            }
-            
-            DB_MASTER = JSON.parse(txt);
-            resolve();
-        } catch (e) {
-            console.error('Error recarga:', e);
-            resolve(); // ← no rechaces para que no truene cambiarEstado
-        }
-    });
-}
-       
-        function irAIncidentes() {
-    document.getElementById('ui-monitor-sso').style.display='none';
-    document.getElementById('ui-incidentes-sso').style.display='block';
-    llenarDesplegablesIncidentes(); // <- esto es lo nuevo
-}
-        function llenarListasIncidentes() {
-            const selSalud = document.getElementById('inc-salud');
-            const selGrav = document.getElementById('inc-gravedad');
-            if (selSalud && DB_MASTER.ESTADO_SALUD) {
-                selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
-                DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
-            }
-            if (selGrav && DB_MASTER.GRAVEDAD) {
-                selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
-                DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
-            }
-        }
 
-        function irAMedico() {
-            document.getElementById('ui-monitor-sso').style.display='none';
-            document.getElementById('ui-medico-sso').style.display='block';
-        }
 
-        function irAExtintores() {
-            document.getElementById('ui-monitor-sso').style.display='none';
-            document.getElementById('ui-extintores-sso').style.display='block';
-        }
+// ===== VINCULAR ATS CIERRE =====
+async function vincularATSaOT_Cierre(folioATS) {
+    try {
+        folioATS = folioATS.trim().toUpperCase();
+        if (!folioATS) throw new Error("Ingresa el folio ATS");
 
-                
-function mostrarSeccionCierre() {
-    // 1. Oculta la sección de apertura de OT
-    const seccionApertura = document.getElementById('ot-seccion-apertura');
-    if(seccionApertura) seccionApertura.style.display = 'none';
-    
-    // 2. Oculta el contenedor principal de botones de OT
-    const contenedorBotones = document.querySelector('#ui-operaciones > div');
-    if(contenedorBotones) contenedorBotones.style.display = 'none';
-    
-    // 3. Muestra la sección de cierre que ya tienes en tu HTML
-    const seccionCierre = document.getElementById('ot-seccion-cierre');
-    if(seccionCierre) {
-        seccionCierre.style.display = 'block';
-    } else {
-        alert("❌ ERROR: No existe el div con id='ot-seccion-cierre' en tu HTML");
+        const div = document.getElementById('ot-datos-vinculados-cierre');
+        div.innerHTML = '';
+
+        const r = await fetch(`${URL_SCRIPT}/sso/vincularPermiso?folio=${encodeURIComponent(folioATS)}`, {
+            method: 'GET'
+        });
+
+        const data = await r.json();
+
+        if (!data.ok) throw new Error(data.error);
+
+        const p = data.datos;
+
+        // GUARDA ESTO PARA CUANDO FINALICES LA OT
+        window.datosVinculadosCierre = {
+            folioATS: folioATS,
+            fase: p.area,
+            ubi: p.lugar,
+            tipo: p.tipo
+        };
+
+        div.innerHTML = `
+          <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
+            <b>✅ ATS VINCULADO</b><br>
+            <small>🏢 Área: ${p.area}</small><br>
+            <small>📍 Lugar: ${p.lugar}</small><br>
+            <small>🔧 Tipo: ${p.tipo || 'N/A'}</small>
+          </div>
+        `;
+        alert("✅ ATS VINCULADO");
+
+    } catch(e) {
+        alert("❌ Error: " + e.message);
+        console.error(e);
+        document.getElementById('ot-datos-vinculados-cierre').innerHTML = '';
+        window.datosVinculadosCierre = null; // limpia si falla
     }
 }
-
-// ✅ FIX Q28K #8: VOLVER A PANTALLA PRINCIPAL OT
-function cancelarCierre() {
-  const seccionCierre = document.getElementById('ot-seccion-cierre');
-  if (seccionCierre) seccionCierre.style.display = 'none';
-
-  const seccionApertura = document.getElementById('ot-seccion-apertura');
-  if (seccionApertura) seccionApertura.style.display = 'block';
-
-  const contenedorBotones = document.querySelector('#ui-operaciones > div');
-  if (contenedorBotones) contenedorBotones.style.display = 'block';
-}
-
-// === 1. CARGAR PERMISOS - API PROPIA ===
+// === 1. CARGAR PERMISOS  ===
 async function cargarPermisosParaCerrar() {
-  const API_SSO = 'http://172.16.0.1:3000/api/sso';
-  const cont = document.getElementById('contenedor-tabla-sso');
+  const API_SSO = `${URL_SCRIPT}/sso`;
+  console.log("CEO API_SSO =", API_SSO); 
+  console.log("CEO URL_SCRIPT =", URL_SCRIPT); 
   
-  if (!cont) return;
-  cont.innerHTML = "Cargando permisos...";
+  const cont = document.getElementById('contenedor-tabla-sso');
 
   try {
     const res = await fetch(`${API_SSO}/detalle?desde=2000-01-01&hasta=2100-12-31`);
@@ -1960,606 +2308,68 @@ async function cargarPermisosParaCerrar() {
   }
 }
 
-// Ejecutar cuando cargue DOM
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', cargarPermisosParaCerrar);
 } else {
   cargarPermisosParaCerrar();
 }
-       
+// ===== REPORTES DE DESCARGA CSV =====
 
-       
-function llenarDesplegablesOperaciones() {
-  const selPrio = document.getElementById('ot-prioridad');
-  const selDepto = document.getElementById('ot-depto');
-  if (DB_MASTER.PRIORIDAD_OT) {
-    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
-    DB_MASTER.PRIORIDAD_OT.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
-  }
-  if (DB_MASTER.DEPTO_OT) {
-    selDepto.innerHTML = '<option disabled selected>Departamento</option>';
-    DB_MASTER.DEPTO_OT.forEach(d => selDepto.add(new Option(d.nombre, d.nombre)));
-  }
-}
+async function procesarDescargaUniversal(accion, ini, fin, nombre) {
+    if (!ini ||!fin) return alert("❌ Selecciona un rango de fechas");
 
-function checkTecnicoOperaciones(id) {
-    const box = document.getElementById('ot-tec-box');
-    const btn = document.querySelector('#ot-seccion-apertura button[onclick="enviarOT()"]');
-
-    if (!id ||!box) { if(box) box.style.display = 'none'; return; }
-
-    id = id.toString().trim().toUpperCase();
-
-    if (!esActivo('TECNICO', id)) {
-        box.innerHTML = `<span style="color:red;">❌ Técnico ${id} INACTIVO</span>`;
-        box.style.display = 'block';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    const t = getRegistro('TECNICO', id);
-    box.innerHTML = `👨‍🔧 Técnico: ${t.nombre}`;
-    box.style.display = 'block';
-    if(btn) btn.disabled = false;
-}
-
-async function checkTecAgregado(inp) {
-    const id = inp.value.trim().toUpperCase();
-    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
-    const btn = document.getElementById('btn-env');
-
-    if (!id) {
-        box.style.display = 'none';
-        if(btn) btn.disabled = false;
-        return;
-    }
-
-    if(box) {
-        box.innerText = "⏳ Buscando...";
-        box.style.display = 'block';
-    }
-    if(btn) btn.disabled = true;
+    const moduloMap = {
+        "reporte": "LOGISTICA",
+        "reporteIncidentes": "SSO",
+        "reporteOT": "OPERACIONES",
+        "reporteMedico": "SSO",
+        "reporteExtintor": "SSO"
+    };
+    const modulo = moduloMap[accion] || "LOGISTICA";
 
     try {
-        const r = await fetch(`http://172.16.0.1:3000/api/buscar?categoria=TECNICO&id=${id}`);
-        const data = await r.json();
+        const url = `${URL_SCRIPT}/export?modulo=${modulo}&desde=${ini}&hasta=${fin}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Error " + res.status);
 
-        if (!data.ok) {
-            if(box) box.innerText = "❌ Código no encontrado";
-            if(btn) btn.disabled = true;
-            return;
-        }
-
-        const t = data.data;
-
-        if ((t.ATRIBUTO_3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
-            alert("🚫 TÉCNICO BLOQUEADO en sistema.");
-            inp.value = "";
-            if(box) box.style.display = 'none';
-            if(btn) btn.disabled = true;
-            return;
-        }
-
-        if(box) {
-            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
-            box.style.display = 'block';
-        }
-        if(btn) btn.disabled = false;
-
-    } catch (err) {
-        if(box) box.innerText = "❌ Error de conexión";
-        console.error(err);
-        if(btn) btn.disabled = true;
-    }
-}
-       function agregarTecAgregado() {
-    const cont = document.getElementById('contenedor-tec-agregado');
-    if (!cont) return;
-
-    const d = document.createElement('div');
-    d.className = "tec-bloque";
-    d.style.cssText = "margin-top:5px;";
-    d.innerHTML = `
-        <div style="display:flex; gap:10px;">
-            <input type="text" class="tec-id-clase" placeholder="ID técnico"
-                   onblur="checkTecAgregado(this)" style="flex:1;">
-            <button type="button" onclick="this.parentElement.parentElement.remove()"
-                    style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
-        </div>
-        <div class="tec-resultado" style="display:none; margin-top:3px; font-size:13px;"></div>
-    `;
-    cont.appendChild(d);
-}
-
-function checkTecAgregado(inp) {
-    const id = inp.value.trim().toUpperCase();
-    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
-    const btn = document.getElementById('btn-env');
-
-    if (!id) {
-        box.style.display = 'none';
-        if(btn) btn.disabled = false;
-        return;
-    }
-
-    if (!DB_MASTER.TECNICO) {
-        box.innerText = "⏳ Cargando datos...";
-        box.style.display = 'block';
-        if(btn) btn.disabled = false;
-        return;
-    }
-
-    const t = DB_MASTER.TECNICO[id];
-    if (!t) {
-        box.innerText = "❌ Código no encontrado";
-        box.style.display = 'block';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    if ((t.ATRIBUTO_3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
-        alert("🚫 TÉCNICO BLOQUEADO en sistema.");
-        inp.value = "";
-        box.style.display = 'none';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
-    box.style.display = 'block';
-    if(btn) btn.disabled = false;
-}
-       
-       window.onload = () => {
-    cargarCerebroSistema();
-};
-
-// ===== VINCULAR ATS CIERRE =====
-async function vincularATSaOT_Cierre(folioATS) {
-    try {
-        folioATS = folioATS.trim().toUpperCase();
-        if (!folioATS) throw new Error("Ingresa el folio ATS");
-
-        const div = document.getElementById('ot-datos-vinculados-cierre');
-        div.innerHTML = '';
-
-        const r = await fetch(`http://172.16.0.1:3000/api/sso/vincularPermiso?folio=${encodeURIComponent(folioATS)}`, {
-            method: 'GET'
-        });
-
-        const data = await r.json();
-
-        if (!data.ok) throw new Error(data.error);
-
-        const p = data.datos;
-
-        // GUARDA ESTO PARA CUANDO FINALICES LA OT
-        window.datosVinculadosCierre = {
-            folioATS: folioATS,
-            fase: p.area,
-            ubi: p.lugar,
-            tipo: p.tipo
-        };
-
-        div.innerHTML = `
-          <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
-            <b>✅ ATS VINCULADO</b><br>
-            <small>🏢 Área: ${p.area}</small><br>
-            <small>📍 Lugar: ${p.lugar}</small><br>
-            <small>🔧 Tipo: ${p.tipo || 'N/A'}</small>
-          </div>
-        `;
-        alert("✅ ATS VINCULADO");
+        const csv = await res.text();
+        // CAMBIO 1: text/csv → application/vnd.ms-excel
+        // CAMBIO 2:.csv →.xls
+        const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${nombre}_${ini}_al_${fin}.xls`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
     } catch(e) {
-        alert("❌ Error: " + e.message);
-        console.error(e);
-        document.getElementById('ot-datos-vinculados-cierre').innerHTML = '';
-        window.datosVinculadosCierre = null; // limpia si falla
+        alert("❌ Error de descarga: " + e.message);
     }
 }
 
-// ===== FINALIZAR OT =====
-async function finalizarTareaOT(folioOT, btn) {
-    folioOT = String(folioOT || '').trim().toUpperCase();
-    
-    if (!folioOT) {
-        alert("❌ El folio está vacío.");
-        return;
-    }
-
-    const obsInput = document.getElementById('ot-comentarios-cierre');
-    const obs = obsInput ? obsInput.value.trim() : '';
-    
-    if (!obs) {
-        alert("❌ Escribe las observaciones de cierre.");
-        return;
-    }
-
-    if (!confirm("¿Finalizar OT " + folioOT + "?")) return;
-
-    const boton = btn || window.event?.target;
-    if (boton) {
-        boton.disabled = true;
-        boton.innerText = "CERRANDO...";
-    }
-
-    try {
-        const folioATS = window.datosVinculadosCierre?.folioATS || "";
-
-        const res = await fetch('http://172.16.0.1:3000/api/ot/finalizar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                folio_ot: folioOT,
-                comentarios_cierre: obs,
-                folio_ats: folioATS,
-                cerrado_por: window.usuarioLogueado?.usuario || 'SISTEMA' 
-        })
-                   });
-
-        const data = await res.json();
-
-        if (!data.ok) {
-            // ATS abierto → avisa y NO limpia
-            alert("❌ " + data.mensaje);
-            return;
-        }
-
-        // OK → avisa y limpia siempre
-        alert("✅ " + data.mensaje);
-        if (typeof cancelarCierre === 'function') cancelarCierre();
-        window.datosVinculadosCierre = null;
-        if (obsInput) obsInput.value = '';
-        if (typeof cargarOTs === 'function') cargarOTs();
-        else location.reload();
-
-    } catch (err) {
-        alert("❌ ERROR DE RED: " + err.message);
-        console.error(err);
-    } finally {
-        if (boton) {
-            boton.disabled = false;
-            boton.innerText = "FINALIZAR";
-        }
-    }
-}
-function salir() {
-  // Oculta todos los paneles
-  document.getElementById('ui-app').style.display = 'none';
-  document.getElementById('ui-supervisor').style.display = 'none';
-  document.getElementById('ui-monitor-sso').style.display = 'none';
-  document.getElementById('ui-seguridad').style.display = 'none';
-  document.getElementById('ui-operaciones').style.display = 'none';
-  document.getElementById('ui-admin-datos').style.display = 'none';
-  document.getElementById('ui-incidentes-sso').style.display = 'none';
-  document.getElementById('ui-medico-sso').style.display = 'none';
-  document.getElementById('ui-extintores-sso').style.display = 'none';
-
-  // Muestra el login
-  const login = document.getElementById('login');
-  if (login) login.style.display = 'block';
-
-  // Limpia todo
-  document.getElementById('id-in').value = '';
-  document.getElementById('u').value = '';
-  document.getElementById('p').value = '';
-
-  // Resetea el botón de login por si se quedó trabado
-  const btn = document.getElementById('btn-login');
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = 'INGRESAR';
-  }
-}
-  
-async function vincularDatosPermiso(folioATS) {
-    try {
-        folioATS = folioATS.trim().toUpperCase();
-        if (!folioATS) throw new Error("Ingresa el folio ATS");
-
-        const div = document.getElementById('datos-vinculados-sso');
-        div.innerHTML = '';
-
-        const r = await fetch(`http://172.16.0.1:3000/api/sso/vincularPermiso?folio=${encodeURIComponent(folioATS)}`, {
-            method: 'GET'
-        });
-
-        const data = await r.json();
-
-        if (!data.ok) throw new Error(data.error);
-
-        const p = data.datos;
-
-        // GUARDA ESTO PARA QUE FUNCIONE enviarIncidenteCompleto
-        window.datosVinculados = {
-            folioATS: folioATS,
-            fase: p.area,
-            ubi: p.lugar,
-            tipo: p.tipo
-        };
-
-        div.innerHTML = `
-          <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
-            <b>✅ SSO VINCULADO</b><br>
-            <small>🏢 Área: ${p.area}</small><br>
-            <small>📍 Lugar: ${p.lugar}</small><br>
-            <small>🔧 Tipo: ${p.tipo || 'N/A'}</small>
-          </div>
-        `;
-        alert("✅ SSO VINCULADO");
-
-    } catch(e) {
-        alert("❌ Error: " + e.message);
-        console.error(e);
-        document.getElementById('datos-vinculados-sso').innerHTML = '';
-        window.datosVinculados = null; // limpia si falla
-    }
-}
-       async function checkInvolucradoIncidente(inp) {
-    const id = inp.value.trim().toUpperCase();
-    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
-    
-    if (!id) {
-        if(box) box.style.display = 'none';
-        return;
-    }
-
-    if(box) {
-        box.innerText = "⏳ Buscando...";
-        box.style.display = 'block';
-    }
-
-    try {
-        const r = await fetch(`http://172.16.0.1:3000/api/buscar?categoria=TECNICO&id=${id}`);
-        const data = await r.json();
-
-        if (!data.ok) {
-            if(box) box.innerText = "❌ Código no encontrado";
-            return;
-        }
-
-        const t = data.data;
-        if(box) {
-            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
-            box.style.display = 'block';
-        }
-
-    } catch (err) {
-        if(box) box.innerText = "❌ Error de conexión";
-    }
+function descargarCSV() {
+    procesarDescargaUniversal("reporte", document.getElementById('f-inicio').value, document.getElementById('f-fin').value, "Logistica");
 }
 
-window.checkInvolucradoIncidente = async function(inp) {
-    const id = inp.value.trim().toUpperCase();
-    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
-    
-    if (!id) {
-        if(box) box.style.display = 'none';
-        return;
-    }
-
-    if(box) {
-        box.innerText = "⏳ Buscando...";
-        box.style.display = 'block';
-    }
-
-    try {
-        const r = await fetch(`http://172.16.0.1:3000/api/buscar?categoria=TECNICO&id=${id}`);
-        const data = await r.json();
-
-        if (!data.ok) {
-            if(box) box.innerText = "❌ Código no encontrado";
-            return;
-        }
-
-        const t = data.data;
-        if(box) {
-            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
-            box.style.display = 'block';
-        }
-
-    } catch (err) {
-        if(box) box.innerText = "❌ Error de conexión";
-    }
-}
-
-function agregarInvolucradoInc() {
-    const cont = document.getElementById('contenedor-involucrados-inc');
-    if (!cont) return;
-    
-    const d = document.createElement('div');
-    d.className = 'inc-bloque'; // <- esto faltaba
-    d.style.cssText = "display:flex; gap:10px; margin-top:5px; flex-wrap:wrap;";
-    d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;">
-                   <button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
-                   <div class="inc-resultado" style="display:none; width:100%;"></div>`;
-    cont.appendChild(d);
-}
-
-async function enviarIncidenteCompleto() {
-  const btn = document.querySelector('button[onclick="enviarIncidenteCompleto()"]');
-  btn.disabled = true;
-  btn.innerText = "REGISTRANDO... ⏳";
-
-  try {
-    if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
-
-    // SOLO ESTE BLOQUE DE IDS
-    const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
-      .map(i => i.value.toUpperCase().trim())
-      .filter(v => v);
-
-    console.log('IDs encontrados:', ids); // para debug
-
-    if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
-
-    const involucrados = ids.map(id => {
-      const t = DB_MASTER.TECNICO?.find(x => x.id.toString() === id);
-      return t ? `${t.nombre} (${id})` : id;
-    }).join(" | ");
-
-    const payload = {
-  folio: window.datosVinculados.folioATS,
-  area: window.datosVinculados.fase,
-  ubicacion: window.datosVinculados.ubi,
-  tipoEvento: document.getElementById('inc-tipo').value,
-  gravedad: document.getElementById('inc-gravedad').value,
-  riesgo: document.getElementById('inc-riesgo').value,
-  contaminacion: document.getElementById('inc-contaminacion').value,
-  estructura: document.getElementById('inc-estructura').value,
-  reparacion: document.getElementById('inc-reparacion').value,
-  reincidencia: document.getElementById('inc-reincidencia').value,
-  estadoFinal: document.getElementById('inc-estado-final').value,
-  salud: document.getElementById('inc-salud').value,
-  creado_por: window.usuarioLogueado?.usuario || 'SISTEMA', // ← coma aquí
-  involucrados: involucrados,
-  desc: document.getElementById('inc-recomendacion').value, // ← cámbialo a desc para que cuadre
-  tecnico_principal: document.getElementById('inc-tecnico')?.value || null
-};
-    // 4. Validar campos obligatorios
-    const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
-    for (let campo of camposObligatorios) {
-      if (!payload[campo] || payload[campo].includes('disabled selected')) {
-        throw new Error(`Selecciona una opción válida en ${campo}`);
-      }
-    }
-
-    // 5. Guardar en SQL
-    const res = await fetch("http://172.16.0.1:3000/api/registrarIncidente", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
-
-    const folio = data.folio;
-
-    // 6. Descargar el PDF
-    btn.innerText = "DESCARGANDO PDF... ⏳";
-    const pdfRes = await fetch(`http://172.16.0.1:3000/api/incidente/pdf/${folio}`);
-
-    if (!pdfRes.ok) {
-      const errText = await pdfRes.text();
-      throw new Error('Error generando PDF: ' + errText);
-    }
-
-    const blob = await pdfRes.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${folio}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-
-    alert("✅ INFORME SSO REGISTRADO CORRECTAMENTE");
-    document.getElementById('ui-incidentes-sso').style.display = 'none';
-    document.getElementById('ui-monitor-sso').style.display = 'block';
-    setTimeout(() => location.reload(), 1000);
-
-  } catch (e) {
-    alert("❌ Error: " + e.message);
-    console.error(e);
-  } finally {
-    btn.disabled = false;
-    btn.innerText = "REGISTRAR INFORME 🚩";
-  }
-}
-  function llenarSelectTipoMedico() {
-  const sel = document.getElementById('med-tipo');
-  if (!sel) return;
-
-  sel.innerHTML = '<option disabled selected>Selecciona Tipo Médico</option>';
-
-  if (!DB_MASTER.TIPO_MEDICO) {
-    sel.innerHTML = '<option disabled>Cargando...</option>';
+async function descargarCSV_ATS() {
+  const ini = document.getElementById('f-ini-sso').value;
+  const fin = document.getElementById('f-fin-sso').value;
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin');
     return;
   }
-
-  DB_MASTER.TIPO_MEDICO
-    .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
-    .forEach(t => {
-      const opt = new Option(
-        decodeURIComponent(escape(t.nombre)), // <-- fuerza utf8
-        decodeURIComponent(escape(t.nombre))
-      );
-      sel.add(opt);
-    });
-}
-console.log(DB_MASTER.TIPO_EVENTO)
-llenarSelectTipoMedico();
-       
-  function llenarSelectAgenteExtintor() {
-  const sel = document.getElementById('ext-agente');
-  if (!sel) return;
-  
-  const agentes = DB_MASTER.AGENTE_EXTINTOR || [];
-  
-  sel.innerHTML = '<option value="">Seleccione agente...</option>' +
-    agentes.map(a => 
-      `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
-    ).join('');
-}
-async function mostrarUIOperaciones() {
-  document.getElementById('ui-operaciones').style.display = 'block';
-  
-  const res = await fetch('http://172.16.0.1:3000/api/db_master', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({})
-  });
-  
-  DB_MASTER = await res.json();
-  
-  llenarDesplegablesOperaciones(); // 
-}
-
-function llenarDesplegablesOperaciones() {
-  const selPrio = document.getElementById('ot-prioridad');
-  const selDepto = document.getElementById('ot-depto');
-  
-  // Prioridad usa PRIORIDAD, no PRIORIDAD_OT
-  if (DB_MASTER.PRIORIDAD) {
-    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
-    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
-  }
-  
-  
-  if (DB_MASTER.DEPARTAMENTO) {
-    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-    DB_MASTER.DEPARTAMENTO.forEach(d => {
-      selDepto.add(new Option(d.nombre, d.id));
-    });
-  }
-  
-  console.log('✅ Deptos cargados:', selDepto.options.length - 1);
-}
-       async function reimprimirDoc() {
-  const folio = document.getElementById('rep-folio').value.trim();
-  const tipo = document.getElementById('rep-tipo').value;
-
-  if (!folio ||!tipo) return alert('Folio y tipo obligatorios');
-
-  const url = `http://172.16.0.1:3000/reprint-pdf?tipo=${tipo}&folio=${folio}`;
-  window.open(url, '_blank'); // Abre PDF y ya imprimes
-}
-    async function descargarCSV_Admin() {
   try {
-    const url = 'http://172.16.0.1:3000/export-admin';
+    const url = `${URL_SCRIPT}/export-sso?desde=${ini}&hasta=${fin}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
-    // Cambia esto: text/csv → text/tab-separated-values
-    const blob = new Blob([csv], { type: 'text/tab-separated-values;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    // Cambia esto:.csv →.xls
-    link.download = `BD_CONFIG_${new Date().toISOString().slice(0,10)}.xls`;
+    link.download = `SSO_${ini}_al_${fin}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -2567,6 +2377,171 @@ function llenarDesplegablesOperaciones() {
     alert("❌ Error de descarga: " + e.message);
   }
 }
-   </script>
+
+async function descargarCSV_Incidentes() {
+  const ini = document.getElementById('f-ini-sso').value;
+  const fin = document.getElementById('f-fin-sso').value;
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin');
+    return;
+  }
+  const url = `${URL_SCRIPT}/export-incidentes?desde=${ini}&hasta=${fin}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Error " + res.status);
+
+  const csv = await res.text();
+  const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `INCIDENTES_${ini}_al_${fin}.xls`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+async function descargarCSV_Medico() {
+  const ini = document.getElementById('f-ini-sso').value;
+  const fin = document.getElementById('f-fin-sso').value;
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin');
+    return;
+  }
+  const url = `${URL_SCRIPT}/export-medico?desde=${ini}&hasta=${fin}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Error " + res.status);
+
+    const csv = await res.text();
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `MEDICO_${ini}_al_${fin}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (err) {
+    alert("Error al descargar CSV: " + err.message);
+  }
+}
+
+async function descargarCSV_Extintores() {
+  const ini = document.getElementById('f-ini-sso')?.value;
+  const fin = document.getElementById('f-fin-sso')?.value;
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin');
+    return;
+  }
+  try {
+    const url = `${URL_SCRIPT}/export-extintores?desde=${ini}&hasta=${fin}`;
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error("Error " + res.status);
+
+    const csv = await res.text();
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `EXTINTORES_${ini}_al_${fin}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch(err) {
+    alert('Error: Bloqueado por HTTPS. Usa http en vez de https o ponle SSL al Node.\n\nDetalle: ' + err.message);
+    console.error(err);
+  }
+}
+
+
+
+async function descargarCSV_OT() {
+  const ini = document.getElementById('f-ini-ot')?.value;
+  const fin = document.getElementById('f-fin-ot')?.value;
+  if (!ini ||!fin) {
+    alert('Selecciona fecha inicio y fin de OT');
+    return;
+  }
+
+  const btn = document.querySelector('button[onclick*="descargarCSV_OT"]');
+  const textoOriginal = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = "📥 GENERANDO EXCEL... ⏳";
+
+  try {
+    const url = `${URL_SCRIPT}/export-ot?desde=${ini}&hasta=${fin}`;
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error("Error " + res.status);
+
+    const csv = await res.text();
+    // OJO CEO: ya no agrego '\uFEFF' aquí porque el backend ya lo manda
+    const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const link = document.createElement("a");
+    const urlBlob = URL.createObjectURL(blob);
+    link.href = urlBlob;
+    link.download = `OT_${ini}_al_${fin}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(urlBlob);
+
+    alert("✅ Excel de OTs descargado");
+  } catch (err) {
+    alert("❌ Error: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = textoOriginal;
+  }
+}
+
+async function descargarCSV_Admin() {
+  try {
+    const url = `${URL_SCRIPT}/export-admin`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Error " + res.status);
+
+    const csv = await res.text();
+    const blob = new Blob([csv], { type: 'text/tab-separated-values;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `BD_CONFIG_${new Date().toISOString().slice(0,10)}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch(e) {
+    alert("❌ Error de descarga: " + e.message);
+  }
+} 
+
+ async function reimprimirDoc() {
+  const folio = document.getElementById('rep-folio').value.trim();
+  const tipo = document.getElementById('rep-tipo').value;
+
+  if (!folio ||!tipo) return alert('Folio y tipo obligatorios');
+
+  const url = `${URL_SCRIPT}/reprint-pdf?tipo=${tipo}&folio=${folio}`;
+  window.open(url, '_blank');
+} 
+
+
+function salir() {
+  const ui = ['ui-app','ui-supervisor','ui-monitor-sso','ui-seguridad','ui-operaciones','ui-admin-datos','ui-incidentes-sso','ui-medico-sso','ui-extintores-sso'];
+  ui.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+
+  const login = document.getElementById('login');
+  if (login) login.style.display = 'block';
+
+  document.getElementById('id-in').value = '';
+  document.getElementById('u').value = '';
+  document.getElementById('p').value = '';
+
+  const btn = document.getElementById('btn-login');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'INGRESAR';
+  }
+} // <- SOLO ESTA 1 LLAVE
+
+</script>
 </body>
 </html>
