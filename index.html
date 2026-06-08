@@ -2549,9 +2549,11 @@ function llenarDesplegablesOperaciones() {
   const url = `http://172.16.0.1:3000/reprint-pdf?tipo=${tipo}&folio=${folio}`;
   window.open(url, '_blank'); // Abre PDF y ya imprimes
 }
-      async function descargarCSV_Admin() {
+     async function descargarCSV_Admin() {
   try {
-    const url = location.protocol + `http://172.16.0.1:3000/export-admin'; // agarra http o https
+   
+    const url = 'http://172.16.0.1:3000/export-admin';
+
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error " + res.status);
 
@@ -2560,7 +2562,9 @@ function llenarDesplegablesOperaciones() {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `BD_CONFIG_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(link); // esto ayuda en algunos browsers
     link.click();
+    document.body.removeChild(link);
   } catch(e) {
     alert("❌ Error de descarga: " + e.message);
   }
