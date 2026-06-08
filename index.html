@@ -632,7 +632,25 @@ async function entrar() {
 
 window.entrar = entrar;
 
-function abrirModulo(rol) {
+async function abrirModulo(rol) { 
+    
+    if (!DB_MASTER || !DB_MASTER.UBICACION) {
+        console.log('CEO: Cargando DB_MASTER...');
+        try {
+            const res = await fetch(`${URL_SCRIPT}/db_master`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({})
+            });
+            DB_MASTER = await res.json();
+            console.log('CEO DB_MASTER cargado:', Object.keys(DB_MASTER));
+        } catch(e) {
+            console.error('CEO ERROR DB_MASTER:', e);
+            alert('Error cargando catálogos');
+            return;
+        }
+    }
+
     switch(rol.toUpperCase()) {
         case "OPERADOR":
             document.getElementById('ui-app').style.display='block';
@@ -648,7 +666,7 @@ function abrirModulo(rol) {
             break;
         case "SSO":
             document.getElementById('ui-seguridad').style.display='block';
-            llenarDesplegablesSSO();
+            llenarDesplegablesSSO(); // <- Ahora DB_MASTER ya tiene datos
             break;
         case "OPERACIONES":
             document.getElementById('ui-operaciones').style.display='block';
@@ -664,7 +682,6 @@ function abrirModulo(rol) {
             document.getElementById('login').style.display='block';
     }
 }
-
  async function recargarDatosMaestros() {
     return new Promise(async (resolve, reject) => {
         try {
@@ -916,16 +933,22 @@ function llenarSelect(selectId, categoria, primerOpcionTexto = null) {
      .forEach(x => sel.add(new Option(x.nombre, x.nombre))); 
 }
 
-function actualizarUbicaciones() {
-    const fase = document.getElementById('p-fase')?.value;
-    const selUbi = document.getElementById('p-ubicacion');
-    if (!selUbi ||!fase) return;
-    selUbi.innerHTML = '<option disabled selected>Lugar específico</option>';
-    if (DB_MASTER.UBICACION) {
-        DB_MASTER.UBICACION.filter(u => u.extra1 === fase).forEach(u => selUbi.add(new Option(u.nombre, u.nombre)));
-        selUbi.disabled = false;
-    }
-}
+function llenarDesplegablesOperaciones() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
+  
+  if (DB_MASTER.PRIORIDAD) {
+    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
+    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
+  }
+  
+  if (DB_MASTER.DEPARTAMENTO) {
+    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+    DB_MASTER.DEPARTAMENTO.forEach(d => {
+      selDepto.add(new Option(d.nombre, d.id));
+    });
+  }
+} 
 
 function llenarSelectTipoMedico() {
   const sel = document.getElementById('med-tipo');
@@ -1028,7 +1051,6 @@ function crearCheck(texto) {
     div.innerHTML = `<label class="chk-label"><input type="checkbox" class="chk-input" checked> ${texto}</label>`;
     return div;
 }
-
 function checkTecnicoOperaciones(id) {
     const box = document.getElementById('ot-tec-box');
     const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
@@ -2540,8 +2562,10 @@ function salir() {
     btn.disabled = false;
     btn.textContent = 'INGRESAR';
   }
-} // <- SOLO ESTA 1 LLAVE
-
+} 
+window.actualizarChecklist = actualizarChecklist;
+window.actualizarUbicaciones = actualizarUbicaciones;
+       
 </script>
 </body>
 </html>
