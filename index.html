@@ -659,7 +659,7 @@ async function abrirModulo(rol) {
             document.getElementById('ui-supervisor').style.display='block';
             iniciarReloj(); actualizarPildoras(); setInterval(actualizarPildoras, 30000);
             break;
-        case "SUPERVISOR_SSO": // <- AQUÍ VA DENTRO DEL SWITCH
+        case "SUPERVISOR_SSO": 
             document.getElementById('ui-monitor-sso').style.display='block';
             actualizarPildoras(); 
             cargarPermisosParaCerrar(); 
@@ -850,7 +850,8 @@ async function actualizarPildoras() {
     const ini = document.getElementById('f-inicio')?.value || fechaCorte;
     const fin = document.getElementById('f-fin')?.value || fechaCorte;
 
-    const rLog = await fetch(`${URL_SCRIPT}/logistica?modulo=LOGISTICA&accion=reporte&desde=${ini}&hasta=${fin}&t=${Date.now()}`, {mode: 'cors'});
+   const url = `${URL_SCRIPT}/logistica?modulo=LOGISTICA&accion=reporte&desde=${encodeURIComponent(ini)}&hasta=${encodeURIComponent(fin)}&t=${Date.now()}`;
+const rLog = await fetch(url);
 
     if(rLog.ok) {
       const dLog = await rLog.json();
