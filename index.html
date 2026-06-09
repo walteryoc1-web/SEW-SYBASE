@@ -895,17 +895,20 @@ function llenarDesplegablesSSO() {
 
     if (DB_MASTER.TRABAJO) {
         DB_MASTER.TRABAJO.filter(x => (x.extra3||"ACTIVO").toUpperCase()!== "INACTIVO")
-         .forEach(t => selTipo.add(new Option(t.nombre, t.nombre.toUpperCase())));
+          .forEach(t => selTipo.add(new Option(t.nombre, t.nombre.toUpperCase())));
     }
     llenarSelectTecnico();
 }
 
+window.onload = () => {
+    cargarCerebroSistema();
+};
 function llenarSelectTecnico() {
     const selTec = document.getElementById('tu-select-tecnico');
     if (!selTec) return;
     selTec.innerHTML = '<option disabled selected>Técnico</option>';
     DB_MASTER.TECNICO?.filter(t => (t.extra3 || "ACTIVO").toUpperCase() === "ACTIVO")
-     .forEach(t => {
+      .forEach(t => {
             const texto = t.extra4? `${t.nombre} - ${t.extra4}` : t.nombre;
             selTec.add(new Option(texto, t.id));
         });
@@ -929,25 +932,18 @@ function llenarSelect(selectId, categoria, primerOpcionTexto = null) {
     const placeholder = primerOpcionTexto || sel.options[0]?.text || 'Selecciona';
     sel.innerHTML = `<option disabled selected>${placeholder}</option>`;
     DB_MASTER[categoria]?.filter(x => (x.extra3 || "ACTIVO").toUpperCase() === "ACTIVO")
-    .forEach(x => sel.add(new Option(x.nombre, x.nombre)));
+     .forEach(x => sel.add(new Option(x.nombre, x.nombre))); 
 }
 
-// SOLO 1 COPIA
-function llenarDesplegablesOperaciones() {
-  const selPrio = document.getElementById('ot-prioridad');
-  const selDepto = document.getElementById('ot-depto');
-
-  if (DB_MASTER.PRIORIDAD) {
-    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
-    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
-  }
-
-  if (DB_MASTER.DEPARTAMENTO) {
-    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
-    DB_MASTER.DEPARTAMENTO.forEach(d => {
-      selDepto.add(new Option(d.nombre, d.id));
-    });
-  }
+function actualizarUbicaciones() {
+    const fase = document.getElementById('p-fase')?.value;
+    const selUbi = document.getElementById('p-ubicacion');
+    if (!selUbi ||!fase) return;
+    selUbi.innerHTML = '<option disabled selected>Lugar específico</option>';
+    if (DB_MASTER.UBICACION) {
+        DB_MASTER.UBICACION.filter(u => u.extra1 === fase).forEach(u => selUbi.add(new Option(u.nombre, u.nombre)));
+        selUbi.disabled = false;
+    }
 }
 
 function llenarSelectTipoMedico() {
@@ -962,10 +958,10 @@ function llenarSelectTipoMedico() {
   }
 
   DB_MASTER.TIPO_MEDICO
-   .filter(x => (x.extra3 || "ACTIVO").toUpperCase()!== "INACTIVO")
-   .forEach(t => {
+    .filter(x => (x.extra3 || "ACTIVO").toUpperCase() !== "INACTIVO")
+    .forEach(t => {
       const opt = new Option(
-        decodeURIComponent(escape(t.nombre)),
+        decodeURIComponent(escape(t.nombre)), 
         decodeURIComponent(escape(t.nombre))
       );
       sel.add(opt);
@@ -973,45 +969,56 @@ function llenarSelectTipoMedico() {
 }
 
 llenarSelectTipoMedico();
-
-function llenarSelectAgenteExtintor() {
+       
+  function llenarSelectAgenteExtintor() {
   const sel = document.getElementById('ext-agente');
   if (!sel) return;
-
+  
   const agentes = DB_MASTER.AGENTE_EXTINTOR || [];
-
+  
   sel.innerHTML = '<option value="">Seleccione agente...</option>' +
-    agentes.map(a =>
+    agentes.map(a => 
       `<option value="${a.id}">${a.nombre} - ${a.extra2}</option>`
     ).join('');
 }
-
 async function mostrarUIOperaciones() {
   document.getElementById('ui-operaciones').style.display = 'block';
-
+  
   const res = await fetch(`${URL_SCRIPT}/db_master`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({})
   });
-
+  
   DB_MASTER = await res.json();
-
-  llenarDesplegablesOperaciones();
+  
+  llenarDesplegablesOperaciones(); // 
 }
+
+function llenarDesplegablesOperaciones() {
+  const selPrio = document.getElementById('ot-prioridad');
+  const selDepto = document.getElementById('ot-depto');
+  
+  
+  if (DB_MASTER.PRIORIDAD) {
+    selPrio.innerHTML = '<option disabled selected>Prioridad</option>';
+    DB_MASTER.PRIORIDAD.forEach(p => selPrio.add(new Option(p.nombre, p.nombre)));
+  }
+  
+  
+  if (DB_MASTER.DEPARTAMENTO) {
+    selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
+    DB_MASTER.DEPARTAMENTO.forEach(d => {
+      selDepto.add(new Option(d.nombre, d.id));
+    });
+  }
 
 // ===== CHECKLIST ATS =====
 function actualizarChecklist() {
-    console.log('CEO: actualizarChecklist ejecutada');
     const selector = document.getElementById('p-tipo');
-    const contCheck = document.getElementById('contenedor-checklist');
-
-    if (!selector ||!selector.value || selector.value === 'Tipo de Trabajo') {
-        if(contCheck) contCheck.style.display = 'none';
-        return;
-    }
-
+    if (!selector ||!selector.value) return;
     const tipoElegido = selector.options[selector.selectedIndex].text.toUpperCase().trim();
+    const contCheck = document.getElementById('contenedor-checklist');
     const lEpp = document.getElementById('lista-epp');
     const lHerr = document.getElementById('lista-herramientas');
     const lCol = document.getElementById('lista-colectiva');
@@ -1019,39 +1026,19 @@ function actualizarChecklist() {
     const cC = document.getElementById('check-colectiva')?.checked;
 
     if(contCheck) contCheck.style.display = 'block';
-    if(lEpp) lEpp.innerHTML = "<b>✅ EPP REQUERIDO:</b><br>";
-    if(lHerr) lHerr.innerHTML = "<b>🛠️ HERRAMIENTAS:</b><br>";
-    if(lCol) lCol.innerHTML = "<b>🚧 COLECTIVA:</b><br>";
+    if(lEpp) lEpp.innerHTML = "<b>✅ EPP REQUERIDO:</b>";
+    if(lHerr) lHerr.innerHTML = "<b>🛠️ HERRAMIENTAS:</b>";
+    if(lCol) lCol.innerHTML = "<b>🚧 COLECTIVA:</b>";
 
-    const eppDemo = ['Casco', 'Lentes', 'Guantes'];
-    const herrDemo = ['Multímetro', 'Escalera'];
-    const colDemo = ['Barandal', 'Señalización'];
-
-    if (DB_MASTER?.EPP?.length) {
-        DB_MASTER.EPP.filter(e => e.extra1?.toUpperCase() === tipoElegido)
-         .forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
-    } else {
-        eppDemo.forEach(e => lEpp.appendChild(crearCheck(e)));
-    }
-
-    if (hC) {
+    if (DB_MASTER.EPP) DB_MASTER.EPP.filter(e => e.extra1.toUpperCase() === tipoElegido).forEach(e => lEpp.appendChild(crearCheck(e.nombre)));
+    if (hC && DB_MASTER.HERRAMIENTA) {
         lHerr.style.display = 'block';
-        if (DB_MASTER?.HERRAMIENTA?.length) {
-            DB_MASTER.HERRAMIENTA.filter(h => h.extra1?.toUpperCase() === tipoElegido)
-             .forEach(h => lHerr.appendChild(crearCheck(h.nombre)));
-        } else {
-            herrDemo.forEach(h => lHerr.appendChild(crearCheck(h)));
-        }
+        DB_MASTER.HERRAMIENTA.filter(h => h.extra1.toUpperCase() === tipoElegido).forEach(h => lHerr.appendChild(crearCheck(h.nombre)));
     } else if(lHerr) lHerr.style.display = 'none';
 
-    if (cC) {
+    if (cC && DB_MASTER.COLECTIVA) {
         lCol.style.display = 'block';
-        if (DB_MASTER?.COLECTIVA?.length) {
-            DB_MASTER.COLECTIVA.filter(c => c.extra1?.toUpperCase() === tipoElegido)
-             .forEach(c => lCol.appendChild(crearCheck(c.nombre)));
-        } else {
-            colDemo.forEach(c => lCol.appendChild(crearCheck(c)));
-        }
+        DB_MASTER.COLECTIVA.filter(c => c.extra1.toUpperCase() === tipoElegido).forEach(c => lCol.appendChild(crearCheck(c.nombre)));
     } else if(lCol) lCol.style.display = 'none';
 }
 
@@ -1061,43 +1048,6 @@ function crearCheck(texto) {
     return div;
 }
 
-// GLOBAL CEO
-window.actualizarChecklist = actualizarChecklist;
-window.actualizarUbicaciones = actualizarUbicaciones;
-// ===== UBICACIONES SSO =====
-function actualizarUbicaciones() {
-    console.log('CEO: actualizarUbicaciones ejecutada');
-    const selFase = document.getElementById('p-fase');
-    const selUbic = document.getElementById('p-ubicacion');
-    
-    if(!selFase || !selUbic) return;
-    
-    const faseElegida = selFase.value;
-    
-    if(!faseElegida || faseElegida === 'Area Labores') {
-        selUbic.innerHTML = '<option disabled selected>Lugar específico</option>';
-        selUbic.disabled = true;
-        return;
-    }
-    
-    selUbic.disabled = false;
-    selUbic.innerHTML = '<option disabled selected>Lugar específico</option>';
-    
-    // Filtra ubicaciones por fase/extra1
-    if(DB_MASTER?.UBICACION?.length) {
-        DB_MASTER.UBICACION
-            .filter(u => u.extra1 === faseElegida && (u.extra3||"ACTIVO").toUpperCase() !== "INACTIVO")
-            .forEach(u => {
-                selUbic.add(new Option(u.nombre, u.nombre));
-            });
-    }
-    
-    console.log('CEO: Ubicaciones cargadas para fase:', faseElegida);
-}
-
-// GLOBAL CEO
-window.actualizarUbicaciones = actualizarUbicaciones;
-       
 function checkTecnicoOperaciones(id) {
     const box = document.getElementById('ot-tec-box');
     const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
@@ -1122,10 +1072,10 @@ function checkTecnicoOperaciones(id) {
     if(btn) btn.disabled = false;
 }
 
-async function checkInvolucradoIncidente(inp) {
+ async function checkInvolucradoIncidente(inp) {
     const id = inp.value.trim().toUpperCase();
     const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
-
+    
     if (!id) {
         if(box) box.style.display = 'none';
         return;
@@ -1156,18 +1106,122 @@ async function checkInvolucradoIncidente(inp) {
     }
 }
 
-window.checkInvolucradoIncidente = checkInvolucradoIncidente;
-
-function llenarListasIncidentes() {
-    const selSalud = document.getElementById('inc-salud');
-    const selGrav = document.getElementById('inc-gravedad');
-    if (selSalud && DB_MASTER.ESTADO_SALUD) {
-        selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
-        DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
+window.checkInvolucradoIncidente = async function(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.inc-bloque').querySelector('.inc-resultado');
+    
+    if (!id) {
+        if(box) box.style.display = 'none';
+        return;
     }
-    if (selGrav && DB_MASTER.GRAVEDAD) {
-        selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
-        DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+
+    try {
+        const r = await fetch(`${URL_SCRIPT}/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            return;
+        }
+
+        const t = data.data;
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
+    }
+}
+
+ function llenarListasIncidentes() {
+            const selSalud = document.getElementById('inc-salud');
+            const selGrav = document.getElementById('inc-gravedad');
+            if (selSalud && DB_MASTER.ESTADO_SALUD) {
+                selSalud.innerHTML = '<option value="SIN_AFECTADOS">No hay afectados</option>';
+                DB_MASTER.ESTADO_SALUD.forEach(x => selSalud.add(new Option(x.nombre, x.nombre)));
+            }
+            if (selGrav && DB_MASTER.GRAVEDAD) {
+                selGrav.innerHTML = '<option disabled selected>Gravedad</option>';
+                DB_MASTER.GRAVEDAD.forEach(x => selGrav.add(new Option(x.nombre, x.nombre)));
+            }
+        }
+
+
+function checkTecnicoOperaciones(id) {
+    const box = document.getElementById('ot-tec-box');
+    const btn = document.querySelector('#ot-seccion-apertura button[onclick="enviarOT()"]');
+
+    if (!id ||!box) { if(box) box.style.display = 'none'; return; }
+
+    id = id.toString().trim().toUpperCase();
+
+    if (!esActivo('TECNICO', id)) {
+        box.innerHTML = `<span style="color:red;">❌ Técnico ${id} INACTIVO</span>`;
+        box.style.display = 'block';
+        if(btn) btn.disabled = true;
+        return;
+    }
+
+    const t = getRegistro('TECNICO', id);
+    box.innerHTML = `👨‍🔧 Técnico: ${t.nombre}`;
+    box.style.display = 'block';
+    if(btn) btn.disabled = false;
+}
+
+async function checkTecAgregado(inp) {
+    const id = inp.value.trim().toUpperCase();
+    const box = inp.closest('.tec-bloque').querySelector('.tec-resultado');
+    const btn = document.getElementById('btn-env');
+
+    if (!id) {
+        box.style.display = 'none';
+        if(btn) btn.disabled = false;
+        return;
+    }
+
+    if(box) {
+        box.innerText = "⏳ Buscando...";
+        box.style.display = 'block';
+    }
+    if(btn) btn.disabled = true;
+
+    try {
+        const r = await fetch(`${URL_SCRIPT}/buscar?categoria=TECNICO&id=${id}`);
+        const data = await r.json();
+
+        if (!data.ok) {
+            if(box) box.innerText = "❌ Código no encontrado";
+            if(btn) btn.disabled = true;
+            return;
+        }
+
+        const t = data.data;
+
+        if ((t.ATRIBUTO_3 || "ACTIVO").toString().trim().toUpperCase() === 'BLOQUEADO') {
+            alert("🚫 TÉCNICO BLOQUEADO en sistema.");
+            inp.value = "";
+            if(box) box.style.display = 'none';
+            if(btn) btn.disabled = true;
+            return;
+        }
+
+        if(box) {
+            box.innerText = `👨‍🔧 ${t.NOMBRE_VALOR} (${t.ATRIBUTO_1})`;
+            box.style.display = 'block';
+        }
+        if(btn) btn.disabled = false;
+
+    } catch (err) {
+        if(box) box.innerText = "❌ Error de conexión";
+        console.error(err);
+        if(btn) btn.disabled = true;
     }
 }
 
