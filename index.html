@@ -402,7 +402,7 @@
       border-radius: 8px;
       box-sizing: border-box;
       text-transform: uppercase;
-      height: 46px; /* CEO: todos mismo alto */
+      height: 46px; 
       font-family: 'Segoe UI', Arial, sans-serif;
     }
     #ui-medico-sso textarea {
@@ -512,7 +512,7 @@
       <div><label style="font-size:11px;">Vence *</label><input type="month" id="ext-vence" required></div>
     </div>
 
-    <!-- INSPECTOR OBLIGATORIO CEO -->
+    <!-- INSPECTOR OBLIGATORIO-->
     <div style="margin-bottom:15px;">
       <label style="font-size:12px; font-weight:bold; color:#c0392b;">Nombre Inspector: *</label>
       <input type="text" id="ext-inspector" placeholder="NOMBRE COMPLETO Y FIRMA" style="text-transform:uppercase;" required>
@@ -648,7 +648,7 @@ async function abrirModulo(rol) {
             DB_MASTER = await res.json();
            
         } catch(e) {
-            console.error('CEO ERROR DB_MASTER:', e);
+            console.error('ERROR DB_MASTER:', e);
             alert('Error cargando catálogos');
             return;
         }
@@ -704,18 +704,18 @@ async function abrirModulo(rol) {
     return new Promise(async (resolve, reject) => {
         try {
             const r = await fetch(URL_SCRIPT + '?accion=getAdminConfig');
-            const txt = await r.text(); // ← lee texto primero
+            const txt = await r.text(); 
             
             if (!r.ok) {
                 console.error('Status:', r.status, 'Respuesta:', txt);
-                return resolve(); // ← no rechaces, solo ignora
+                return resolve(); 
             }
             
             DB_MASTER = JSON.parse(txt);
             resolve();
         } catch (e) {
             console.error('Error recarga:', e);
-            resolve(); // ← no rechaces para que no truene cambiarEstado
+            resolve(); 
         }
     });
 }
@@ -994,7 +994,7 @@ async function mostrarUIOperaciones() {
   
   DB_MASTER = await res.json();
   
-  llenarDesplegablesOperaciones(); // 
+  llenarDesplegablesOperaciones();  
 }
 
 function llenarDesplegablesOperaciones() {
@@ -1274,7 +1274,7 @@ function agregarTecAgregado() {
     cont.appendChild(d);
 }
 
-// SOLO 1 WINDOW.ONLOAD
+
 window.onload = () => {
     cargarCerebroSistema();
     actualizarPildoras();
@@ -1326,7 +1326,7 @@ window.onload = () => {
  function irAIncidentes() {
     document.getElementById('ui-monitor-sso').style.display='none';
     document.getElementById('ui-incidentes-sso').style.display='block';
-    llenarDesplegablesIncidentes(); // <- esto es lo nuevo
+    llenarDesplegablesIncidentes(); 
 }
        
         function irAMedico() {
@@ -1340,7 +1340,6 @@ window.onload = () => {
         }
 
 
-// ===== FUNCIONES DE ENVIAR=====
 
 // ===== FUNCIONES DE REGISTRO DE LOGISTICA=====
 async function enviar() {
@@ -1360,7 +1359,7 @@ async function enviar() {
   movimiento: document.getElementById('mov').value || '', 
   producto: document.getElementById('prod').value || '',  
   cliente: p.extra4 || '',                                
-  placa_unidad: p.extra1 || '',  // <- aquí
+  placa_unidad: p.extra1 || '',  
   ciclo_terpac: document.getElementById('CicloTer').value || null,
   ciclo_epq: document.getElementById('CicloEPQ').value || null,
    creado_por: window.usuarioLogueado?.usuario || 'SISTEMA'
@@ -1446,7 +1445,7 @@ const payload = {
 
         const folio = data.folio;
 
-        // 2. Descargar el PDF
+        
         btn.innerText = "DESCARGANDO PDF... ⏳";
 
         const pdfRes = await fetch(`${URL_SCRIPT}/ats-sso/pdf/${folio}`);
@@ -1522,7 +1521,7 @@ const payload = {
 
     const idFicha = data.idFicha;
 
-    // 2. Descargar el PDF - IGUAL QUE TU SSO CEO
+    
     btn.innerText = "DESCARGANDO PDF... ⏳";
 
     const pdfRes = await fetch(`${URL_SCRIPT}/ficha/pdf/${idFicha}`);
@@ -1544,7 +1543,7 @@ const payload = {
 
     alert("✅ FICHA MÉDICA REGISTRADA Y PDF DESCARGADO");
 
-    // === LIMPIAR TODO EL FORMULARIO ===
+    
     document.getElementById('med-id').value = '';
     document.getElementById('med-nombre').value = '';
     document.getElementById('med-tipo').value = '';
@@ -1684,7 +1683,7 @@ async function enviarOT() {
     const nombreTec = tec ? tec.nombre : idTec;
 
    const payload = {
-  folio_manual: folio, // 
+  folio_manual: folio, 
   depto_id: deptoId,
   depto_nombre: deptoNombre,
   prioridad: prioridad,
@@ -1736,7 +1735,7 @@ async function enviarOT() {
   if(tipo === 'SISTEMA') {
   folioInput.placeholder = 'Se generará al guardar';
   folioInput.readOnly = true;
-  folioInput.value = ''; // vacío siempre
+  folioInput.value = ''; 
   folioInput.style.background = '#f0f0f0';
 }
   else {
@@ -1851,7 +1850,7 @@ async function enviarIncidenteCompleto() {
   try {
     if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
 
-    // SOLO ESTE BLOQUE DE IDS
+    
     const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
       .map(i => i.value.toUpperCase().trim())
       .filter(v => v);
@@ -1952,7 +1951,7 @@ async function vincularDatosPermiso(folioATS) {
 
         const p = data.datos;
 
-        // GUARDA ESTO PARA QUE FUNCIONE enviarIncidenteCompleto
+        
         window.datosVinculados = {
             folioATS: folioATS,
             fase: p.area,
@@ -1974,7 +1973,7 @@ async function vincularDatosPermiso(folioATS) {
         alert("❌ Error: " + e.message);
         console.error(e);
         document.getElementById('datos-vinculados-sso').innerHTML = '';
-        window.datosVinculados = null; // limpia si falla
+        window.datosVinculados = null; 
     }
 }
       
@@ -1983,7 +1982,7 @@ function agregarInvolucradoInc() {
     if (!cont) return;
     
     const d = document.createElement('div');
-    d.className = 'inc-bloque'; // <- esto faltaba
+    d.className = 'inc-bloque'; 
     d.style.cssText = "display:flex; gap:10px; margin-top:5px; flex-wrap:wrap;";
     d.innerHTML = `<input type="text" class="inc-id-clase" placeholder="ID" onblur="checkInvolucradoIncidente(this)" style="flex:1;">
                    <button type="button" onclick="this.parentElement.remove()" style="background:red; color:white; border-radius:5px; width:40px; border:none;">X</button>
@@ -2019,8 +2018,8 @@ async function guardarDatoMaestro() {
 
     const payload = {
     accion: 'guardarDatoMaestro',
-    categoria: cat,  // <- era 'categoria' y no existe
-    id_codigo: idNuevo,  // <- era 'dm_id' y no existe ese input
+    categoria: cat,  
+    id_codigo: idNuevo,  
     descripcion: document.getElementById('adm-nombre').value.trim(),
     estado: document.getElementById('adm-estado').value,
     usuario: window.usuarioLogueado?.usuario || 'SISTEMA'
@@ -2234,7 +2233,7 @@ async function vincularATSaOT_Cierre(folioATS) {
 
         const p = data.datos;
 
-        // GUARDA ESTO PARA CUANDO FINALICES LA OT
+        
         window.datosVinculadosCierre = {
             folioATS: folioATS,
             fase: p.area,
@@ -2256,7 +2255,7 @@ async function vincularATSaOT_Cierre(folioATS) {
         alert("❌ Error: " + e.message);
         console.error(e);
         document.getElementById('ot-datos-vinculados-cierre').innerHTML = '';
-        window.datosVinculadosCierre = null; // limpia si falla
+        window.datosVinculadosCierre = null; 
     }
 }
 // === 1. CARGAR PERMISOS  ===
@@ -2279,7 +2278,7 @@ async function cargarPermisosParaCerrar() {
     abiertos.forEach(p => {
       const folioLimpio = String(p.FOLIO).trim().replace(/[\r\n\t]/g, '');
       
-      // CEO: Crear elementos sin onclick
+      
       const div = document.createElement('div');
       div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; align-items:center;";
       
@@ -2290,7 +2289,7 @@ async function cargarPermisosParaCerrar() {
       btn.innerText = "CERRAR";
       btn.style.cssText = "background:#27ae60; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;";
       
-      // CEO CLAVE: Amarrar evento con JS, no con HTML
+      
       btn.addEventListener('click', async () => {
         if (!confirm("¿Cerrar permiso " + folioLimpio + "?")) return;
         
@@ -2362,8 +2361,7 @@ async function procesarDescargaUniversal(accion, ini, fin, nombre) {
         if (!res.ok) throw new Error("Error " + res.status);
 
         const csv = await res.text();
-        // CAMBIO 1: text/csv → application/vnd.ms-excel
-        // CAMBIO 2:.csv →.xls
+        
         const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -2499,7 +2497,7 @@ async function descargarCSV_OT() {
     if (!res.ok) throw new Error("Error " + res.status);
 
     const csv = await res.text();
-    // OJO CEO: ya no agrego '\uFEFF' aquí porque el backend ya lo manda
+    
     const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const link = document.createElement("a");
     const urlBlob = URL.createObjectURL(blob);
