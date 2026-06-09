@@ -629,7 +629,6 @@ async function entrar() {
     }
 }
 // ===== ACCESO A ROLES ASIGNADOS =====
-
 window.entrar = entrar;
 
 async function abrirModulo(rol) { 
@@ -660,24 +659,30 @@ async function abrirModulo(rol) {
             document.getElementById('ui-supervisor').style.display='block';
             iniciarReloj(); actualizarPildoras(); setInterval(actualizarPildoras, 30000);
             break;
+        case "SUPERVISOR_SSO": // <- AQUÍ VA DENTRO DEL SWITCH
+            document.getElementById('ui-monitor-sso').style.display='block';
+            actualizarPildoras(); 
+            cargarPermisosParaCerrar(); 
+            setInterval(actualizarPildoras, 30000);
+            break;
         case "SSO":
-    document.getElementById('ui-seguridad').style.display='block';
-    llenarDesplegablesSSO();
-    
-    setTimeout(() => {
-        const selFase = document.getElementById('p-fase');
-        const selTipo = document.getElementById('p-tipo');
-        const chkHerr = document.getElementById('check-herramientas');
-        const chkCol = document.getElementById('check-colectiva');
-        
-        if(selFase) selFase.addEventListener('change', actualizarUbicaciones);
-        if(selTipo) selTipo.addEventListener('change', actualizarChecklist);
-        if(chkHerr) chkHerr.addEventListener('change', actualizarChecklist);
-        if(chkCol) chkCol.addEventListener('change', actualizarChecklist);
-        
-        console.log('CEO: Eventos SSO amarrados');
-    }, 100);
-    break;
+            document.getElementById('ui-seguridad').style.display='block';
+            llenarDesplegablesSSO();
+            
+            setTimeout(() => {
+                const selFase = document.getElementById('p-fase');
+                const selTipo = document.getElementById('p-tipo');
+                const chkHerr = document.getElementById('check-herramientas');
+                const chkCol = document.getElementById('check-colectiva');
+                
+                if(selFase) selFase.addEventListener('change', actualizarUbicaciones);
+                if(selTipo) selTipo.addEventListener('change', actualizarChecklist);
+                if(chkHerr) chkHerr.addEventListener('change', actualizarChecklist);
+                if(chkCol) chkCol.addEventListener('change', actualizarChecklist);
+                
+                console.log('CEO: Eventos SSO amarrados');
+            }, 100);
+            break;
         case "OPERACIONES":
             document.getElementById('ui-operaciones').style.display='block';
             llenarDesplegablesOperaciones();
@@ -692,7 +697,7 @@ async function abrirModulo(rol) {
             document.getElementById('login').style.display='block';
     }
 }
- async function recargarDatosMaestros() {
+       async function recargarDatosMaestros() {
     return new Promise(async (resolve, reject) => {
         try {
             const r = await fetch(URL_SCRIPT + '?accion=getAdminConfig');
