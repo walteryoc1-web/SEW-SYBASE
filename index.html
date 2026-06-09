@@ -525,7 +525,7 @@
  <!-- SECCIÓN DE SCRIPTS -->
    <script>
 
-const URL_SCRIPT = location.protocol + '//172.16.0.1:3000/api';
+const URL_SCRIPT = 'http://172.16.0.1:3000/api';
 let DB_MASTER = {};
 let datosVinculados = null;
 let datosVinculadosATS_Cierre = null;
@@ -634,7 +634,7 @@ window.entrar = entrar;
 async function abrirModulo(rol) { 
     
     if (!DB_MASTER || !DB_MASTER.UBICACION) {
-        console.log('CEO: Cargando DB_MASTER...');
+        
         try {
             const res = await fetch(`${URL_SCRIPT}/db_master`, {
                 method: 'POST',
@@ -642,7 +642,7 @@ async function abrirModulo(rol) {
                 body: JSON.stringify({})
             });
             DB_MASTER = await res.json();
-            console.log('CEO DB_MASTER cargado:', Object.keys(DB_MASTER));
+           
         } catch(e) {
             console.error('CEO ERROR DB_MASTER:', e);
             alert('Error cargando catálogos');
@@ -680,8 +680,7 @@ async function abrirModulo(rol) {
                 if(chkHerr) chkHerr.addEventListener('change', actualizarChecklist);
                 if(chkCol) chkCol.addEventListener('change', actualizarChecklist);
                 
-                console.log('CEO: Eventos SSO amarrados');
-            }, 100);
+                            }, 100);
             break;
         case "OPERACIONES":
             document.getElementById('ui-operaciones').style.display='block';
@@ -827,8 +826,7 @@ function obtenerFechaCorte() {
 
 async function actualizarPildoras() {
   const fechaCorte = obtenerFechaCorte();
-  console.log('Fecha corte CEO:', fechaCorte);
-
+ 
   try {
     const elIni = document.getElementById('f-ini-sso');
     const elFin = document.getElementById('f-fin-sso');
@@ -855,8 +853,7 @@ const rLog = await fetch(url);
 
     if(rLog.ok) {
       const dLog = await rLog.json();
-      console.log("LOG DATA CEO:", dLog);
-
+    
       if (dLog.ok) {
         const total = dLog.arribos || 0;
         const proceso = 0;
@@ -1855,8 +1852,6 @@ async function enviarIncidenteCompleto() {
       .map(i => i.value.toUpperCase().trim())
       .filter(v => v);
 
-    console.log('IDs encontrados:', ids); 
-
     if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
 
     const involucrados = ids.map(id => {
@@ -2263,8 +2258,6 @@ async function vincularATSaOT_Cierre(folioATS) {
 // === 1. CARGAR PERMISOS  ===
 async function cargarPermisosParaCerrar() {
   const API_SSO = `${URL_SCRIPT}/sso`;
-  console.log("CEO API_SSO =", API_SSO); 
-  console.log("CEO URL_SCRIPT =", URL_SCRIPT); 
   
   const cont = document.getElementById('contenedor-tabla-sso');
 
@@ -2311,8 +2304,7 @@ async function cargarPermisosParaCerrar() {
       })
     });
           const data = await res.json();
-          console.log('CEO RESP CERRAR:', data);
-          
+                   
           if (data.ok === true) {
             alert("✅ Permiso cerrado correctamente");
             cargarPermisosParaCerrar();
@@ -2333,8 +2325,7 @@ async function cargarPermisosParaCerrar() {
       div.appendChild(btn);
       cont.appendChild(div);
     });
-    console.log('CEO: Pintados', abiertos.length, 'permisos');
-
+   
   } catch (err) {
     console.error('CEO ERROR FETCH:', err);
     cont.innerHTML = `<p style="color:red; padding:10px;">Q28K_ERROR: ${err.message}</p>`;
