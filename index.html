@@ -1006,12 +1006,13 @@ function llenarDesplegablesOperaciones() {
   }
   
   
-  if (DB_MASTER.DEPARTAMENTO) {
+ if (DB_MASTER.DEPARTAMENTO) {
     selDepto.innerHTML = '<option disabled selected>Selecciona Depto</option>';
     DB_MASTER.DEPARTAMENTO.forEach(d => {
       selDepto.add(new Option(d.nombre, d.id));
     });
   }
+} 
 
 // ===== CHECKLIST ATS =====
 function actualizarChecklist() {
@@ -1048,29 +1049,6 @@ function crearCheck(texto) {
     return div;
 }
 
-function checkTecnicoOperaciones(id) {
-    const box = document.getElementById('ot-tec-box');
-    const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
-
-    if (!id) {
-        if(box) box.style.display = 'none';
-        return;
-    }
-
-    id = id.toString().trim().toUpperCase();
-
-    if (!esActivo('TECNICO', id)) {
-        box.innerHTML = `<span style="color:red;">❌ Técnico ${id} INACTIVO</span>`;
-        box.style.display = 'block';
-        if(btn) btn.disabled = true;
-        return;
-    }
-
-    const t = getRegistro('TECNICO', id);
-    box.innerHTML = `👨‍🔧 Técnico: ${t.nombre}`;
-    box.style.display = 'block';
-    if(btn) btn.disabled = false;
-}
 
  async function checkInvolucradoIncidente(inp) {
     const id = inp.value.trim().toUpperCase();
