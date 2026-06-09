@@ -660,20 +660,17 @@ async function abrirModulo(rol) {
             document.getElementById('ui-supervisor').style.display='block';
             iniciarReloj(); actualizarPildoras(); setInterval(actualizarPildoras, 30000);
             break;
-        case "SUPERVISOR_SSO":
-            document.getElementById('ui-monitor-sso').style.display='block';
-            actualizarPildoras(); cargarPermisosParaCerrar(); setInterval(actualizarPildoras, 30000);
-            break;
         case "SSO":
     document.getElementById('ui-seguridad').style.display='block';
     llenarDesplegablesSSO();
     
-    
     setTimeout(() => {
+        const selFase = document.getElementById('p-fase');
         const selTipo = document.getElementById('p-tipo');
         const chkHerr = document.getElementById('check-herramientas');
         const chkCol = document.getElementById('check-colectiva');
         
+        if(selFase) selFase.addEventListener('change', actualizarUbicaciones);
         if(selTipo) selTipo.addEventListener('change', actualizarChecklist);
         if(chkHerr) chkHerr.addEventListener('change', actualizarChecklist);
         if(chkCol) chkCol.addEventListener('change', actualizarChecklist);
@@ -1062,7 +1059,40 @@ function crearCheck(texto) {
 // GLOBAL CEO
 window.actualizarChecklist = actualizarChecklist;
 window.actualizarUbicaciones = actualizarUbicaciones;
+// ===== UBICACIONES SSO =====
+function actualizarUbicaciones() {
+    console.log('CEO: actualizarUbicaciones ejecutada');
+    const selFase = document.getElementById('p-fase');
+    const selUbic = document.getElementById('p-ubicacion');
+    
+    if(!selFase || !selUbic) return;
+    
+    const faseElegida = selFase.value;
+    
+    if(!faseElegida || faseElegida === 'Area Labores') {
+        selUbic.innerHTML = '<option disabled selected>Lugar específico</option>';
+        selUbic.disabled = true;
+        return;
+    }
+    
+    selUbic.disabled = false;
+    selUbic.innerHTML = '<option disabled selected>Lugar específico</option>';
+    
+    // Filtra ubicaciones por fase/extra1
+    if(DB_MASTER?.UBICACION?.length) {
+        DB_MASTER.UBICACION
+            .filter(u => u.extra1 === faseElegida && (u.extra3||"ACTIVO").toUpperCase() !== "INACTIVO")
+            .forEach(u => {
+                selUbic.add(new Option(u.nombre, u.nombre));
+            });
+    }
+    
+    console.log('CEO: Ubicaciones cargadas para fase:', faseElegida);
+}
 
+// GLOBAL CEO
+window.actualizarUbicaciones = actualizarUbicaciones;
+       
 function checkTecnicoOperaciones(id) {
     const box = document.getElementById('ot-tec-box');
     const btn = document.querySelector('#ot-seccion-apertura button[onclick*="enviarOT"]');
