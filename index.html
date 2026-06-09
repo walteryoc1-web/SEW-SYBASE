@@ -29,15 +29,19 @@
     </style>
 </head>
 <body>
-    <!-- 1. LOGIN -->
-    <div id="login" class="card-compacta">
-        <h2 style="color:var(--verde-oscuro); margin:0;">TERPAC USUARIO</h2>
-        <span style="font-size:10px; color:#888;">SEW-CONTROL PLUS V2</span>
-        <input type="text" id="u" placeholder="Usuario" autofocus>
-        <input type="password" id="p" placeholder="Contraseña">
-        <button id="btn-login" class="btn" onclick="entrar()">INGRESAR</button>
-        <p style="font-size: 10px; color: #bbb; margin-top: 15px;">Puerto Quetzal, Guatemala</p>
-    </div>
+   <!-- 1. LOGIN -->
+<div id="login" class="card-compacta">
+    <h2 style="color:var(--verde-oscuro); margin:0;">TERPAC USUARIO</h2>
+    <span style="font-size:10px; color:#888;">SEW-CONTROL PLUS V2</span>
+    
+    <form onsubmit="entrar(); return false;">
+        <input type="text" id="u" placeholder="Usuario" autofocus autocomplete="username">
+        <input type="password" id="p" placeholder="Contraseña" autocomplete="current-password">
+        <button id="btn-login" class="btn" type="submit">INGRESAR</button>
+    </form>
+    
+    <p style="font-size: 10px; color: #bbb; margin-top: 15px;">Puerto Quetzal, Guatemala</p>
+</div>
 
 
     <!-- 2. UI OPERADOR LOGÍSTICA -->
