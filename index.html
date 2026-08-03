@@ -1850,10 +1850,12 @@ async function enviarIncidenteCompleto() {
   try {
     if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
 
-    
+    // SOLO ESTE BLOQUE DE IDS
     const ids = Array.from(document.querySelectorAll('#contenedor-involucrados-inc .inc-id-clase'))
       .map(i => i.value.toUpperCase().trim())
       .filter(v => v);
+
+    console.log('IDs encontrados:', ids); 
 
     if (ids.length === 0) throw new Error("Agrega al menos 1 colaborador afectado");
 
