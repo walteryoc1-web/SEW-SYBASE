@@ -1942,10 +1942,8 @@ async function enviarIncidenteCompleto() {
 // ===== FUNCION VINCULAR DATOS =====
 async function vincularDatosPermiso(folioATS) {
     try {
-        // OPTIMIZACIÓN: Si el parámetro llega vacío desde el HTML, lo busca automáticamente en el input.
-        // Reemplaza 'input-folio-ats' por el ID real de tu caja de texto si es diferente.
         if (!folioATS) {
-            const inputFolio = document.getElementById('input-folio-ats');
+            const inputFolio = document.getElementById('input-folio-ats'); 
             folioATS = inputFolio ? inputFolio.value : '';
         }
 
@@ -1955,18 +1953,20 @@ async function vincularDatosPermiso(folioATS) {
         const div = document.getElementById('datos-vinculados-sso');
         if (div) div.innerHTML = 'Buscando... ⏳';
 
-        // CORREGIDO: Se añade 'redirect: follow' e instrucciones explícitas de CORS
-        const r = await fetch(`${URL_SCRIPT}/sso/vincularPermiso?folio=${encodeURIComponent(folioATS)}`, {
-            method: 'GET',
+        // CAMBIO CRÍTICO: Pasamos a POST enviando un JSON
+        const r = await fetch(`${URL_SCRIPT}`, {
+            method: 'POST',
             mode: 'cors',
-            redirect: 'follow',
             headers: {
-                'Accept': 'application/json'
-            }
+                'Content-Type': 'text/plain' // Usamos text/plain para evitar solicitudes preflight (OPTIONS) de CORS
+            },
+            body: JSON.stringify({
+                accion: 'vincularPermiso',
+                folio: folioATS
+            })
         });
 
         const data = await r.json();
-
         if (!data.ok) throw new Error(data.error);
 
         const p = data.datos;
