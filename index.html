@@ -1841,11 +1841,13 @@ async function finalizarTareaOT(folioOT, btn) {
     }
 }
 
-// ===== FUNCION REPORTE DE INCIDENTE=====
+// ===== FUNCION REPORTE DE INCIDENTE =====
 async function enviarIncidenteCompleto() {
   const btn = document.querySelector('button[onclick="enviarIncidenteCompleto()"]');
-  btn.disabled = true;
-  btn.innerText = "REGISTRANDO... ⏳";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "REGISTRANDO... ⏳";
+  }
 
   try {
     if (!window.datosVinculados) throw new Error("Primero vincula un folio SSO válido");
@@ -1865,23 +1867,23 @@ async function enviarIncidenteCompleto() {
     }).join(" | ");
 
     const payload = {
-  folio: window.datosVinculados.folioATS,
-  area: window.datosVinculados.fase,
-  ubicacion: window.datosVinculados.ubi,
-  tipoEvento: document.getElementById('inc-tipo').value,
-  gravedad: document.getElementById('inc-gravedad').value,
-  riesgo: document.getElementById('inc-riesgo').value,
-  contaminacion: document.getElementById('inc-contaminacion').value,
-  estructura: document.getElementById('inc-estructura').value,
-  reparacion: document.getElementById('inc-reparacion').value,
-  reincidencia: document.getElementById('inc-reincidencia').value,
-  estadoFinal: document.getElementById('inc-estado-final').value,
-  salud: document.getElementById('inc-salud').value,
-  creado_por: window.usuarioLogueado?.usuario || 'SISTEMA', 
-  involucrados: involucrados,
-  desc: document.getElementById('inc-recomendacion').value, 
-  tecnico_principal: document.getElementById('inc-tecnico')?.value || null
-};
+      folio: window.datosVinculados.folioATS,
+      area: window.datosVinculados.fase,
+      ubicacion: window.datosVinculados.ubi,
+      tipoEvento: document.getElementById('inc-tipo').value,
+      gravedad: document.getElementById('inc-gravedad').value,
+      riesgo: document.getElementById('inc-riesgo').value,
+      contaminacion: document.getElementById('inc-contaminacion').value,
+      estructura: document.getElementById('inc-estructura').value,
+      reparacion: document.getElementById('inc-reparacion').value,
+      reincidencia: document.getElementById('inc-reincidencia').value,
+      estadoFinal: document.getElementById('inc-estado-final').value,
+      salud: document.getElementById('inc-salud').value,
+      creado_por: window.usuarioLogueado?.usuario || 'SISTEMA', 
+      involucrados: involucrados,
+      desc: document.getElementById('inc-recomendacion').value, 
+      tecnico_principal: document.getElementById('inc-tecnico')?.value || null
+    };
     
     const camposObligatorios = ['tipoEvento', 'gravedad', 'riesgo', 'estadoFinal'];
     for (let campo of camposObligatorios) {
@@ -1890,9 +1892,10 @@ async function enviarIncidenteCompleto() {
       }
     }
 
-    
-    const res = await fetch("${URL_SCRIPT}/registrarIncidente", {
+    // CORREGIDO: Se cambiaron comillas dobles por invertidas
+    const res = await fetch(`${URL_SCRIPT}/registrarIncidente`, {
       method: 'POST',
+      mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
@@ -1902,8 +1905,7 @@ async function enviarIncidenteCompleto() {
 
     const folio = data.folio;
 
-    
-    btn.innerText = "DESCARGANDO PDF... ⏳";
+    if (btn) btn.innerText = "DESCARGANDO PDF... ⏳";
     const pdfRes = await fetch(`${URL_SCRIPT}/incidente/pdf/${folio}`);
 
     if (!pdfRes.ok) {
@@ -1930,21 +1932,37 @@ async function enviarIncidenteCompleto() {
     alert("❌ Error: " + e.message);
     console.error(e);
   } finally {
-    btn.disabled = false;
-    btn.innerText = "REGISTRAR INFORME 🚩";
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "REGISTRAR INFORME 🚩";
+    }
   }
 }
 
+// ===== FUNCION VINCULAR DATOS =====
 async function vincularDatosPermiso(folioATS) {
     try {
+        // OPTIMIZACIÓN: Si el parámetro llega vacío desde el HTML, lo busca automáticamente en el input.
+        // Reemplaza 'input-folio-ats' por el ID real de tu caja de texto si es diferente.
+        if (!folioATS) {
+            const inputFolio = document.getElementById('input-folio-ats');
+            folioATS = inputFolio ? inputFolio.value : '';
+        }
+
+        if (!folioATS || folioATS.trim() === "") throw new Error("Ingresa el folio ATS");
         folioATS = folioATS.trim().toUpperCase();
-        if (!folioATS) throw new Error("Ingresa el folio ATS");
 
         const div = document.getElementById('datos-vinculados-sso');
-        div.innerHTML = '';
+        if (div) div.innerHTML = 'Buscando... ⏳';
 
+        // CORREGIDO: Se añade 'redirect: follow' e instrucciones explícitas de CORS
         const r = await fetch(`${URL_SCRIPT}/sso/vincularPermiso?folio=${encodeURIComponent(folioATS)}`, {
-            method: 'GET'
+            method: 'GET',
+            mode: 'cors',
+            redirect: 'follow',
+            headers: {
+                'Accept': 'application/json'
+            }
         });
 
         const data = await r.json();
@@ -1952,7 +1970,6 @@ async function vincularDatosPermiso(folioATS) {
         if (!data.ok) throw new Error(data.error);
 
         const p = data.datos;
-
         
         window.datosVinculados = {
             folioATS: folioATS,
@@ -1961,23 +1978,27 @@ async function vincularDatosPermiso(folioATS) {
             tipo: p.tipo
         };
 
-        div.innerHTML = `
-          <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
-            <b>✅ SSO VINCULADO</b><br>
-            <small>🏢 Área: ${p.area}</small><br>
-            <small>📍 Lugar: ${p.lugar}</small><br>
-            <small>🔧 Tipo: ${p.tipo || 'N/A'}</small>
-          </div>
-        `;
+        if (div) {
+            div.innerHTML = `
+              <div style='background:#e8f5e9; padding:10px; border-radius:10px; color:#27ae60; margin-top:5px;'>
+                <b>✅ SSO VINCULADO</b><br>
+                <small>🏢 Área: ${p.area}</small><br>
+                <small>📍 Lugar: ${p.lugar}</small><br>
+                <small>🔧 Tipo: ${p.tipo || 'N/A'}</small>
+              </div>
+            `;
+        }
         alert("✅ SSO VINCULADO");
 
     } catch(e) {
         alert("❌ Error: " + e.message);
         console.error(e);
-        document.getElementById('datos-vinculados-sso').innerHTML = '';
+        const div = document.getElementById('datos-vinculados-sso');
+        if (div) div.innerHTML = '';
         window.datosVinculados = null; 
     }
 }
+
       
 function agregarInvolucradoInc() {
     const cont = document.getElementById('contenedor-involucrados-inc');
